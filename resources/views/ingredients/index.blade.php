@@ -33,7 +33,7 @@
                             <td>{{ $ing->unit }}</td>
                             <td>
                                 <a href="{{ route('ingredients.edit', $ing) }}" class="btn btn-sm btn-warning">Editar</a>
-                                <form action="{{ route('ingredients.destroy', $ing) }}" method="POST" style="display:inline-block">
+                                <form action="{{ route('ingredients.destroy', $ing->id) }}" method="POST" style="display:inline-block">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>
                                 </form>

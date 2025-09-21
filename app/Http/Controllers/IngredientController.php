@@ -13,7 +13,7 @@ class IngredientController extends Controller
      */
     public function index()
     {
-        $ingredients = Ingredient::latest()->paginate(15);
+        $ingredients = Ingredient::where('status', true)->latest()->get();;
         return view('ingredients.index', compact('ingredients'));
     }
 
@@ -82,10 +82,9 @@ class IngredientController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Ingredient $ingredient)
+    public function destroy(string $ingredient)
     {
-        $ingredient->delete();
-
+        Ingredient::where('id', $ingredient)->update(['status' => false]);
         return redirect()->route('ingredients.index')
             ->with('success', 'Ingrediente eliminado correctamente.');
     }
