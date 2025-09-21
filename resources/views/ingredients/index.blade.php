@@ -1,48 +1,76 @@
-<div class="container">
-    <h1>Ingredientes</h1>
+@extends('partials.layouts.master')
 
-    <a href="{{ route('ingredients.create') }}" class="btn btn-primary mb-3">➕ Nuevo ingrediente</a>
+@section('title', 'SIGENUH')
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+@section('sub-title', 'Ingredientes')
+@section('pagetitle', 'Inicio')
+@section('buttonTitle', 'Share')
 
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>Unidad</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-        </thead>
-        <tbody>
-        @forelse($ingredients as $ing)
-            <tr>
-                <td><a href="{{ route('ingredients.show', $ing) }}">{{ $ing->name }}</a></td>
-                <td>{{ $ing->category }}</td>
-                <td>{{ $ing->unit }}</td>
-                <td>
-                    @if($ing->status)
-                        <span class="badge bg-success">Activo</span>
-                    @else
-                        <span class="badge bg-secondary">Inactivo</span>
-                    @endif
-                </td>
-                <td>
-                    <a href="{{ route('ingredients.edit', $ing) }}" class="btn btn-sm btn-warning">✏️ Editar</a>
-                    <form action="{{ route('ingredients.destroy', $ing) }}" method="POST" style="display:inline-block">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">🗑️ Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-        @empty
-            <tr><td colspan="5">No hay ingredientes.</td></tr>
-        @endforelse
-        </tbody>
-    </table>
+@section('css')
+    <link rel="stylesheet" href="{{ asset('assets/libs/air-datepicker/air-datepicker.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/libs/@yaireo/tagify/tagify.css') }}">
+@endsection
 
-    {{ $ingredients->links() }}
-</div>
+@section('content')
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card mb-0 h-100">
+                <table class="data-table-basic table-hover align-middle table table-nowrap w-100">
+                    <thead class="bg-light bg-opacity-30">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Unidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($ingredients as $ing)
+                        <tr>
+                            <td><a href="{{ route('ingredients.show', $ing) }}">{{ $ing->name }}</a></td>
+                            <td>{{ $ing->category }}</td>
+                            <td>{{ $ing->unit }}</td>
+                            <td>
+                                <a href="{{ route('ingredients.edit', $ing) }}" class="btn btn-sm btn-warning">Editar</a>
+                                <form action="{{ route('ingredients.destroy', $ing) }}" method="POST" style="display:inline-block">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6">
+                                Sin registros
+                                <a href="{{ route('ingredients.create') }}" class="btn btn-primary">Nuevo</a>
+                            </td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+
+    </div>
+
+    @include('partials.social-share-modal')
+
+@endsection
+
+@section('js')
+
+    <!-- Datatable js -->
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+    <!-- Datatable init -->
+    <script src="{{ asset('assets/js/table/datatable.init.js') }}"></script>
+    <!-- App js -->
+    <script type="module" src="{{ asset('assets/js/app.js') }}"></script>
+
+@endsection

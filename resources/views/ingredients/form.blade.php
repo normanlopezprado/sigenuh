@@ -25,15 +25,6 @@
 </div>
 
 <div class="mb-3">
-    <label class="form-label">Estado</label>
-    <select name="status" class="form-control" required>
-        <option value="1" @selected(old('status', $ingredient->status ?? 1)==1)>Activo</option>
-        <option value="0" @selected(old('status', $ingredient->status ?? 1)==0)>Inactivo</option>
-    </select>
-    @error('status')<div class="text-danger">{{ $message }}</div>@enderror
-</div>
-
-<div class="mb-3">
     <label class="form-label">Notas</label>
     <textarea name="notes" class="form-control">{{ old('notes', $ingredient->notes ?? '') }}</textarea>
     @error('notes')<div class="text-danger">{{ $message }}</div>@enderror
