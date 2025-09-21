@@ -113,6 +113,12 @@
                                 Gestionar
                             </a>
                         </li>
+                        <li class="slide">
+                            <a href="{{ route('ingredients.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                                <i class="ri-settings-4-line"></i>
+                                Ingredientes
+                            </a>
+                        </li>
                     </ul>
             </li>
         </ul>
