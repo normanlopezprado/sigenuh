@@ -12,6 +12,7 @@ use App\Http\Controllers\HospitalFloorController;
 use App\Http\Controllers\HospitalFloorServiceController;
 use App\Http\Controllers\BedController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\IngredientController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -64,3 +65,6 @@ Route::resource('beds', BedController::class)
 Route::resource('usuarios', UserController::class)
     ->parameters(['usuarios' => 'usuario'])
     ->middleware(['auth']);
+
+Route::resource('ingredients', IngredientController::class)
+    ->middleware('auth');
