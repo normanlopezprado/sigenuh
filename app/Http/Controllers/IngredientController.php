@@ -35,7 +35,6 @@ class IngredientController extends Controller
             'name'     => ['required','string','max:255','unique:ingredients,name'],
             'category' => ['required','string','max:255'],
             'unit'     => ['required', Rule::in(['g','kg','ml','L','unidad'])],
-            'status'   => ['required','boolean'],
             'notes'    => ['nullable','string'],
         ]);
 
@@ -58,7 +57,7 @@ class IngredientController extends Controller
      */
     public function edit(Ingredient $ingredient)
     {
-        $units = ['g','kg','ml','L','unidad'];
+        $units = ['g','kg','ml','L','botella', 'galón','unidad'];
         return view('ingredients.edit', compact('ingredient','units'));
     }
 
@@ -70,8 +69,7 @@ class IngredientController extends Controller
         $data = $request->validate([
             'name'     => ['required','string','max:255', Rule::unique('ingredients','name')->ignore($ingredient->id)],
             'category' => ['required','string','max:255'],
-            'unit'     => ['required', Rule::in(['g','kg','ml','L','unidad'])],
-            'status'   => ['required','boolean'],
+            'unit'     => ['required', Rule::in(['g','kg','ml','L','botella', 'galón','unidad'])],
             'notes'    => ['nullable','string'],
         ]);
 

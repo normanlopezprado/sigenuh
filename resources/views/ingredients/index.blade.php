@@ -28,7 +28,7 @@
                     <tbody>
                     @forelse($ingredients as $ing)
                         <tr>
-                            <td><a href="{{ route('ingredients.show', $ing) }}">{{ $ing->name }}</a></td>
+                            <td>{{ $ing->name }}</td>
                             <td>{{ $ing->category }}</td>
                             <td>{{ $ing->unit }}</td>
                             <td>
