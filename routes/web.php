@@ -13,6 +13,7 @@ use App\Http\Controllers\HospitalFloorServiceController;
 use App\Http\Controllers\BedController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\MenuController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -170,4 +171,5 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('usuarios/{usuario}',   [UserController::class,'destroy'])->name('usuarios.destroy')->middleware('permission:users.delete');
 });
 
-
+Route::resource('menus', MenuController::class)
+    ->middleware('auth');

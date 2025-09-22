@@ -1,8 +1,9 @@
+
 @extends('partials.layouts.master')
 
 @section('title', 'SIGENUH')
 
-@section('sub-title', 'Ingredientes')
+@section('sub-title', 'Menús')
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 
@@ -21,35 +22,31 @@
                     <tr>
                         <th>Nombre</th>
                         <th>Categoría</th>
-                        <th>Unidad</th>
+                        <th>Descripción</th>
+                        <th>Notas</th>
                         <th>Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @forelse($ingredients as $ing)
+                    @forelse($menus as $m)
                         <tr>
-                            <td>{{ $ing->name }}</td>
-                            <td>{{ $ing->category }}</td>
-                            <td>{{ $ing->unit }}</td>
+                            <td>{{ $m->name }}</td>
+                            <td>{{ $m->category }}</td>
+                            <td>{{ $m->description }}</td>
+                            <td>{{ $m->notes }}</td>
                             <td>
-                                @can('ingredients.edit')
-                                <a href="{{ route('ingredients.edit', $ing) }}" class="btn btn-sm btn-warning">Editar</a>
-                                <form action="{{ route('ingredients.destroy', $ing->id) }}" method="POST" style="display:inline-block">
-                                @endcan
-                                @can('ingredients.delete')
+                                <a href="{{ route('menus.edit', $m) }}" class="btn btn-sm btn-warning">Editar</a>
+                                <form action="{{ route('menus.destroy', $m->id) }}" method="POST" style="display:inline-block">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>
                                 </form>
-                                @endcan
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="6">
                                 Sin registros
-                                @can('ingredients.create')
-                                <a href="{{ route('ingredients.create') }}" class="btn btn-primary">Nuevo</a>
-                                @endcan
+                                <a href="{{ route('menus.create') }}" class="btn btn-primary">Nuevo</a>
                             </td>
                         </tr>
                     @endforelse
@@ -58,12 +55,8 @@
 
             </div>
         </div>
-
-
     </div>
-
     @include('partials.social-share-modal')
-
 @endsection
 
 @section('js')
@@ -78,5 +71,4 @@
     <script src="{{ asset('assets/js/table/datatable.init.js') }}"></script>
     <!-- App js -->
     <script type="module" src="{{ asset('assets/js/app.js') }}"></script>
-
 @endsection
