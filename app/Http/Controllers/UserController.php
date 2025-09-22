@@ -5,17 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Hospital;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    /** Roles permitidos en la app (sin CRUD de roles) */
+    private const ALLOWED_ROLES = ['Administrador','Nutrición','Recolector','Visualizador'];
+
+    
+
     public function index()
     {
-        $users = User::with('hospital')->latest()->paginate(50);
+        $users = User::with(['hospital','roles'])->latest()->paginate(50);
         return view('usuarios.index', compact('users'));
     }
 
@@ -23,14 +26,12 @@ class UserController extends Controller
     {
         $hospitals = Hospital::orderBy('name')->get(['id','name']);
 
-        // NUEVO: lista de roles fijos
         $roles = Role::where('guard_name', 'web')
-            ->whereIn('name', ['Administrador','Nutrición','Recolector','Visualizador'])
+            ->whereIn('name', self::ALLOWED_ROLES)
             ->orderBy('name')
             ->pluck('name')
             ->all();
 
-        // Pasa hospitales + roles a la vista
         return view('usuarios.create', compact('hospitals','roles'));
     }
 
@@ -43,20 +44,21 @@ class UserController extends Controller
             'password'           => ['nullable','string','min:8'],
             'user'               => ['nullable','string','max:50'],
             'avatar'             => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
-
-            // NUEVO: rol obligatorio, debe existir para guard web
             'role'               => [
                 'required','string',
+                Rule::in(self::ALLOWED_ROLES),
                 Rule::exists('roles','name')->where('guard_name','web'),
             ],
         ]);
 
-        // base para username (según tu implementación actual)
+        // Username sugerido → base única
         $base = $request->input('user') ?: \App\Models\User::baseUsernameFromName($data['name']);
         $data['user'] = \App\Models\User::generateUniqueUsername($base);
-        $data['password'] = $data['password'] ?? \Illuminate\Support\Str::random(12);
 
-        // Subir avatar con UUID del user
+        // Password auto si no viene (tu modelo lo hashea con cast 'hashed')
+        $data['password'] = $data['password'] ?? Str::random(12);
+
+        // UUID manual para nombrar avatar
         $uuid = (string) Str::uuid();
         $data['id'] = $uuid;
 
@@ -67,10 +69,9 @@ class UserController extends Controller
             $data['avatar'] = "avatars/{$filename}";
         }
 
-        // Crear usuario
-        $user = \App\Models\User::create($data);
+        $user = User::create($data);
 
-        // NUEVO: asignar ÚNICO rol
+        // Asignar ÚNICO rol
         $user->syncRoles([$data['role']]);
 
         return redirect()->route('usuarios.index')->with('success','Usuario creado y rol asignado.');
@@ -78,7 +79,7 @@ class UserController extends Controller
 
     public function show(User $usuario)
     {
-        $usuario->load('hospital');
+        $usuario->load(['hospital','roles']);
         return view('usuarios.show', compact('usuario'));
     }
 
@@ -86,14 +87,12 @@ class UserController extends Controller
     {
         $hospitals = Hospital::orderBy('name')->get(['id','name']);
 
-        // NUEVO: lista de roles fijos
         $roles = Role::where('guard_name', 'web')
-            ->whereIn('name', ['Administrador','Nutrición','Recolector','Visualizador'])
+            ->whereIn('name', self::ALLOWED_ROLES)
             ->orderBy('name')
             ->pluck('name')
             ->all();
 
-        // NUEVO: rol actual (siempre 1)
         $currentRole = $usuario->roles()->pluck('name')->first();
 
         return view('usuarios.edit', compact('usuario','hospitals','roles','currentRole'));
@@ -113,17 +112,17 @@ class UserController extends Controller
             'hospital_selected'  => ['nullable','uuid','exists:hospitals,id'],
             'password'           => ['sometimes','string','min:8'],
             'avatar'             => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
-
-            // NUEVO: rol obligatorio, debe existir para guard web
             'role'               => [
                 'required','string',
+                Rule::in(self::ALLOWED_ROLES),
                 Rule::exists('roles','name')->where('guard_name','web'),
             ],
         ]);
 
-        if (empty($data['email_verified_at'])) unset($data['email_verified_at']);
+        if (empty($data['email_verified_at'])) {
+            unset($data['email_verified_at']);
+        }
 
-        // avatar nuevo
         if ($request->hasFile('avatar')) {
             if ($usuario->avatar) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($usuario->avatar);
@@ -136,7 +135,7 @@ class UserController extends Controller
 
         $usuario->update($data);
 
-        // NUEVO: mantener SOLO el rol elegido
+        // Mantener SOLO el rol elegido
         $usuario->syncRoles([$data['role']]);
 
         return redirect()->route('usuarios.index')->with('success','Usuario actualizado y rol sincronizado.');
@@ -144,10 +143,15 @@ class UserController extends Controller
 
     public function destroy(User $usuario)
     {
+        // (opcional) Evitar borrarte a ti mismo o al último Administrador:
+        // if (auth()->id() === $usuario->id) { abort(403, 'No puedes eliminar tu propio usuario.'); }
+        // if ($usuario->hasRole('Administrador') && User::role('Administrador')->count() <= 1) { abort(403, 'Debe existir al menos un Administrador.'); }
+
         if ($usuario->avatar) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($usuario->avatar);
         }
         $usuario->delete();
+
         return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado.');
     }
 }

@@ -58,3 +58,6 @@ php artisan serve
 
 🎉🪄🔑⚙️🔎📦🧰💾🗃️🧑🏻‍💻🗄️
 
+
+## solo para actualizar permisos 🔑
+php artisan db:seed --class=RolePermissionSeeder

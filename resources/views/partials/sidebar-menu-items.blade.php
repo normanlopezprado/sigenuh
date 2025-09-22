@@ -189,14 +189,9 @@
             <span class="side-menu__label" data-lang="hr-maps">Hospitales</span>
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
-        <ul class="slide-menu" role="menu">
-            <li class="slide">
-                <a href="{{ route('hospitales.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
-                    <i class="ri-add-line"></i>
-                    Añadir
-                </a>
-            </li>
-        </ul>
+
+
+
         <ul class="slide-menu" role="menu">
         </ul>
         <ul class="slide-menu" role="menu">
@@ -259,5 +254,17 @@
                 </ul>
             </li>
         </ul>
+
+        <ul class="slide-menu" role="menu">
+            <li class="slide">
+                @can('hospitales.index)')
+                <a href="{{ route('hospitales.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
+                    <i class="ri-add-line"></i>
+                    Añadir
+                </a>
+                @endcan
+            </li>
+        </ul>
+
     </li>
 </ul>

@@ -11,34 +11,39 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
+            //hospitales
             'hospitales.index',
             'hospitales.create',
             'hospitales.edit',
-
+            'hospitales.delete',
+            //niveles del hospital
             'niveles.index',
             'niveles.create',
             'niveles.edit',
-
+            //plantas de hospital
             'hospital-floors.edit',
-
+            //servicios
             'servicios.index',
             'servicios.create',
             'servicios.edit',
-
+            //servicios por piso
             'hospital-floor-services.edit',
-
+            //camas
             'beds.index',
             'beds.create',
             'beds.edit',
-
+            //usuarios
             'users.index',
             'users.create',
             'users.edit',
+            'users.delete',
+            //ingredientes
+            'ingredients.index',
+            'ingredients.create',
+            'ingredients.edit',
+            'ingredients.delete',
 
-
-
-
-            'dashboard',
+            //dashboards
             'dashboard.view',
 
 
@@ -59,20 +64,22 @@ class RolePermissionSeeder extends Seeder
         $admin->syncPermissions(Permission::pluck('name')->all());
 
         $nutricion->syncPermissions([
-            'dashboard',
+            //dashboard
             'dashboard.view',
+            //ingredientes
+            'ingredients.index',
+            'ingredients.create',
+            'ingredients.edit',
 
         ]);
 
         $recolector->syncPermissions([
-            'dashboard',
             'dashboard.view',
 
 
         ]);
 
         $visualizador->syncPermissions([
-            'dashboard',
             'dashboard.view',
 
 

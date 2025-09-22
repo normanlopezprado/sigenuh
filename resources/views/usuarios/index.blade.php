@@ -47,15 +47,30 @@
           <td>{{ $u->created_at?->format('Y-m-d') }}</td>
           <td>{{ $u->updated_at?->format('Y-m-d') }}</td>
           <td class="d-flex gap-2">
+            @can('users.edit')
             <a class="btn btn-sm btn-warning" href="{{ route('usuarios.edit',$u) }}">Editar</a>
+            @endcan
+            @can('users.delete')
             <form method="POST" action="{{ route('usuarios.destroy',$u) }}">
-              @csrf @method('DELETE')
-              <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar?')">Eliminar</button>
+                @csrf @method('DELETE')
+                <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar?')">
+                Eliminar
+            </button>
             </form>
+            @endcan
           </td>
         </tr>
       @empty
-        <tr><td colspan="8">Sin registros. <a href="{{ route('usuarios.create') }}">Crear</a></td></tr>
+        <tr>
+            <td colspan="8">
+                Sin registros.
+                @can('users.create')
+                <a href="{{ route('usuarios.create') }}">
+                    Crear
+                </a>
+                @endcan
+            </td>
+        </tr>
       @endforelse
       </tbody>
     </table>
