@@ -36,7 +36,6 @@ class MenuController extends Controller
         $data = $request->validate([
             'name'        => ['required','string','max:255','unique:menus,name'],
             'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
-            'status'      => ['required','boolean'],
             'description' => ['nullable','string'],
             'notes'       => ['nullable','string'],
         ]);
@@ -77,7 +76,6 @@ class MenuController extends Controller
         $data = $request->validate([
             'name'        => ['required','string','max:255', Rule::unique('menus','name')->ignore($menu->id)],
             'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
-            'status'      => ['required','boolean'],
             'description' => ['nullable','string'],
             'notes'       => ['nullable','string'],
 

@@ -22,6 +22,8 @@
                     <tr>
                         <th>Nombre</th>
                         <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Notas</th>
                         <th>Acciones</th>
                     </tr>
                     </thead>
@@ -30,8 +32,10 @@
                         <tr>
                             <td>{{ $m->name }}</td>
                             <td>{{ $m->category }}</td>
+                            <td>{{ $m->description }}</td>
+                            <td>{{ $m->notes }}</td>
                             <td>
-                                <a href="{{ route('menus.edit', $ing) }}" class="btn btn-sm btn-warning">Editar</a>
+                                <a href="{{ route('menus.edit', $m) }}" class="btn btn-sm btn-warning">Editar</a>
                                 <form action="{{ route('menus.destroy', $m->id) }}" method="POST" style="display:inline-block">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>

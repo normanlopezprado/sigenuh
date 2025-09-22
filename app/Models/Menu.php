@@ -30,6 +30,7 @@ class Menu extends Model
     public function ingredients()
     {
         return $this->belongsToMany(Ingredient::class, 'menu_ingredient', 'menu_id', 'ingredient_id')
+            ->using(MenuIngredient::class)  
             ->withPivot(['id','qty','is_optional','notes'])
             ->withTimestamps();
     }
