@@ -31,14 +31,13 @@
                     </div>
                     <div class="col-md-6 form-floating form-label">
 
-                        <input type="text" name="category" class="form-control"
+                        <input type="text" name="category" class="form-select"
                                value="{{ old('category', $ingredient->category ?? '') }}" required>
                         <label class="form-label">Categoría</label>
                         @error('category')<div class="text-danger">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6 form-floating form-label">
-
-                        <select name="unit" class="form-control" required>
+                        <select name="unit" class="form-select" required>
                             @foreach($units as $u)
                                 <option value="{{ $u }}" @selected(old('unit', $ingredient->unit ?? '')===$u)>{{ $u }}</option>
                             @endforeach
