@@ -46,7 +46,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                <a href="auth-reset-password" class="col-sm-6 text-end">
+                                <a href="{{ route('password.request') }}" class="col-sm-6 text-end">
                                     <span class="fs-14 text-muted">
                                         ¿Olvidaste tu contraseña?
                                     </span>
@@ -62,9 +62,7 @@
                                     </span>
                                 </button>
                             <p class="mb-0 mt-5 text-muted text-center">
-                                Todavía no tienes una cuenta ?
-                                <a href="auth-signup" class="text-primary fw-medium text-decoraton-underline ms-1">
-                                    Sign up
+                                Todavía no tienes una cuenta? ponte en contacto con IT
                                 </a>
                             </p>
                         </form>

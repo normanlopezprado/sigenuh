@@ -23,23 +23,7 @@ yarn install
 ## 🗄️ DataBase
 
 php artisan migrate
-php artisan db:seed --class=HospitalServiceSeeder
-
-### 🧑🏻‍💻 Usuarios
-
-php artisan tinker
-
-`
-use Illuminate\Support\Facades\Hash;
-`
-
-`
-use App\Models\User;
-`
-
-`
-User::create(['name' => 'Admin','email' => 'root@gmail.com','password' => Hash::make('admin'),]);
-`
+php artisan db:seed
 
 ## 💾 Rutas - Guardar imagenes/icon en la DB
 
@@ -59,5 +43,9 @@ php artisan serve
 🎉🪄🔑⚙️🔎📦🧰💾🗃️🧑🏻‍💻🗄️
 
 
-## solo para actualizar permisos 🔑
+## actualizar permisos 🔑
+routes/web.php
+RolePermissionSeeder.php
+
+
 php artisan db:seed --class=RolePermissionSeeder

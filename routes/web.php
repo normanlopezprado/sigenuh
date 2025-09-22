@@ -13,12 +13,50 @@ use App\Http\Controllers\HospitalFloorServiceController;
 use App\Http\Controllers\BedController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\IngredientController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 
 Route::get('/', function () {
     return view('welcome');
 
 });
+
+Route::middleware('guest')->group(function () {
+    // Form para solicitar el enlace
+    Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+
+    // Enviar email con enlace
+    Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->middleware('throttle:6,1')
+        ->name('password.email');
+
+    // Form de reset (desde el email)
+    Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
+
+    // Guardar nueva contraseña
+    Route::post('reset-password', [ResetPasswordController::class, 'reset'])
+        ->name('password.update');
+});
+
+// verificación de email
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill(); // marca email como verificado
+    return redirect()->route('dashboard')->with('success','Email verificado.');
+})->middleware(['auth','signed','throttle:6,1'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('success','Te enviamos un nuevo enlace de verificación.');
+})->middleware(['auth','throttle:6,1'])->name('verification.send');
 
 // login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -28,9 +66,23 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])
     ->name('logout');
 
+// Solicitar enlace
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->middleware('guest')->name('password.request');
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->middleware('guest')->name('password.email');
+
+// Form de reset + aplicar cambio
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+    ->middleware('guest')->name('password.reset');
+
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
+    ->middleware('guest')->name('password.update');
+
 // index
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth','permission:dashboard.view'])
+    ->middleware(['auth', 'verified', 'permission:dashboard.view'])
     ->name('dashboard');
 
 // select-hospital
