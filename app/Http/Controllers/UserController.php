@@ -8,19 +8,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('hospital')->latest()->paginate(15);
+        $users = User::with('hospital')->latest()->paginate(50);
         return view('usuarios.index', compact('users'));
     }
 
     public function create()
     {
         $hospitals = Hospital::orderBy('name')->get(['id','name']);
-        return view('usuarios.create', compact('hospitals'));
+
+        // NUEVO: lista de roles fijos
+        $roles = Role::where('guard_name', 'web')
+            ->whereIn('name', ['Administrador','Nutrición','Recolector','Visualizador'])
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+
+        // Pasa hospitales + roles a la vista
+        return view('usuarios.create', compact('hospitals','roles'));
     }
 
     public function store(Request $request)
@@ -32,16 +43,23 @@ class UserController extends Controller
             'password'           => ['nullable','string','min:8'],
             'user'               => ['nullable','string','max:50'],
             'avatar'             => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
+
+            // NUEVO: rol obligatorio, debe existir para guard web
+            'role'               => [
+                'required','string',
+                Rule::exists('roles','name')->where('guard_name','web'),
+            ],
         ]);
 
-        // base para username (según lo ya implementado en tu proyecto)
+        // base para username (según tu implementación actual)
         $base = $request->input('user') ?: \App\Models\User::baseUsernameFromName($data['name']);
         $data['user'] = \App\Models\User::generateUniqueUsername($base);
         $data['password'] = $data['password'] ?? \Illuminate\Support\Str::random(12);
 
-        // 1) creamos sin avatar para obtener el ID
+        // Subir avatar con UUID del user
         $uuid = (string) Str::uuid();
         $data['id'] = $uuid;
+
         if ($request->hasFile('avatar')) {
             $ext = $request->file('avatar')->extension();
             $filename = "{$uuid}.{$ext}";
@@ -49,10 +67,14 @@ class UserController extends Controller
             $data['avatar'] = "avatars/{$filename}";
         }
 
+        // Crear usuario
         $user = \App\Models\User::create($data);
-        return redirect()->route('usuarios.index')->with('success','Usuario creado.');
-    }
 
+        // NUEVO: asignar ÚNICO rol
+        $user->syncRoles([$data['role']]);
+
+        return redirect()->route('usuarios.index')->with('success','Usuario creado y rol asignado.');
+    }
 
     public function show(User $usuario)
     {
@@ -63,7 +85,18 @@ class UserController extends Controller
     public function edit(User $usuario)
     {
         $hospitals = Hospital::orderBy('name')->get(['id','name']);
-        return view('usuarios.edit', compact('usuario','hospitals'));
+
+        // NUEVO: lista de roles fijos
+        $roles = Role::where('guard_name', 'web')
+            ->whereIn('name', ['Administrador','Nutrición','Recolector','Visualizador'])
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+
+        // NUEVO: rol actual (siempre 1)
+        $currentRole = $usuario->roles()->pluck('name')->first();
+
+        return view('usuarios.edit', compact('usuario','hospitals','roles','currentRole'));
     }
 
     public function update(Request $request, User $usuario)
@@ -80,6 +113,12 @@ class UserController extends Controller
             'hospital_selected'  => ['nullable','uuid','exists:hospitals,id'],
             'password'           => ['sometimes','string','min:8'],
             'avatar'             => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
+
+            // NUEVO: rol obligatorio, debe existir para guard web
+            'role'               => [
+                'required','string',
+                Rule::exists('roles','name')->where('guard_name','web'),
+            ],
         ]);
 
         if (empty($data['email_verified_at'])) unset($data['email_verified_at']);
@@ -97,9 +136,11 @@ class UserController extends Controller
 
         $usuario->update($data);
 
-        return redirect()->route('usuarios.index')->with('success','Usuario actualizado.');
-    }
+        // NUEVO: mantener SOLO el rol elegido
+        $usuario->syncRoles([$data['role']]);
 
+        return redirect()->route('usuarios.index')->with('success','Usuario actualizado y rol sincronizado.');
+    }
 
     public function destroy(User $usuario)
     {
@@ -109,5 +150,4 @@ class UserController extends Controller
         $usuario->delete();
         return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado.');
     }
-
 }

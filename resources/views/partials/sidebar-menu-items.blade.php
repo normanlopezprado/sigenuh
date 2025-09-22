@@ -180,22 +180,6 @@
                     </ul>
                 </li>
 
-                <li class="slide">
-                    <a href="#!" class="side-menu__item" role="menuitem">
-                        <span class="side_menu_icon"><i class="ri-shield-line"></i></span>
-                        <span class="side-menu__label" data-lang="hr-layout">Roles</span>
-                        <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                    </a>
-
-                    <ul class="slide-menu" role="menu">
-                        <li class="slide">
-                            <a href="{{ route('niveles.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
-                                <i class="ri-shield-cross-line"></i>
-                                Gestionar
-                            </a>
-                        </li>
-                    </ul>
-                </li>
             </ul>
     </li>
 

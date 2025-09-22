@@ -20,6 +20,7 @@
           <th>Usuario</th>
           <th>Email</th>
           <th>Hospital</th>
+          <th>Rol</th>
           <th>Verificación de email</th>
           <th>Creado</th>
           <th>Actualizado</th>
@@ -34,6 +35,14 @@
           <td>{{ $u->user }}</td>
           <td>{{ $u->email }}</td>
           <td>{{ $u->hospital?->name ?? '—' }}</td>
+          <td>
+            @php($r = $u->roles->pluck('name')->first())
+            @if($r)
+                <span class="badge bg-primary-subtle text-primary">{{ $r }}</span>
+            @else
+                <span class="text-muted">—</span>
+            @endif
+          </td>
           <td>{{ $u->email_verified_at ? $u->email_verified_at->format('Y-m-d H:i') : 'No verificado' }}</td>
           <td>{{ $u->created_at?->format('Y-m-d') }}</td>
           <td>{{ $u->updated_at?->format('Y-m-d') }}</td>
