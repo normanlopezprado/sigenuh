@@ -13,7 +13,7 @@ class IngredientController extends Controller
      */
     public function index()
     {
-        $ingredients = Ingredient::where('status', true)->latest()->get();;
+        $ingredients = Ingredient::where('status', true)->latest()->get();
         return view('ingredients.index', compact('ingredients'));
     }
 
