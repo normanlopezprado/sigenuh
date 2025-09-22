@@ -69,6 +69,25 @@
             </select>
             </div>
 
+            {{-- Rol (obligatorio) --}}
+        <div class="mb-3">
+          <label for="role" class="form-label">Rol</label>
+          @php
+            // Para create: old('role')
+            // Para edit: old('role', $currentRole ?? (isset($usuario) ? ($usuario->roles->pluck('name')->first() ?? null) : null))
+            $selectedRole = old('role', $currentRole ?? (isset($usuario) ? ($usuario->roles->pluck('name')->first() ?? null) : null));
+          @endphp
+          <select id="role" name="role" class="form-select" required>
+            <option value="" disabled {{ $selectedRole ? '' : 'selected' }}>Seleccione un rol</option>
+            @foreach($roles as $rname)
+              <option value="{{ $rname }}" {{ $selectedRole === $rname ? 'selected' : '' }}>
+                {{ $rname }}
+              </option>
+            @endforeach
+          </select>
+          @error('role')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+
             {{-- Contraseña --}}
             <div class="form-floating mb-3">
             <input type="password" class="form-control" id="password" name="password"

@@ -72,10 +72,12 @@
                                     });
                                 </script>
                             @endpush
+                            @can('hospitalfloors.update')
                             <div class="mt-3">
                                 <button class="btn btn-primary">Guardar asignación</button>
                                 <a href="{{ route('dashboard') }}" class="btn btn-danger">Cancelar</a>
                             </div>
+                            @endcan
                         </form>
                     </div>
                 </div>

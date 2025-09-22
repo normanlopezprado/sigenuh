@@ -52,18 +52,26 @@
                                 @endif
                             </td>
                             <td class="d-flex gap-2">
-                                <a class="btn btn-sm btn-warning" href="{{ route('hospitales.edit', $h) }}">Editar</a>
-                                <form method="POST" action="{{ route('hospitales.destroy', $h) }}" onsubmit="return confirm('¿Eliminar?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-danger">Eliminar</button>
-                                </form>
+                                @can('hospitales.edit')
+                                    <a class="btn btn-sm btn-warning" href="{{ route('hospitales.edit', $h) }}">Editar</a>
+                                @endcan
+
+                                @can('hospitales.delete')
+                                    <form method="POST" action="{{ route('hospitales.destroy', $h) }}" onsubmit="return confirm('¿Eliminar?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-danger">Eliminar</button>
+                                    </form>
+                                @endcan
+
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="6">
                                 Sin registros
+                                @can('hospitales.create')
                                 <a href="{{ route('hospitales.create') }}" class="btn btn-primary">Nuevo</a>
+                                @endcan
                             </td>
                         </tr>
                     @endforelse

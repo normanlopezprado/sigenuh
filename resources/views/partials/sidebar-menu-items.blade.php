@@ -113,12 +113,14 @@
                                 Gestionar
                             </a>
                         </li>
+                        @canany(['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.delete'])
                         <li class="slide">
                             <a href="{{ route('ingredients.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
                                 <i class="ri-settings-4-line"></i>
                                 Ingredientes
                             </a>
                         </li>
+                        @endcan
                     </ul>
             </li>
         </ul>
@@ -152,15 +154,12 @@
     <li class="menu-title" role="presentation" data-lang="hr-title-tables">Administración</li>
 
 
-
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
             <span class="side_menu_icon"><i class="ri-shield-keyhole-line"></i></span>
             <span class="side-menu__label" data-lang="hr-maps">Accesos</span>
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
-
-
 
             <ul class="slide-menu" role="menu">
                 <li class="slide">
@@ -170,6 +169,7 @@
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
 
+                    @canany(['users.index', 'users.create', 'users.edit', 'users.delete'])
                     <ul class="slide-menu" role="menu">
                         <li class="slide">
                             <a href="{{ route('usuarios.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
@@ -178,24 +178,9 @@
                             </a>
                         </li>
                     </ul>
+                    @endcan
                 </li>
 
-                <li class="slide">
-                    <a href="#!" class="side-menu__item" role="menuitem">
-                        <span class="side_menu_icon"><i class="ri-shield-line"></i></span>
-                        <span class="side-menu__label" data-lang="hr-layout">Roles</span>
-                        <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                    </a>
-
-                    <ul class="slide-menu" role="menu">
-                        <li class="slide">
-                            <a href="{{ route('niveles.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
-                                <i class="ri-shield-cross-line"></i>
-                                Gestionar
-                            </a>
-                        </li>
-                    </ul>
-                </li>
             </ul>
     </li>
 
@@ -205,14 +190,7 @@
             <span class="side-menu__label" data-lang="hr-maps">Hospitales</span>
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
-        <ul class="slide-menu" role="menu">
-            <li class="slide">
-                <a href="{{ route('hospitales.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
-                    <i class="ri-add-line"></i>
-                    Añadir
-                </a>
-            </li>
-        </ul>
+
         <ul class="slide-menu" role="menu">
         </ul>
         <ul class="slide-menu" role="menu">
@@ -223,30 +201,32 @@
                     <i class="ri-arrow-down-s-line side-menu__angle"></i>
                 </a>
                 <ul class="slide-menu" role="menu">
-
-
-
-
+                    @canany(['beds.index', 'beds.create', 'beds.edit', 'beds.delete', 'servicios.show'])
                     <li class="slide">
                         <a href="{{ route('beds.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
                             <i class="ri-hotel-bed-line"></i>
                             Camas
                         </a>
                     </li>
+                    @endcan
 
+                    @can('hospital-floor-services.edit')
                     <li class="slide">
                         <a href="{{ route('hospital-floor-services.edit') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
                             <i class="ri-link-unlink-m"></i>
                             Vincular
                         </a>
                     </li>
+                    @endcan
 
+                    @canany(['servicios.index', 'servicios.create', 'servicios.edit', 'servicios.delete', 'servicios.show'])
                     <li class="slide">
                         <a href="{{ route('servicios.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
                             <i class="ri-heart-add-line"></i>
                             Servicios
                         </a>
                     </li>
+                    @endcan
 
                 </ul>
             </li>
@@ -259,21 +239,35 @@
                 </a>
                 <ul class="slide-menu" role="menu">
                     <li class="slide">
+                        @can('hospitalfloors.edit')
                         <a href="{{ route('hospital-floors.edit') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
                             <i class="ri-link-unlink-m"></i>
                             Vincular
                         </a>
+                        @endcan
                     </li>
-
+                    @canany(['niveles.index', 'niveles.create', 'niveles.edit', 'niveles.delete'])
                     <li class="slide">
                         <a href="{{ route('niveles.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
                             <i class="ri-building-line"></i>
                             Plantas
                         </a>
                     </li>
-
+                    @endcan
                 </ul>
             </li>
         </ul>
+
+        <ul class="slide-menu" role="menu">
+            @canany(['hospitales.index', 'hospitales.create', 'hospitales.edit', 'hospitales.delete'])
+            <li class="slide">
+                <a href="{{ route('hospitales.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
+                    <i class="ri-add-line"></i>
+                    Añadir
+                </a>
+            </li>
+            @endcan
+        </ul>
+
     </li>
 </ul>

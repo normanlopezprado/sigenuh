@@ -4,6 +4,6 @@
     <p><strong>Categoría:</strong> {{ $service->category }}</p>
     <p><strong>Estado:</strong> {{ $service->status ? 'Activo' : 'Inactivo' }}</p>
     <p>{{ $service->description }}</p>
-
+    @can('servicios.index')
     <a href="{{ route('servicios.index') }}" class="btn btn-secondary">Volver</a>
-
+    @endcan
