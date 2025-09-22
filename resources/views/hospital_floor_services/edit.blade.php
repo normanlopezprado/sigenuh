@@ -18,6 +18,7 @@
                 <div class="card-header">
                     <h5 class="card-title mb-0">Asignar servicios a plantas</h5>
                 </div>
+                @can('hospital-floor-services.edit')
                 <div class="card-body">
                     @if(session('success'))
                         <div class="alert alert-success mt-2">{{ session('success') }}</div>
@@ -32,7 +33,9 @@
                             </ul>
                         </div>
                     @endif
+
                     <div class="col-md-12 form-floating form-label">
+
                         <form method="GET" action="{{ route('hospital-floor-services.edit') }}" class="row g-2 mb-3">
                             <div class="col-md-8">
                                 <select name="floor" class="form-select" onchange="this.form.submit()">
@@ -47,6 +50,7 @@
                                 <button class="btn btn-secondary w-100">Cambiar piso</button>
                             </div>
                         </form>
+
                         <hr>
                         @if($selectedFloor)
                             <form method="POST" action="{{ route('hospital-floor-services.update') }}">
@@ -76,11 +80,12 @@
                                         </div>
                                     @endforeach
                                 </div>
-
+                                @can('hospital-floor-services.update')
                                 <div class="mt-3">
                                     <button class="btn btn-primary">Guardar</button>
                                     <a href="{{ route('dashboard') }}" class="btn btn-secondary">Cancelar</a>
                                 </div>
+                                @endcan
                             </form>
                         @endif
 
@@ -94,13 +99,12 @@
                             </script>
                         @endpush
                     </div>
+                    @endcan
 
                 </div>
             </div>
         </div>
     </div>
-
-
 
     @include('partials.social-share-modal')
 

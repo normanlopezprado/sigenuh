@@ -12,6 +12,7 @@
 @endsection
 
 @section('content')
+    
     <form method="POST" action="{{ route('ingredients.update', $ingredient) }}">
         @csrf
         @method('PUT')

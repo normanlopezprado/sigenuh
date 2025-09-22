@@ -32,18 +32,24 @@
                             <td>{{ $ing->category }}</td>
                             <td>{{ $ing->unit }}</td>
                             <td>
+                                @can('ingredients.edit')
                                 <a href="{{ route('ingredients.edit', $ing) }}" class="btn btn-sm btn-warning">Editar</a>
+                                @endcan
+                                @can('ingredients.delete')
                                 <form action="{{ route('ingredients.destroy', $ing) }}" method="POST" style="display:inline-block">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="6">
                                 Sin registros
+                                @can('ingredients.create')
                                 <a href="{{ route('ingredients.create') }}" class="btn btn-primary">Nuevo</a>
+                                @endcan
                             </td>
                         </tr>
                     @endforelse

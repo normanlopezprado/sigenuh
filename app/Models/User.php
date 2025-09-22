@@ -10,10 +10,10 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasRoles;
+    use Notifiable, \Spatie\Permission\Traits\HasRoles;
 
     protected $guard_name = 'web';
-    
+
 
     protected $fillable = [
         'id',

@@ -20,18 +20,24 @@ class RolePermissionSeeder extends Seeder
             'niveles.index',
             'niveles.create',
             'niveles.edit',
+            'niveles.delete',
             //plantas de hospital
-            'hospital-floors.edit',
+            'hospitalfloors.edit',
+            'hospitalfloors.update',
             //servicios
             'servicios.index',
             'servicios.create',
             'servicios.edit',
+            'servicios.delete',
+            'servicios.show',
             //servicios por piso
             'hospital-floor-services.edit',
+            'hospital-floor-services.update',
             //camas
             'beds.index',
             'beds.create',
             'beds.edit',
+            'beds.delete',
             //usuarios
             'users.index',
             'users.create',

@@ -2,13 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Nivel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,22 +13,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::firstOrCreate(
-            ['email' => 'root@gmail.com'], // evitar duplicados
-            [
-                'name'     => 'Norman Daniel López Prado',
-                'user'     => 'nodalopr',
-                'email'    => 'root@gmail.com',
-                'password' => Hash::make('admin'),
-            ]
-        );
+        // 1) Primero: roles y permisos (para poder asignarlos al usuario root)
         $this->call([
+            RolePermissionSeeder::class,
             ServiceSeeder::class,
             HospitalSeeder::class,
             NivelesSeeder::class,
-            RolePermissionSeeder::class
         ]);
+
+        // 2) Usuario root (idempotente)
+        $user = User::firstOrCreate(
+            ['email' => 'root@gmail.com'], // evita duplicados por email
+            [
+                'name'              => 'Norman Daniel López Prado',
+                'user'              => 'nodalopr',
+                'password'          => Hash::make('admin'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // 3) Asignar rol Administrador (idempotente)
+        // Requiere que tu modelo User use el trait: use Spatie\Permission\Traits\HasRoles;
+        $user->syncRoles(['Administrador']);
     }
 }

@@ -20,20 +20,25 @@ Route::get('/', function () {
 
 });
 
+// login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 
+// logout
 Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])
     ->name('logout');
 
+// index
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth','permission:dashboard.view'])
     ->name('dashboard');
 
+// select-hospital
 Route::post('/user/select-hospital/{hospital}', [UserHospitalController::class, 'select'])
-    ->middleware(['auth','permission:users.select-hospital'])
+    //->middleware(['auth','permission:users.select-hospital'])
     ->name('user.select-hospital');
 
+// servicios
 Route::middleware(['auth'])->group(function () {
     Route::get('servicios',                [ServiceController::class,'index'])->name('servicios.index')->middleware('permission:servicios.index');
     Route::get('servicios/create',         [ServiceController::class,'create'])->name('servicios.create')->middleware('permission:servicios.create');
@@ -44,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('servicios/{servicio}',  [ServiceController::class,'destroy'])->name('servicios.destroy')->middleware('permission:servicios.delete');
 });
 
+// hospitales
 Route::middleware(['auth'])->group(function () {
     Route::get('hospitales',                 [HospitalController::class,'index'])->name('hospitales.index')->middleware('permission:hospitales.index');
     Route::get('hospitales/create',          [HospitalController::class,'create'])->name('hospitales.create')->middleware('permission:hospitales.create');
@@ -54,6 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('hospitales/{hospital}',   [HospitalController::class,'destroy'])->name('hospitales.destroy')->middleware('permission:hospitales.delete');
 });
 
+// plantas
 Route::middleware(['auth'])->group(function () {
     Route::get('niveles',               [NivelController::class,'index'])->name('niveles.index')->middleware('permission:niveles.index');
     Route::get('niveles/create',        [NivelController::class,'create'])->name('niveles.create')->middleware('permission:niveles.create');
@@ -64,12 +71,13 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('niveles/{nivel}',    [NivelController::class,'destroy'])->name('niveles.destroy')->middleware('permission:niveles.delete');
 });
 
+// hospital-plantas
 Route::middleware(['auth'])->group(function () {
     Route::get('hospital-floors',  [HospitalFloorController::class, 'edit'])->name('hospital-floors.edit')->middleware('permission:hospitalfloors.edit');
     Route::post('hospital-floors', [HospitalFloorController::class, 'update'])->name('hospital-floors.update')->middleware('permission:hospitalfloors.update');
 });
 
-
+// hospital-plantas-servicios
 Route::middleware('auth')->group(function () {
     Route::get('/hospital-floor-services',  [HospitalFloorServiceController::class, 'edit'])
         ->name('hospital-floor-services.edit');
@@ -77,6 +85,7 @@ Route::middleware('auth')->group(function () {
         ->name('hospital-floor-services.update');
 });
 
+// camas
 Route::middleware(['auth'])->group(function () {
     Route::get('beds',             [BedController::class,'index'])->name('beds.index')->middleware('permission:beds.index');
     Route::get('beds/create',      [BedController::class,'create'])->name('beds.create')->middleware('permission:beds.create');
@@ -87,6 +96,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('beds/{bed}',    [BedController::class,'destroy'])->name('beds.destroy')->middleware('permission:beds.delete');
 });
 
+// ingredientes
 Route::middleware(['auth'])->group(function () {
     Route::get('ingredients',                 [IngredientController::class,'index'])->name('ingredients.index')->middleware('permission:ingredients.index');
     Route::get('ingredients/create',          [IngredientController::class,'create'])->name('ingredients.create')->middleware('permission:ingredients.create');
@@ -97,7 +107,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('ingredients/{ingredient}', [IngredientController::class,'destroy'])->name('ingredients.destroy')->middleware('permission:ingredients.delete');
 });
 
-
+// usuarios
 Route::middleware(['auth'])->group(function () {
     Route::get('usuarios',                [UserController::class,'index'])->name('usuarios.index')->middleware('permission:users.index');
     Route::get('usuarios/create',         [UserController::class,'create'])->name('usuarios.create')->middleware('permission:users.create');

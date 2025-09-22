@@ -14,7 +14,7 @@ class UserController extends Controller
     /** Roles permitidos en la app (sin CRUD de roles) */
     private const ALLOWED_ROLES = ['Administrador','Nutrición','Recolector','Visualizador'];
 
-    
+
 
     public function index()
     {
@@ -143,6 +143,17 @@ class UserController extends Controller
 
     public function destroy(User $usuario)
     {
+        if ($usuario->id === auth()->id()) {
+        return back()->with('error', 'No puedes eliminar tu propio usuario.');
+        }
+
+        if ($usuario->hasRole('Administrador')) {
+            $admins = \Spatie\Permission\Models\Role::findByName('Administrador', 'web')
+                        ->users()->count();
+            if ($admins <= 1) {
+                return back()->with('error', 'No puedes eliminar al último Administrador.');
+            }
+        }
         // (opcional) Evitar borrarte a ti mismo o al último Administrador:
         // if (auth()->id() === $usuario->id) { abort(403, 'No puedes eliminar tu propio usuario.'); }
         // if ($usuario->hasRole('Administrador') && User::role('Administrador')->count() <= 1) { abort(403, 'Debe existir al menos un Administrador.'); }

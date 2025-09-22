@@ -8,7 +8,9 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0">Usuarios</h5>
+    @can('users.create')
     <a href="{{ route('usuarios.create') }}" class="btn btn-primary">Añadir</a>
+    @endcan
   </div>
 
   <div class="table-responsive">
@@ -50,6 +52,7 @@
             @can('users.edit')
             <a class="btn btn-sm btn-warning" href="{{ route('usuarios.edit',$u) }}">Editar</a>
             @endcan
+            
             @can('users.delete')
             <form method="POST" action="{{ route('usuarios.destroy',$u) }}">
                 @csrf @method('DELETE')
