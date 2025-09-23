@@ -35,18 +35,24 @@
                             <td>{{ $m->description }}</td>
                             <td>{{ $m->notes }}</td>
                             <td>
-                                <a href="{{ route('menus.edit', $m) }}" class="btn btn-sm btn-warning">Editar</a>
-                                <form action="{{ route('menus.destroy', $m->id) }}" method="POST" style="display:inline-block">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>
-                                </form>
+                                @canany('menu.edit')
+                                    <a href="{{ route('menus.edit', $m) }}" class="btn btn-sm btn-warning">Editar</a>
+                                @endcan
+                                @canany( 'menu.delete')
+                                    <form action="{{ route('menus.destroy', $m->id) }}" method="POST" style="display:inline-block">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>
+                                    </form>
+                                @endcan
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="6">
                                 Sin registros
+                                @canany('menu.create')
                                 <a href="{{ route('menus.create') }}" class="btn btn-primary">Nuevo</a>
+                                @endcan
                             </td>
                         </tr>
                     @endforelse

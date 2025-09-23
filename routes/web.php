@@ -170,6 +170,15 @@ Route::middleware(['auth'])->group(function () {
     Route::put('usuarios/{usuario}',      [UserController::class,'update'])->name('usuarios.update')->middleware('permission:users.edit');
     Route::delete('usuarios/{usuario}',   [UserController::class,'destroy'])->name('usuarios.destroy')->middleware('permission:users.delete');
 });
-
+// menus
 Route::resource('menus', MenuController::class)
     ->middleware('auth');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('menus',                 [IngredientController::class,'index'])->name('menus.index')->middleware('permission:menus.index');
+    Route::get('menus/create',          [IngredientController::class,'create'])->name('menus.create')->middleware('permission:menus.create');
+    Route::post('menus',                [IngredientController::class,'store'])->name('menus.store')->middleware('permission:menus.create');
+    Route::get('menus/{menu}/edit',[IngredientController::class,'edit'])->name('menus.edit')->middleware('permission:menus.edit');
+    Route::put('menus/{menu}',    [IngredientController::class,'update'])->name('menus.update')->middleware('permission:menus.edit');
+    Route::delete('menus/{menu}', [IngredientController::class,'destroy'])->name('menus.destroy')->middleware('permission:menus.delete');
+});
