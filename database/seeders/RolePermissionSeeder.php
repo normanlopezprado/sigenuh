@@ -48,6 +48,11 @@ class RolePermissionSeeder extends Seeder
             'ingredients.create',
             'ingredients.edit',
             'ingredients.delete',
+            //menus
+            'menus.index',
+            'menus.create',
+            'menus.edit',
+            'menus.delete',
 
             //dashboards
             'dashboard.view',
@@ -76,7 +81,10 @@ class RolePermissionSeeder extends Seeder
             'ingredients.index',
             'ingredients.create',
             'ingredients.edit',
-
+            //menu
+            'menus.index',
+            'menus.create',
+            'menus.edit',
         ]);
 
         $recolector->syncPermissions([

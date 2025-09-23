@@ -107,12 +107,14 @@
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
                     <ul class="slide-menu" role="menu">
+                        @canany(['menu.index', 'menu.create', 'menu.edit', 'menu.delete'])
                         <li class="slide">
-                            <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                            <a href="{{ route('menu.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
                                 <i class="ri-settings-4-line"></i>
-                                Gestionar
+                                Gestionar Menús
                             </a>
                         </li>
+                        @endcan
                         @canany(['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.delete'])
                         <li class="slide">
                             <a href="{{ route('ingredients.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
