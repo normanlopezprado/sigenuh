@@ -41,6 +41,15 @@ class HospitalController extends Controller
             'icon'        => ['nullable','mimes:png,webp,ico','max:256'],
             'latitude'    => ['nullable','numeric','between:-90,90'],
             'longitude'   => ['nullable','numeric','between:-180,180'],
+            'breakfast_collection_start' => ['nullable','date_format:H:i'],
+            'breakfast_collection_end'   => ['nullable','date_format:H:i'],
+            'breakfast_time'             => ['nullable','date_format:H:i'],
+            'lunch_collection_start'     => ['nullable','date_format:H:i'],
+            'lunch_collection_end'       => ['nullable','date_format:H:i'],
+            'lunch_time'                 => ['nullable','date_format:H:i'],
+            'dinner_collection_start'    => ['nullable','date_format:H:i'],
+            'dinner_collection_end'      => ['nullable','date_format:H:i'],
+            'dinner_time'                => ['nullable','date_format:H:i'],
         ]);
         $uuid = (string) Str::uuid();
         $data['id'] = $uuid; // <-- importante si tu PK es uuid
@@ -94,6 +103,15 @@ class HospitalController extends Controller
             'icon'        => ['nullable','mimes:png,webp,ico','max:256'],
             'latitude'    => ['nullable','numeric','between:-90,90'],
             'longitude'   => ['nullable','numeric','between:-180,180'],
+            'breakfast_collection_start' => ['nullable','date_format:H:i'],
+            'breakfast_collection_end'   => ['nullable','date_format:H:i'],
+            'breakfast_time'             => ['nullable','date_format:H:i'],
+            'lunch_collection_start'     => ['nullable','date_format:H:i'],
+            'lunch_collection_end'       => ['nullable','date_format:H:i'],
+            'lunch_time'                 => ['nullable','date_format:H:i'],
+            'dinner_collection_start'    => ['nullable','date_format:H:i'],
+            'dinner_collection_end'      => ['nullable','date_format:H:i'],
+            'dinner_time'                => ['nullable','date_format:H:i'],
         ]);
         $uuid = $hospital->id; // usamos el mismo id (UUID)
 
