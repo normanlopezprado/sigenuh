@@ -77,7 +77,61 @@
                             </div>
                         </div>
                     </div>
+                    <hr>
+                    <div class="row g-3 form-label mt-3">
+                        <h5>Horarios de comida</h5>
 
+                        <!-- Breakfast -->
+                        <div class="col-md-4">
+                            <label class="form-label">Inicio de recolección de desayuno</label>
+                            <input type="time" name="breakfast_collection_start" class="form-control"
+                                   value="{{ old('breakfast_collection_start', $hospital->breakfast_collection_start?->format('H:i')) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fin de recolección de desayuno</label>
+                            <input type="time" name="breakfast_collection_end" class="form-control"
+                                   value="{{ old('breakfast_collection_end', $hospital->breakfast_collection_end?->format('H:i')) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hora de desayuno</label>
+                            <input type="time" name="breakfast_time" class="form-control"
+                                   value="{{ old('breakfast_time', $hospital->breakfast_time?->format('H:i')) }}">
+                        </div>
+
+                        <!-- Lunch -->
+                        <div class="col-md-4">
+                            <label class="form-label">Inicio de recolección de almuerzo</label>
+                            <input type="time" name="lunch_collection_start" class="form-control"
+                                   value="{{ old('lunch_collection_start', $hospital->lunch_collection_start?->format('H:i')) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fin de recolección de almuerzo</label>
+                            <input type="time" name="lunch_collection_end" class="form-control"
+                                   value="{{ old('lunch_collection_end', $hospital->lunch_collection_end?->format('H:i')) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hora de almuerzo</label>
+                            <input type="time" name="lunch_time" class="form-control"
+                                   value="{{ old('lunch_time', $hospital->lunch_time?->format('H:i')) }}">
+                        </div>
+
+                        <!-- Dinner -->
+                        <div class="col-md-4">
+                            <label class="form-label">Inicio de recolección de cena</label>
+                            <input type="time" name="dinner_collection_start" class="form-control"
+                                   value="{{ old('dinner_collection_start', $hospital->dinner_collection_start?->format('H:i')) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fin de recolección de cena</label>
+                            <input type="time" name="dinner_collection_end" class="form-control"
+                                   value="{{ old('dinner_collection_end', $hospital->dinner_collection_end?->format('H:i')) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hora de cena</label>
+                            <input type="time" name="dinner_time" class="form-control"
+                                   value="{{ old('dinner_time', $hospital->dinner_time?->format('H:i')) }}">
+                        </div>
+                    </div>
                 </div>
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">Guardar</button>
