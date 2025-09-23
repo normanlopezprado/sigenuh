@@ -32,6 +32,7 @@
                         <tr>
                             <td>{{ $m->name }}</td>
                             <td>{{ $m->category }}</td>
+                            <td>{{ $m->diet_type }}</td>
                             <td>{{ $m->description }}</td>
                             <td>{{ $m->notes }}</td>
                             <td>
