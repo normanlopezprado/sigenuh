@@ -13,6 +13,7 @@ class MenuController extends Controller
     /**
      * Display a listing of the resource.
      */
+
     public function index()
     {
         $menus = Menu::latest()->get();
@@ -24,8 +25,16 @@ class MenuController extends Controller
      */
     public function create()
     {
+        $dietOptions = ['Libre',
+            'Blanda',
+            'Hiposódica',
+            'Diabético 1,200',
+            'Diabético 1,500',
+            'Renal',
+            'Licuada',
+            'Especial'];
         $categories = ['desayuno','almuerzo','cena'];
-        return view('menus.create', compact('categories'));
+        return view('menus.create', compact('categories', 'dietOptions'));
     }
 
     /**
@@ -33,9 +42,18 @@ class MenuController extends Controller
      */
     public function store(Request $request)
     {
+        $dietOptions = ['Libre',
+            'Blanda',
+            'Hiposódica',
+            'Diabético 1,200',
+            'Diabético 1,500',
+            'Renal',
+            'Licuada',
+            'Especial'];
         $data = $request->validate([
             'name'        => ['required','string','max:255','unique:menus,name'],
             'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
+            'diet_type'   => ['nullable', Rule::in($dietOptions)],
             'description' => ['nullable','string'],
             'notes'       => ['nullable','string'],
         ]);
@@ -65,7 +83,15 @@ class MenuController extends Controller
         // Ingredientes ya asociados (con sus pivotes)
         $current = $menu->ingredients()->orderBy('name')->get();
         $categories = ['desayuno','almuerzo','cena'];
-        return view('menus.edit', compact('menu','ingredients','current', 'categories'));
+        $dietOptions = ['Libre',
+            'Blanda',
+            'Hiposódica',
+            'Diabético 1,200',
+            'Diabético 1,500',
+            'Renal',
+            'Licuada',
+            'Especial'];
+        return view('menus.edit', compact('menu','ingredients','current', 'categories', 'dietOptions'));
     }
 
     /**
@@ -73,9 +99,18 @@ class MenuController extends Controller
      */
     public function update(Request $request, Menu $menu)
     {
+        $dietOptions = ['Libre',
+            'Blanda',
+            'Hiposódica',
+            'Diabético 1,200',
+            'Diabético 1,500',
+            'Renal',
+            'Licuada',
+            'Especial'];
         $data = $request->validate([
             'name'        => ['required','string','max:255', Rule::unique('menus','name')->ignore($menu->id)],
             'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
+            'diet_type'   => ['nullable', Rule::in($dietOptions)],
             'description' => ['nullable','string'],
             'notes'       => ['nullable','string'],
 

@@ -13,7 +13,7 @@ class Menu extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'name','category','status','description','notes',
+        'name','category','status','description','notes', 'diet_type',
     ];
 
     protected $casts = [
@@ -30,7 +30,7 @@ class Menu extends Model
     public function ingredients()
     {
         return $this->belongsToMany(Ingredient::class, 'menu_ingredient', 'menu_id', 'ingredient_id')
-            ->using(MenuIngredient::class)  
+            ->using(MenuIngredient::class)
             ->withPivot(['id','qty','is_optional','notes'])
             ->withTimestamps();
     }

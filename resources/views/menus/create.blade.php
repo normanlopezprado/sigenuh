@@ -48,6 +48,14 @@
                                     <label class="form-label">Categoría</label>
                                 </div>
                                 <div class="col-md-12 form-floating form-label">
+                                    <select name="diet_type" class="form-select">
+                                        @foreach($dietOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected(old('diet_type')===$value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <label class="form-label">Diet Type</label>
+                                </div>
+                                <div class="col-md-12 form-floating form-label">
                                     <textarea name="description" class="form-control">{{ old('description') }}</textarea>
                                     <label class="form-label">Descripción</label>
                                 </div>
