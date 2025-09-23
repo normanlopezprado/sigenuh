@@ -25,14 +25,17 @@ class MenuController extends Controller
      */
     public function create()
     {
-        $dietOptions = ['Libre',
+        $diets = [
+            'Libre',
             'Blanda',
             'Hiposódica',
             'Diabético 1,200',
             'Diabético 1,500',
             'Renal',
             'Licuada',
-            'Especial'];
+            'Especial',
+        ];
+        $dietOptions = array_combine($diets, $diets);
         $categories = ['desayuno','almuerzo','cena'];
         return view('menus.create', compact('categories', 'dietOptions'));
     }
@@ -42,14 +45,17 @@ class MenuController extends Controller
      */
     public function store(Request $request)
     {
-        $dietOptions = ['Libre',
+        $diets = [
+            'Libre',
             'Blanda',
             'Hiposódica',
             'Diabético 1,200',
             'Diabético 1,500',
             'Renal',
             'Licuada',
-            'Especial'];
+            'Especial',
+        ];
+        $dietOptions = array_combine($diets, $diets);
         $data = $request->validate([
             'name'        => ['required','string','max:255','unique:menus,name'],
             'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
@@ -83,14 +89,17 @@ class MenuController extends Controller
         // Ingredientes ya asociados (con sus pivotes)
         $current = $menu->ingredients()->orderBy('name')->get();
         $categories = ['desayuno','almuerzo','cena'];
-        $dietOptions = ['Libre',
+        $diets = [
+            'Libre',
             'Blanda',
             'Hiposódica',
             'Diabético 1,200',
             'Diabético 1,500',
             'Renal',
             'Licuada',
-            'Especial'];
+            'Especial',
+        ];
+        $dietOptions = array_combine($diets, $diets);
         return view('menus.edit', compact('menu','ingredients','current', 'categories', 'dietOptions'));
     }
 
@@ -99,14 +108,17 @@ class MenuController extends Controller
      */
     public function update(Request $request, Menu $menu)
     {
-        $dietOptions = ['Libre',
+        $diets = [
+            'Libre',
             'Blanda',
             'Hiposódica',
             'Diabético 1,200',
             'Diabético 1,500',
             'Renal',
             'Licuada',
-            'Especial'];
+            'Especial',
+        ];
+        $dietOptions = array_combine($diets, $diets);
         $data = $request->validate([
             'name'        => ['required','string','max:255', Rule::unique('menus','name')->ignore($menu->id)],
             'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
