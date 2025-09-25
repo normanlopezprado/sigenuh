@@ -18,6 +18,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\CalendarController;
 
 
 Route::get('/', function () {
@@ -171,8 +172,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('usuarios/{usuario}',   [UserController::class,'destroy'])->name('usuarios.destroy')->middleware('permission:users.delete');
 });
 // menus
-Route::resource('menus', MenuController::class)
-    ->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('menus',                 [MenuController::class,'index'])->name('menus.index')->middleware('permission:menus.index');
@@ -181,4 +180,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('menus/{menu}/edit',[MenuController::class,'edit'])->name('menus.edit')->middleware('permission:menus.edit');
     Route::put('menus/{menu}',    [MenuController::class,'update'])->name('menus.update')->middleware('permission:menus.edit');
     Route::delete('menus/{menu}', [MenuController::class,'destroy'])->name('menus.destroy')->middleware('permission:menus.delete');
+});
+//Calendar
+
+Route::resource('calendars', CalendarController::class)
+    ->middleware('auth');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/calendars', function () {
+        return view('calendars.index');
+    })->name('calendars.index');
 });
