@@ -38,4 +38,11 @@ class Calendar extends Model
     {
         return $this->hasMany(CalendarMenuIngredient::class, 'calendar_id');
     }
+    public function optionalMenuIngredients()
+    {
+        return $this->belongsToMany(MenuIngredient::class, 'calendar_menu_ingredient', 'calendar_id', 'menu_ingredient_id')
+            ->using(CalendarMenuIngredient::class)
+            ->withPivot(['id', 'notes'])
+            ->withTimestamps();
+    }
 }
