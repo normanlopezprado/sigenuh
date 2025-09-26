@@ -4,11 +4,8 @@
 
     {{-- moment.js (tu archivo) --}}
     <script src="{{ asset('assets/js/moment.min.js') }}"></script>
-
-    {{-- JS adaptado (reemplazo de codigo.js) --}}
     <script>
         @php
-            // Puedes servir el JS como archivo. Para hacerlo rápido aquí lo incrusto.
         @endphp
 
         // ======== codigo-adaptado.js (basado en tu codigo.js) ========
