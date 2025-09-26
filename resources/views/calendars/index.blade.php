@@ -1,9 +1,9 @@
 <div class="container py-3">
-    <link rel="stylesheet" href="{{ asset('calendar/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style-calendar.css') }}">
     <div id="calendar"></div>
 
     {{-- moment.js (tu archivo) --}}
-    <script src="{{ asset('calendar/moment.min.js') }}"></script>
+    <script src="{{ asset('assets/js/moment.min.js') }}"></script>
 
     {{-- JS adaptado (reemplazo de codigo.js) --}}
     <script>
