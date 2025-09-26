@@ -102,7 +102,7 @@
 
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
-                        <i class="ri-restaurant-line"></i>
+                        <i class="ri-circle-line"></i>
                         <span class="side-menu__label" data-lang="hr-apps-email">Dietas</span>
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
@@ -118,7 +118,7 @@
                         @canany(['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.delete'])
                         <li class="slide">
                             <a href="{{ route('ingredients.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
-                                <i class="ri-settings-4-line"></i>
+                                <i class="ri-restaurant-2-line"></i>
                                 Ingredientes
                             </a>
                         </li>
@@ -264,8 +264,8 @@
             @canany(['hospitales.index', 'hospitales.create', 'hospitales.edit', 'hospitales.delete'])
             <li class="slide">
                 <a href="{{ route('hospitales.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
-                    <i class="ri-add-line"></i>
-                    Añadir
+                    <i class="ri-hospital-line"></i>
+                    Gestionar
                 </a>
             </li>
             @endcan
