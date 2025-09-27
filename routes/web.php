@@ -191,3 +191,6 @@ Route::middleware('auth')->group(function () {
         return view('calendars.index');
     })->name('calendars.index');
 });
+
+Route::get('/calendar/month', [CalendarController::class, 'monthData'])
+    ->name('calendar.month');

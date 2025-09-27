@@ -67,7 +67,10 @@
                 const month= this.current.month() + 1; // moment 0-based
 
                 try {
-                    const url = `{{ route('calendars.index') }}`.replace('/calendars','') + `/api/calendar/month?year=${year}&month=${month}`;
+                    const monthRouteTemplate = @json(route('calendar.month', ['year' => '__YEAR__', 'month' => '__MONTH__']));
+                    const url = monthRouteTemplate
+                        .replace('__YEAR__', year)
+                        .replace('__MONTH__', month);
                     const res = await fetch(url, { credentials: 'same-origin' });
                     const json = await res.json();
 
@@ -217,12 +220,12 @@
                 }
 
                 var todaysEvents = this.events.filter(ev => ev.date.isSame(day, 'day'));
-                this.renderEvents(todaysEvents, details);
+                this.renderEvents(todaysEvents, details, day);
 
                 arrow.style.left = (el.offsetLeft - el.parentNode.offsetLeft + 27) + 'px';
             }
 
-            Calendar.prototype.renderEvents = function(events, ele) {
+            Calendar.prototype.renderEvents = function(events, ele, day) {
                 var currentWrapper = ele.querySelector('.events');
                 var wrapper = createElement('div', 'events in' + (currentWrapper ? ' new' : ''));
 
@@ -237,8 +240,17 @@
 
                 if(!events.length) {
                     var div = createElement('div', 'event empty');
-                    var span = createElement('span', '', 'Sin eventos');
-                    div.appendChild(span);
+                    if (day.isAfter(moment(), 'day')) {
+                        var link = document.createElement('a');
+                        link.href = "{{ route('calendars.create') }}" + "?date=" + day.format('YYYY-MM-DD');
+                        link.textContent = '➕ Crear menú';
+                        link.className = 'btn btn-sm btn-primary';
+                        div.appendChild(link);
+                    } else {
+                        var span = createElement('span', '', 'Sin eventos');
+                        div.appendChild(span);
+                    }
+
                     wrapper.appendChild(div);
                 }
 
