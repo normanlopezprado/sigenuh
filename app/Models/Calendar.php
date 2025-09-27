@@ -11,9 +11,10 @@ class Calendar extends Model
 
     public $incrementing = false;
     protected $keyType = 'string';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
-        'date', 'user_id', 'notes',
+        'id', 'date', 'user_id', 'notes',
     ];
 
     protected $casts = [
@@ -22,8 +23,10 @@ class Calendar extends Model
 
     protected static function booted()
     {
-        static::creating(function ($m) {
-            if (empty($m->id)) $m->id = (string) Str::uuid();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = (string) Str::uuid();
+            }
         });
     }
 

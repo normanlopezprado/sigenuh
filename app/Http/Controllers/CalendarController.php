@@ -6,6 +6,7 @@ use App\Models\Calendar;
 use App\Models\MenuIngredient;
 use App\Models\CalendarMenuIngredient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
@@ -14,8 +15,7 @@ class CalendarController extends Controller
     public function index()
     {
         $calendars = Calendar::with('user')
-            ->orderBy('date','desc')
-            ->paginate(15);
+            ->orderBy('date','desc');
 
         return view('calendars.index', compact('calendars'));
     }
@@ -32,8 +32,7 @@ class CalendarController extends Controller
             'notes' => ['nullable','string'],
         ]);
 
-        $data['user_id'] = $request->user()->id;
-
+        $data['user_id'] = Auth::id();
         $calendar = Calendar::create($data);
 
         return redirect()
