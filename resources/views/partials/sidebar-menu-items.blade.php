@@ -55,34 +55,7 @@
                     </ul>
                 </li>
 
-                <li class="slide">
-                    <a href="#!" class="side-menu__item" role="menuitem">
-                        <i class="ri-archive-2-line"></i>
-                        <span class="side-menu__label" data-lang="hr-apps-email">Bodega</span>
-                        <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                    </a>
-                    <ul class="slide-menu" role="menu">
-                        <li class="slide">
-                            <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
-                                <i class="ri-settings-4-line"></i>
-                                Gestionar
-                            </a>
-                        </li>
-                        <li class="slide">
-                            <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
-                                <i class="ri-checkbox-indeterminate-line"></i>
-                                Salida
-                            </a>
-                        </li>
-                        <li class="slide">
-                            <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
-                                <i class="ri-add-box-line"></i>
-                                Entrada
-                            </a>
-                        </li>
-
-                    </ul>
-                </li>
+                
 
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
