@@ -12,7 +12,7 @@
 @endsection
 
 @section('content')
-    <div class="row g-4">
+    <div class="col g-4">
         <div class="col-12 col-lg-6">
             <div class="card h-100 mb-0">
                 <div class="card-header">
@@ -34,7 +34,7 @@
                         </div>
                     @endif
 
-                    <div class="col-md-12 form-floating form-label">
+                    <div class="col-md-4 form-floating form-label">
 
                         <form method="GET" action="{{ route('hospital-floor-services.edit') }}" class="row g-2 mb-3">
                             <div class="col-md-8">

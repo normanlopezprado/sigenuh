@@ -49,7 +49,7 @@
                         <tr>
                             <td colspan="5">
                                 Sin registros,
-                                @can(beds.create)
+                                @can('beds.create')
                                 <a href="{{ route('beds.create') }}" class="btn btn-primary">Nuevo</a>
                                 @endcan
                             </td>

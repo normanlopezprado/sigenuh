@@ -13,17 +13,29 @@ class ServiceSeeder extends Seeder
     public function run(): void
     {
         $services = [
-            ['name' => 'Cirugía',           'abbreviation' => 'CM',  'category' => 'Mujeres'],
-            ['name' => 'Traumatología',     'abbreviation' => 'TM',  'category' => 'Mujeres'],
-            ['name' => 'Especialidad',      'abbreviation' => 'EM',  'category' => 'Mujeres'],
-            ['name' => 'Medicina Interna',  'abbreviation' => 'MIH', 'category' => 'Hombres'],
-            ['name' => 'Especialidad',      'abbreviation' => 'EH',  'category' => 'Hombres'],
-            ['name' => 'Medicina Interna',  'abbreviation' => 'MIM', 'category' => 'Mujeres'],
-            ['name' => 'Cirugía',           'abbreviation' => 'CH',  'category' => 'Hombres'],
-            ['name' => 'Traumatología',     'abbreviation' => 'TH',  'category' => 'Hombres'],
+            ['name' => 'Cirugía',          'abbreviation' => 'CH',   'category' => 'Hombres'],
+            ['name' => 'Cirugía',          'abbreviation' => 'CM',   'category' => 'Mujeres'],
+            ['name' => 'Especialidad',     'abbreviation' => 'EH',   'category' => 'Hombres'],
+            ['name' => 'Especialidad',     'abbreviation' => 'EM',   'category' => 'Mujeres'],
+            ['name' => 'Ginecología',      'abbreviation' => 'Gine', 'category' => 'Mujeres'],
+            ['name' => 'Medicina Interna', 'abbreviation' => 'MIM',  'category' => 'Mujeres'],
+            ['name' => 'Medicina Interna', 'abbreviation' => 'MIH',  'category' => 'Hombres'],
+            ['name' => 'Post Parto',       'abbreviation' => 'PP',   'category' => 'Mujeres'],
+            ['name' => 'Pre Escolares',    'abbreviation' => 'PE',   'category' => 'Menores'],
+            ['name' => 'Sala Cuna',        'abbreviation' => 'SC',   'category' => 'Menores'],
+            ['name' => 'Traumatología',    'abbreviation' => 'TH',   'category' => 'Hombres'],
+            ['name' => 'Traumatología',    'abbreviation' => 'TM',   'category' => 'Mujeres'],
         ];
+
         foreach ($services as $r) {
-            \App\Models\Service::firstOrCreate(['name'=>$r['name']], $r);
+            \App\Models\Service::firstOrCreate(
+                [
+                    'name'        => $r['name'],
+                    'abbreviation'=> $r['abbreviation'],
+                    'category'    => $r['category'],
+                ],
+                $r
+            );
         }
     }
 }
