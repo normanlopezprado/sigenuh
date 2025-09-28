@@ -4,15 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Bed;
 use App\Models\HospitalFloorService;
-use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class BedController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $hospitalId = $request->user()->hospital_selected;
@@ -31,14 +27,11 @@ class BedController extends Controller
                 $q->where('hospital_id', $hospitalId);
             })
             ->latest()
-            ->get() ;
+            ->get();
 
         return view('beds.index', compact('beds'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
         $hospitalId = $request->user()->hospital_selected;
@@ -46,16 +39,21 @@ class BedController extends Controller
             return redirect()->route('dashboard')
                 ->with('warning', 'Selecciona un hospital antes de crear una cama.');
         }
+
         $hfs = HospitalFloorService::with(['service', 'hospitalFloor.nivel'])
             ->whereHas('hospitalFloor', fn($q) => $q->where('hospital_id', $hospitalId))
-            ->orderBy(Service::select('name')->whereColumn('services.id', 'hospital_floor_services.service_id'))
-            ->get();
+            ->get()
+            ->sortByDesc(function ($x) {
+                $level = (int) preg_replace('/\D+/', '', $x->hospitalFloor?->nivel?->name ?? '0');
+                $serviceName = mb_strtolower($x->service?->name ?? '');
+                // clave compuesta: primero nivel desc, luego servicio desc
+                return sprintf('%05d-%s', $level, $serviceName);
+            })
+            ->values();
+
         return view('beds.create', compact('hfs'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $hospitalId = $request->user()->hospital_selected;
@@ -63,6 +61,7 @@ class BedController extends Controller
             return redirect()->route('dashboard')
                 ->with('warning', 'Selecciona un hospital antes de crear una cama.');
         }
+
         $allowedIds = HospitalFloorService::whereHas('hospitalFloor', fn($q) => $q->where('hospital_id', $hospitalId))
             ->pluck('id')->toArray();
 
@@ -78,17 +77,11 @@ class BedController extends Controller
         return redirect()->route('beds.index')->with('success','Cama creada correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Bed $bed)
     {
         return view('beds.show', compact('bed'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Request $request, Bed $bed)
     {
         $hospitalId = $request->user()->hospital_selected;
@@ -99,15 +92,17 @@ class BedController extends Controller
 
         $hfs = HospitalFloorService::with(['service', 'hospitalFloor.nivel'])
             ->whereHas('hospitalFloor', fn($q) => $q->where('hospital_id', $hospitalId))
-            ->orderBy(Service::select('name')->whereColumn('services.id', 'hospital_floor_services.service_id'))
-            ->get();
+            ->get()
+            ->sortByDesc(function ($x) {
+                $level = (int) preg_replace('/\D+/', '', $x->hospitalFloor?->nivel?->name ?? '0');
+                $serviceName = mb_strtolower($x->service?->name ?? '');
+                return sprintf('%05d-%s', $level, $serviceName);
+            })
+            ->values();
 
         return view('beds.edit', compact('bed','hfs'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Bed $bed)
     {
         $hospitalId = $request->user()->hospital_selected;
@@ -117,7 +112,7 @@ class BedController extends Controller
         }
 
         $allowedIds = HospitalFloorService::whereHas('hospitalFloor', fn($q) =>
-        $q->where('hospital_id', $hospitalId)
+            $q->where('hospital_id', $hospitalId)
         )->pluck('id')->toArray();
 
         $data = $request->validate([
@@ -132,14 +127,11 @@ class BedController extends Controller
         return redirect()->route('beds.index')->with('success','Cama actualizada correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Bed $bed)
     {
         $bed->delete();
 
         return redirect()->route('beds.index')
-            ->with('success', 'Cama eliminada correctamente 🗑️');
+            ->with('success', 'Cama eliminada correctamente ');
     }
 }
