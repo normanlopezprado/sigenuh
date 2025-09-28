@@ -17,7 +17,6 @@
                 'Desayuno': 'blue',
                 'Almuerzo': 'orange',
                 'Cena': 'green',
-                'General': 'yellow'
             };
 
             function Calendar(selector) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Calendar;
+use App\Models\Menu;
 use App\Models\MenuIngredient;
 use App\Models\CalendarMenuIngredient;
 use Illuminate\Http\Request;
@@ -20,9 +21,32 @@ class CalendarController extends Controller
         return view('calendars.index', compact('calendars'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('calendars.create');
+        $categories = ['desayuno','almuerzo','cena'];
+        $dietTypes  = [
+            'Libre',
+            'Blanda',
+            'Hiposódica',
+            'Diabético 1,200',
+            'Diabético 1,500',
+            'Renal',
+            'Licuada',
+            'Especial',
+        ];
+        $cat  = $request->query('category');
+        $diet = $request->query('diet_type');
+
+        $menus = Menu::query()
+            ->when($cat,  fn($qq) => $qq->where('category', $cat))
+            ->when($diet, fn($qq) => $qq->where('diet_type', $diet))
+            ->where('status', true)
+            ->orderBy('name')
+            ->get();
+
+        $date = $request->query('date');
+        return view('calendars.create', compact('menus','categories','dietTypes','cat','diet','date'));
+
     }
 
     public function store(Request $request)
@@ -30,13 +54,14 @@ class CalendarController extends Controller
         $data = $request->validate([
             'date'  => ['required','date'],
             'notes' => ['nullable','string'],
+            'menu_id' => ['nullable','string'],
         ]);
 
         $data['user_id'] = Auth::id();
         $calendar = Calendar::create($data);
 
         return redirect()
-            ->route('calendars.edit', $calendar)
+            ->route('calendars.index', $calendar)
             ->with('success', 'Calendario creado. Ahora puedes agregar los ingredientes opcionales.');
     }
 

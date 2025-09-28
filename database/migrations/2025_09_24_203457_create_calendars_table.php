@@ -17,6 +17,12 @@ return new class extends Migration
             $table->uuid('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->text('notes')->nullable();
+            $table->uuid('menu_id')->nullable();
+
+            $table->foreign('menu_id')
+                ->references('id')->on('menus')
+                ->onDelete('restrict');
+            $table->index('menu_id');
             $table->timestamps();
         });
     }
