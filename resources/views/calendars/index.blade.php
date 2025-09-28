@@ -8,11 +8,10 @@
         @php
         @endphp
 
-        // ======== codigo-adaptado.js (basado en tu codigo.js) ========
+
         !function() {
             var today = moment();
 
-            // Helper para mapear etiquetas a color (Desayuno/Azul, Almuerzo/Naranja, Cena/Verde, General/Amarillo)
             const LABEL_COLOR = {
                 'Desayuno': 'blue',
                 'Almuerzo': 'orange',
@@ -22,7 +21,7 @@
             function Calendar(selector) {
                 this.el = document.querySelector(selector);
                 this.current = moment().date(1);
-                this.events = []; // se llena tras fetch
+                this.events = [];
                 this.draw();
                 var current = document.querySelector('.today');
                 if (current) {
@@ -33,7 +32,7 @@
 
             Calendar.prototype.draw = function() {
                 this.drawHeader();
-                this.drawMonth();   // ahora drawMonth hace fetch antes de pintar
+                this.drawMonth();
                 this.drawLegend();
             }
 
@@ -61,9 +60,8 @@
             Calendar.prototype.drawMonth = async function() {
                 var self = this;
 
-                // 1) Pedimos al backend los eventos del mes visible
                 const year = this.current.year();
-                const month= this.current.month() + 1; // moment 0-based
+                const month= this.current.month() + 1;
 
                 try {
                     const monthRouteTemplate = @json(route('calendar.month', ['year' => '__YEAR__', 'month' => '__MONTH__']));
@@ -73,8 +71,6 @@
                     const res = await fetch(url, { credentials: 'same-origin' });
                     const json = await res.json();
 
-                    // 2) Convertimos JSON a estructura esperada por el render
-                    //    this.events = [{date: moment('YYYY-MM-DD'), entries:[{calendar: 'Desayuno', color:'blue', eventName:'...'}]}]
                     this.events = [];
                     (json.events || []).forEach(e => {
                         const d = moment(e.date, 'YYYY-MM-DD');
@@ -178,7 +174,6 @@
                         return memo;
                     }, []);
 
-                    // Dibuja puntos de color por cada item (D/A/C/General)
                     todaysEvents.forEach(function(ev) {
                         var evSpan = createElement('span', ev.color);
                         element.appendChild(evSpan);
@@ -265,9 +260,8 @@
             }
 
             Calendar.prototype.drawLegend = function() {
-                // Fijamos la leyenda con los 4 posibles (coinciden con tu CSS)
                 var legend = createElement('div', 'legend');
-                ['Desayuno|blue','Almuerzo|orange','Cena|green','General|yellow']
+                ['Desayuno|blue','Almuerzo|orange','Cena|green']
                     .forEach(function(e) {
                         var parts = e.split('|');
                         var entry = createElement('span', 'entry ' +  parts[1], parts[0]);
@@ -302,6 +296,5 @@
         (function() {
             new Calendar('#calendar');
         })();
-        // ======== fin codigo-adaptado.js ========
     </script>
 </div>
