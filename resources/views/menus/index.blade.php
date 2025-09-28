@@ -23,8 +23,6 @@
                         <th>Nombre</th>
                         <th>Categoría</th>
                         <th>Tipo de dieta</th> 
-                        <th>Descripción</th>
-                        <th>Notas</th>
                         <th>Acciones</th>
                     </tr>
                     </thead>
@@ -34,8 +32,6 @@
                             <td>{{ $m->name }}</td>
                             <td>{{ $m->category }}</td>
                             <td>{{ $m->diet_type }}</td>
-                            <td>{{ $m->description }}</td>
-                            <td>{{ $m->notes }}</td>
                             <td>
                                 @canany('menus.edit')
                                     <a href="{{ route('menus.edit', $m) }}" class="btn btn-sm btn-warning">Editar</a>

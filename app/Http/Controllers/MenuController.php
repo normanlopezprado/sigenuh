@@ -88,7 +88,7 @@ class MenuController extends Controller
 
         // Ingredientes ya asociados (con sus pivotes)
         $current = $menu->ingredients()->orderBy('name')->get();
-        $categories = ['desayuno','almuerzo','cena'];
+        $categories = ['Desayuno','Almuerzo','Cena'];
         $diets = [
             'Libre',
             'Blanda',
