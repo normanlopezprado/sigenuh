@@ -36,7 +36,7 @@ class MenuController extends Controller
             'Especial',
         ];
         $dietOptions = array_combine($diets, $diets);
-        $categories = ['desayuno','almuerzo','cena'];
+        $categories = ['Desayuno','Almuerzo','Cena'];
         return view('menus.create', compact('categories', 'dietOptions'));
     }
 
@@ -58,7 +58,7 @@ class MenuController extends Controller
         $dietOptions = array_combine($diets, $diets);
         $data = $request->validate([
             'name'        => ['required','string','max:255','unique:menus,name'],
-            'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
+            'category'     => ['required', Rule::in(['Desayuno','Almuerzo','Cena'])],
             'diet_type'   => ['nullable', Rule::in($dietOptions)],
             'description' => ['nullable','string'],
             'notes'       => ['nullable','string'],
@@ -121,7 +121,7 @@ class MenuController extends Controller
         $dietOptions = array_combine($diets, $diets);
         $data = $request->validate([
             'name'        => ['required','string','max:255', Rule::unique('menus','name')->ignore($menu->id)],
-            'category'     => ['required', Rule::in(['desayuno','almuerzo','cena'])],
+            'category'     => ['required', Rule::in(['Desayuno','Almuerzo','Cena'])],
             'diet_type'   => ['nullable', Rule::in($dietOptions)],
             'description' => ['nullable','string'],
             'notes'       => ['nullable','string'],

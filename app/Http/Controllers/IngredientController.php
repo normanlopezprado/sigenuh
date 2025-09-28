@@ -9,7 +9,10 @@ use Illuminate\Validation\Rule;
 class IngredientController extends Controller
 {
     // Catálogo fijo de categorías
-    private const CATEGORIES = ['Condimento','Fruta','Proteína','Verdura'];
+    private const CATEGORIES = ['Condimento','Fruta', 'Lácteos', 'Proteína','Verdura'];
+
+
+
 
     // Valores EXACTOS del ENUM => etiqueta visible
     private const UNITS = [

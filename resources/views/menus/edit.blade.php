@@ -120,11 +120,11 @@
                             </table>
 
                             <div class="mb-3">
-                                <button type="button" class="btn btn-outline-primary" id="add-row">➕ Agregar ingrediente</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="add-row">➕ Agregar ingrediente</button>
                             </div>
                             <div class="mt-3">
-                                <button class="btn btn-primary">Guardar</button>
-                                <a href="{{ route('menus.index') }}" class="btn btn-secondary">Cancelar</a>
+                                <button class="btn btn-sm btn-primary">Guardar</button>
+                                <a href="{{ route('menus.index') }}" class="btn btn-sm btn-danger">Cancelar</a>
                             </div>
                         </form>
 
