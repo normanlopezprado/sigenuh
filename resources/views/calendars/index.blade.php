@@ -12,11 +12,10 @@
 @endsection
 
 @section('content')
-
     <div class="row g-4">
         <div class="col-12">
-            <div class="card mb-0 h-100">
-                @extends('calendars.show')
+            <div class="card mb-0 h-100" style="height: 580px !important;">
+                @include('calendars.show')
             </div>
         </div>
     </div>

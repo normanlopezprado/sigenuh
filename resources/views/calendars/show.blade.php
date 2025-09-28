@@ -1,6 +1,9 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style-calendar.css') }}">
     <div id="calendar"></div>
-    <script src="{{ asset('assets/js/moment.min.js') }}"></script>
+    <script src="{{ asset('assets/js/moment/moment-with-locales.min.js') }}"></script>
+    <script>
+        moment.locale('es');
+    </script>
     <script>
         !function() {
             var today = moment();
