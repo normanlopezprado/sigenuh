@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('menus', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name')->unique();
-            $table->enum('category', ['desayuno','almuerzo','cena']);
+            $table->enum('category', ['Desayuno','Almuerzo','Cena']);
             $table->boolean('status')->default(true);
             $table->text('description')->nullable();
             $table->text('notes')->nullable();
