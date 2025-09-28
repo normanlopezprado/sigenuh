@@ -1,7 +1,7 @@
 <!-- START SWITCHER -->
 <div class="switcher">
   <button type="button" class="switcher-icon btn btn-dark" data-bs-toggle="offcanvas" data-bs-target="#switcher">
-    <i class="bi-sliders fs-6 me-2"></i> Customize
+    <i class="bi-sliders fs-6 me-2"></i> Interfaz
   </button>
 
   <!-- OFFCANVAS -->

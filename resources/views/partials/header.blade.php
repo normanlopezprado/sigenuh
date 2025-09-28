@@ -6,7 +6,7 @@
       <div class="header-left hstack gap-3">
         <!-- HORIZONTAL BRAND LOGO -->
         <div class="app-sidebar-logo app-horizontal-logo justify-content-center align-items-center">
-          <a href="dashboard">
+          <a href="{{ route('dashboard') }}">
             <img height="35" class="app-sidebar-logo-default" alt="Logo" loading="lazy" src="{{ asset('assets/images/light-log.png') }}">
             <img height="40" class="app-sidebar-logo-minimize" alt="Logo" loading="lazy" src="{{ asset('assets/images/16650.png') }}">
           </a>
