@@ -104,7 +104,7 @@
         <div class="col-md-6 col-xl-4">
             <div class="card">
                 <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h6 class="card-title mb-0">Calendario de manús</h6>
+                    <h6 class="card-title mb-0">Calendario de menús</h6>
 
                 </div>
                 <div class="card-body">
