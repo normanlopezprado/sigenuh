@@ -1,14 +1,8 @@
 <div class="container py-3">
     <link rel="stylesheet" href="{{ asset('assets/css/style-calendar.css') }}">
     <div id="calendar"></div>
-
-    {{-- moment.js (tu archivo) --}}
     <script src="{{ asset('assets/js/moment.min.js') }}"></script>
     <script>
-        @php
-        @endphp
-
-
         !function() {
             var today = moment();
 
@@ -233,17 +227,27 @@
                 });
 
                 if(!events.length) {
-                    var div = createElement('div', 'event empty');
                     if (day.isAfter(moment(), 'day')) {
+                        var div = createElement('div', 'event empty');
                         var link = document.createElement('a');
                         link.href = "{{ route('calendars.create') }}" + "?date=" + day.format('YYYY-MM-DD');
                         link.textContent = '➕ Crear menú';
                         link.className = 'btn btn-sm btn-primary';
                         div.appendChild(link);
-                    } else {
+                        wrapper.appendChild(div);
+                    }else{
+                        var div = createElement('div', 'event empty');
                         var span = createElement('span', '', 'Sin eventos');
                         div.appendChild(span);
+                        wrapper.appendChild(div);
                     }
+                } else if (day.isAfter(moment(), 'day')) {
+                    var div = createElement('div', 'event empty');
+                    var link = document.createElement('a');
+                    link.href = "{{ route('calendars.create') }}" + "?date=" + day.format('YYYY-MM-DD');
+                    link.textContent = '➕ Crear menú';
+                    link.className = 'btn btn-sm btn-primary';
+                    div.appendChild(link);
 
                     wrapper.appendChild(div);
                 }
@@ -292,7 +296,6 @@
             }
         }();
 
-        // Inicializa
         (function() {
             new Calendar('#calendar');
         })();
