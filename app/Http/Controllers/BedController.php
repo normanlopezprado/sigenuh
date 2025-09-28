@@ -140,6 +140,6 @@ class BedController extends Controller
         $bed->delete();
 
         return redirect()->route('beds.index')
-            ->with('success', 'Cama eliminada correctamente 🗑️');
+            ->with('success', 'Cama eliminada correctamente.');
     }
 }
