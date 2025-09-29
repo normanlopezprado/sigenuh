@@ -65,50 +65,64 @@ class CalendarController extends Controller
             ->with('success', 'Calendario creado. Ahora puedes agregar los ingredientes opcionales.');
     }
 
-    public function edit(Calendar $calendar)
+    public function edit(Calendar $calendar, Request $request)
     {
-        $calendar->load([
-            'optionalMenuIngredients' => function($q) { $q->orderBy('created_at','desc'); },
-            'optionalMenuIngredients.menu',
-        ]);
-        $optionalItems = MenuIngredient::where('is_optional', true)
-            ->with(['menu','ingredient'])
-            ->orderBy('created_at','desc')
-            ->get();
+        // Carga menú para mostrar su nombre/categoría
+        $calendar->load(['menu']);
 
-        return view('calendars.edit', compact('calendar','optionalItems'));
+        // Opcionales disponibles del menú seleccionado
+        $optionalItems = collect();
+        if ($calendar->menu_id) {
+            $optionalItems = MenuIngredient::where('menu_id', $calendar->menu_id)
+                ->where('is_optional', true)
+                ->with(['menu','ingredient'])
+                ->orderBy('id')
+                ->get();
+        }
+
+        // IDs ya seleccionados en el calendario (para marcar checkboxes)
+        $selectedOptionalIds = $calendar->optionalMenuIngredients()
+            ->pluck('menu_ingredient.id')
+            ->toArray();
+
+        return view('calendars.edit', compact(
+            'calendar', 'optionalItems', 'selectedOptionalIds'
+        ));
     }
 
     public function update(Request $request, Calendar $calendar)
     {
+        // Validación de fecha y notas (puedes omitir si no se editan aquí)
         $data = $request->validate([
-            'date'  => ['required','date'],
-            'notes' => ['nullable','string'],
+            'notes' => ['nullable','string','max:500'],
+            'selected_menu_ingredient_id'   => ['array'],
+            'selected_menu_ingredient_id.*' => ['uuid'],
         ]);
 
-        $calendar->update($data);
+
+        $calendar->update([
+            'notes' => $data['notes'] ?? null,
+        ]);
 
 
-        if ($request->has('selected_menu_ingredient_id')) {
-            $ids = $request->input('selected_menu_ingredient_id', []);
+        $allowedOptionalIds = MenuIngredient::where('menu_id', $calendar->menu_id)
+            ->where('is_optional', true)
+            ->pluck('id')->toArray();
+
+        $requestedIds = $data['selected_menu_ingredient_id'] ?? [];
+        $finalIds = array_values(array_intersect($requestedIds, $allowedOptionalIds));
 
 
-            $validIds = MenuIngredient::whereIn('id', $ids)
-                ->where('is_optional', true)
-                ->pluck('id')->toArray();
-
-
-            $syncPayload = [];
-            foreach ($validIds as $id) {
-                $syncPayload[$id] = [];
-            }
-
-            $calendar->optionalMenuIngredients()->sync($syncPayload);
+        $payload = [];
+        foreach ($finalIds as $id) {
+            $payload[$id] = [];
         }
+
+        $calendar->optionalMenuIngredients()->sync($payload);
 
         return redirect()
             ->route('calendars.edit', $calendar)
-            ->with('success','Calendario actualizado.');
+            ->with('success', 'Calendario actualizado. Opcionales guardados correctamente.');
     }
 
     public function destroy(Calendar $calendar)

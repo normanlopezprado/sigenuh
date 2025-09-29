@@ -47,8 +47,10 @@
                                            name="date"
                                            class="form-control @error('date') is-invalid @enderror"
                                            value="{{ old('date', $calendar->date->format('Y-m-d')) }}"
-                                           required>
-                                    @error('date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                           required disabled>
+                                    @error('date')
+                                    <div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <small class="text-muted">* La fecha una vez asignada no se puede cambiar.</small>
                                 </div>
 
                                 <div class="col-md-9">
@@ -62,15 +64,18 @@
                                             @endif
                                         </div>
                                     @else
-                                        <div class="alert alert-warning mb-0">Este calendario no tiene menú asignado.</div>
+                                        <div class="alert alert-warning mb-0">Este calendario no tiene menú asignado.
+                                        </div>
                                     @endif
-                                    <small class="text-muted">* Si necesitas cambiar el menú, podemos habilitarlo en esta pantalla.</small>
+                                    <small class="text-muted">* El menú una vez asignado no se puede cambiar.</small>
                                 </div>
 
                                 <div class="col-12">
                                     <label class="form-label">Notas (opcional)</label>
-                                    <textarea name="notes" rows="3" class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $calendar->notes) }}</textarea>
-                                    @error('notes')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <textarea name="notes" rows="3"
+                                              class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $calendar->notes) }}</textarea>
+                                    @error('notes')
+                                    <div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
 
@@ -95,7 +100,7 @@
                                 <div class="row g-2">
                                     @foreach($optionalItems as $opt)
                                         <div class="col-md-6">
-                                            <label class="form-check d-flex align-items-start gap-2 p-2 border rounded">
+                                            <label class="form-check-label me-2">
                                                 <input
                                                     type="checkbox"
                                                     name="selected_menu_ingredient_id[]"
@@ -104,18 +109,18 @@
                                                     @checked(in_array($opt->id, old('selected_menu_ingredient_id', $selectedOptionalIds)))
                                                 >
                                                 <span>
-                    <strong>{{ $opt->ingredient?->name ?? 'Ingrediente' }}</strong>
-                    <br>
-                    <small class="text-muted">
-                      Menú: {{ $opt->menu?->name ?? '-' }}
-                        @if(!empty($opt->qty))
-                            · Cant: {{ rtrim(rtrim(number_format($opt->qty, 3, '.', ''), '0'), '.') }}
-                        @endif
-                        @if(!empty($opt->unit))
-                            · {{ $opt->unit }}
-                        @endif
-                    </small>
-                  </span>
+                                                    <strong>{{ $opt->ingredient?->name ?? 'Ingrediente' }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                      Menú: {{ $opt->menu?->name ?? '-' }}
+                                                        @if(!empty($opt->qty))
+                                                            · Cant: {{ rtrim(rtrim(number_format($opt->qty, 3, '.', ''), '0'), '.') }}
+                                                        @endif
+                                                        @if(!empty($opt->unit))
+                                                            · {{ $opt->unit }}
+                                                        @endif
+                                                    </small>
+                                                  </span>
                                             </label>
                                         </div>
                                     @endforeach
