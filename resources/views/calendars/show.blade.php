@@ -234,7 +234,7 @@
                         var link = document.createElement('a');
                         link.href = "{{ route('calendars.create') }}" + "?date=" + day.format('YYYY-MM-DD');
                         link.textContent = '➕ Crear menú';
-                        link.className = 'btn btn-sm btn-primary';
+                        link.className = 'btn btn-sm btn-dark';
                         div.appendChild(link);
                         wrapper.appendChild(div);
                     }else{
@@ -248,20 +248,22 @@
                     var link = document.createElement('a');
                     link.href = "{{ route('calendars.create') }}" + "?date=" + day.format('YYYY-MM-DD');
                     link.textContent = '➕ Crear menú';
-                    link.className = 'btn btn-sm btn-primary';
+                    link.className = 'btn btn-sm btn-dark';
                     div.appendChild(link);
 
                     wrapper.appendChild(div);
                 }
 
-                if(currentWrapper) {
+                if (currentWrapper) {
                     currentWrapper.className = 'events out';
                     currentWrapper.addEventListener('animationend', function() {
                         currentWrapper.parentNode.removeChild(currentWrapper);
                         ele.appendChild(wrapper);
+                        adjustHeights(ele);
                     }, { once: true });
                 } else {
                     ele.appendChild(wrapper);
+                    adjustHeights(ele);
                 }
             }
 
@@ -289,7 +291,25 @@
             }
 
             window.Calendar = Calendar;
+            function adjustHeights(detailsEl) {
+                if (!detailsEl) return;
 
+                const items = detailsEl.querySelectorAll('.events .event').length;
+                const detailsHeight = (items * 26) + 26;
+                detailsEl.style.height = detailsHeight + 'px';
+                detailsEl.style.transition = 'height 0.3s ease';
+                const eventsIn = detailsEl.querySelector('.events.in');
+                if (eventsIn) {
+                    eventsIn.style.height = detailsHeight + 'px';
+                    eventsIn.style.transition = 'height 0.3s ease';
+                }
+                const container = document.querySelector('.calendarContainer');
+                if (container) {
+                    container.style.setProperty('height', (558 + detailsHeight) + 'px', 'important');
+                    container.style.transition = 'height 0.3s ease';
+                }
+
+            }
             function createElement(tagName, className, innerText) {
                 var ele = document.createElement(tagName);
                 if(className) ele.className = className;
@@ -301,4 +321,5 @@
         (function() {
             new Calendar('#calendar');
         })();
+
     </script>

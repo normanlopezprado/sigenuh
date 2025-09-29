@@ -107,7 +107,7 @@
                     <h6 class="card-title mb-0">Calendario de menús</h6>
 
                 </div>
-                <div class="card-body">
+                <div class="card-body calendarContainer" style="height: 558px;">
                     @include('calendars.show')
                 </div>
             </div>

@@ -9,6 +9,10 @@ Author: SRBThemes
 Version: 1.0.0
 File: Main Css File
 */
+.calendarContainer {
+    transition: height 0.3s ease;
+}
+
 .switcher .switcher-icon {
   position: fixed;
   bottom: 25px;

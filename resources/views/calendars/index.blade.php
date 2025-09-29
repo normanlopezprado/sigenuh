@@ -14,7 +14,7 @@
 @section('content')
     <div class="row g-4">
         <div class="col-12">
-            <div class="card mb-0 h-100" style="height: 580px !important;">
+            <div class="card mb-0 h-100 calendarContainer" style="height: 558px;">
                 @include('calendars.show')
             </div>
         </div>
