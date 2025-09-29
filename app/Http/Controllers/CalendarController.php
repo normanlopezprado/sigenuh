@@ -140,6 +140,7 @@ class CalendarController extends Controller
                         'label'   => 'Menú',
                         'color'   =>  $color,
                         'summary' => $cal->menu->name,
+                        'editUrl' => route('calendars.edit', $cal->id),
                     ]],
                 ];
             } else {

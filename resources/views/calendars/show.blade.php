@@ -75,7 +75,8 @@
                                 date: d.clone(),
                                 calendar: item.label,
                                 color: LABEL_COLOR[item.label] || item.color || 'yellow',
-                                eventName: item.summary || item.label
+                                eventName: item.summary || item.label,
+                                editUrl: item.editUrl
                             });
                         });
                     });
@@ -222,7 +223,19 @@
                 events.forEach(function(ev) {
                     var div = createElement('div', 'event');
                     var square = createElement('div', 'event-category ' + ev.color);
-                    var span = createElement('span', '', ev.calendar + (ev.eventName ? ' — ' + ev.eventName : ''));
+                    var text = ev.calendar + (ev.eventName ? ' — ' + ev.eventName : '');
+                    var span = createElement('span', '');
+                    if (ev.editUrl) {
+                        var a = document.createElement('a');
+                        a.href = ev.editUrl;
+                        a.textContent = text;
+                        a.className = 'event-link';
+                        a.style.textDecoration = 'none';
+                        a.style.color = 'inherit';
+                        span.appendChild(a);
+                    } else {
+                        span.textContent = text;
+                    }
                     div.appendChild(square);
                     div.appendChild(span);
                     wrapper.appendChild(div);
