@@ -110,10 +110,9 @@
 @section('js')
 <script>
 const routes = {
-    menus: "{{ route('staff.meals.menus') }}",
-    search: "{{ route('staff.meals.search') }}",
-    store: "{{ route('staff.meals.store') }}",
-    today: "{{ route('staff.meals.today') }}"
+    search: "{{ route('staff_meals.search_beneficiaries') }}",
+    suggest: "{{ route('staff_meals.suggest_menus') }}",
+    store: "{{ route('staff_meals.store') }}"
 };
 
 function showAlert(type, msg) {

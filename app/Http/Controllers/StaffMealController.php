@@ -3,159 +3,133 @@
 namespace App\Http\Controllers;
 
 use App\Models\Menu;
-use App\Models\Beneficiary;
+use App\Models\StaffBeneficiary;
 use App\Models\StaffMealRecord;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema; // IMPORTANTE
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 
 class StaffMealController extends Controller
 {
-    /**
-     * Pantalla de entrega
-     * GET /staff-meals/entrega
-     */
-    public function create(Request $request)
+    
+    public function delivery(Request $request)
+    {
+        $mealType = $request->get('meal_type'); 
+        return view('staff_meals.delivery', compact('mealType'));
+    }
+
+    public function searchBeneficiaries(Request $request)
+    {
+        $q = trim((string) $request->get('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $hospitalId = $request->user()->hospital_selected;
+
+        $items = StaffBeneficiary::query()
+            ->when($hospitalId, fn($q2) => $q2->where('hospital_id', $hospitalId))
+            ->where('status', 1)
+            ->where('full_name', 'like', '%' . $q . '%')
+            ->orderBy('full_name')
+            ->limit(15)
+            ->get(['id', 'full_name']);
+
+        return response()->json($items);
+    }
+
+    // GET /staff_meals/suggest-menus?meal_type=desayuno
+    public function suggestMenus(Request $request)
     {
         $mealType = $request->get('meal_type', 'desayuno');
-        $menus = $this->menusFor($mealType);
 
-        return view('staff_meals.delivery', [
-            'mealType' => $mealType,
-            'menus'    => $menus,
-        ]);
-    }
+        // Si tu tabla menus NO tiene meal_type/diet_type, no intentes filtrar
+        $hasMealType = Schema::hasColumn('menus', 'meal_type');
+        $hasStatus   = Schema::hasColumn('menus', 'status');
 
-    /**
-     * Guardar la entrega
-     * POST /staff-meals/entrega
-     */
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'meal_type'      => 'required|in:desayuno,almuerzo,cena',
-            'menu_id'        => 'required|exists:menus,id',
-            'beneficiary_id' => 'required|exists:beneficiaries,id',
-            'notes'          => 'nullable|string|max:500',
-        ]);
-
-        $data['delivered_by'] = Auth::id();
-        $data['delivered_at'] = Carbon::now();
-
-        StaffMealRecord::create($data);
-
-        return response()->json([
-            'ok'      => true,
-            'message' => 'Entrega registrada correctamente.',
-        ]);
-    }
-
-    /**
-     * AJAX: Obtener menús según tipo de comida
-     */
-    public function menusByMealType(Request $request)
-    {
-        $request->validate([
-            'meal_type' => 'required|in:desayuno,almuerzo,cena',
-        ]);
-
-        $menus = $this->menusFor($request->meal_type)->map(fn ($m) => [
-            'id'   => $m->id,
-            'name' => $m->name,
-        ]);
+        $q = Menu::query();
+        if ($hasStatus) $q->where('status', 1);
+        if ($hasMealType) $q->where('meal_type', $mealType);
+        // Si no tiene columnas, devolveremos una lista corta (o vacía)
+        $menus = $q->orderBy('name')->limit(20)->get(['id', 'name']);
 
         return response()->json($menus);
     }
 
-    /**
-     * AJAX: Buscar beneficiarios
-     */
-    public function searchBeneficiaries(Request $request)
+    // POST /staff_meals
+    public function store(Request $request)
     {
-        $q = trim($request->get('q', ''));
-        if ($q === '') {
-            return response()->json([]);
-        }
+        $today = Carbon::now()->toDateString();
 
-        $beneficiarios = \App\Models\Beneficiary::query()
-            ->where('status', true)
-            ->where('name', 'like', "%{$q}%")
-            ->orderBy('name')
-            ->limit(20)
-            ->get(['id', 'name']);
-
-        return response()->json(
-            $beneficiarios->map(fn ($b) => [
-                'id'   => $b->id,
-                'name' => $b->name,
-            ])
-        );
-    }
-
-    /**
-     * AJAX: Ver entregas de hoy
-     */
-    public function todayDeliveries(Request $request)
-    {
-        $request->validate([
-            'meal_type' => 'required|in:desayuno,almuerzo,cena',
+        $validated = $request->validate([
+            'staff_beneficiary_id' => ['required','uuid', Rule::exists('staff_beneficiaries','id')],
+            'meal_type'            => ['required', Rule::in(['desayuno','almuerzo','cena'])],
+            // si se envía otra fecha (p.e. re-proceso), la aceptamos
+            'delivery_date'        => ['nullable','date'],
+            'menu_id'              => ['nullable','uuid', Rule::exists('menus','id')],
+            'menu_text'            => ['nullable','string','max:255'],
+            'notes'                => ['nullable','string','max:2000'],
         ]);
 
-        $start = Carbon::today();
-        $end   = Carbon::tomorrow();
+        $hospitalId   = $request->user()->hospital_selected;
+        $deliveryDate = $validated['delivery_date'] ?? $today;
 
-        $records = StaffMealRecord::with(['beneficiary', 'menu', 'deliveredBy'])
-            ->where('meal_type', $request->meal_type)
-            ->whereBetween('delivered_at', [$start, $end])
-            ->latest('delivered_at')
-            ->get();
+        // Evita duplicados por índice único de la DB
+        $record = StaffMealRecord::firstOrCreate(
+            [
+                'staff_beneficiary_id' => $validated['staff_beneficiary_id'],
+                'meal_type'            => $validated['meal_type'],
+                'delivery_date'        => $deliveryDate,
+            ],
+            [
+                'hospital_id' => $hospitalId,
+                'delivered_by'=> $request->user()->id,
+                'menu_id'     => $validated['menu_id']   ?? null,
+                'menu_text'   => $validated['menu_text'] ?? null,
+                'notes'       => $validated['notes']     ?? null,
+            ]
+        );
 
-        $rows = $records->map(function ($r) {
-            return [
-                'id'           => $r->id,
-                'beneficiary'  => optional($r->beneficiary)->first_name . ' ' . optional($r->beneficiary)->last_name,
-                'position'     => optional($r->beneficiary)->position,
-                'menu'         => optional($r->menu)->name,
-                'delivered_by' => optional($r->deliveredBy)->name,
-                'delivered_at' => optional($r->delivered_at)?->format('Y-m-d H:i:s'),
-                'notes'        => (string) ($r->notes ?? ''),
-            ];
-        });
+        // Si ya existía, avisamos que no se duplicó
+        if (!$record->wasRecentlyCreated) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Ya existe una entrega registrada para este beneficiario, tipo y fecha.'
+            ], 409);
+        }
 
-        return response()->json($rows);
+        return response()->json(['ok' => true, 'message' => 'Entrega registrada.']);
     }
 
-    /**
-     * Helper: Obtener menús para un tipo de comida sin depender de columnas
-     */
-    private function menusFor(string $mealType)
+    // GET /staff_meals
+    public function index(Request $request)
     {
-        $q = Menu::query();
+        $hospitalId = $request->user()->hospital_selected;
 
-        // Filtrar por status si existe
-        if (Schema::hasColumn('menus', 'status')) {
-            $q->where('status', 1);
-        }
+        $q = StaffMealRecord::query()
+            ->with(['beneficiary','deliveredBy'])
+            ->when($hospitalId, fn($qq) => $qq->where('hospital_id', $hospitalId))
+            ->when($request->filled('meal_type'), fn($qq) => $qq->where('meal_type', $request->meal_type))
+            ->when($request->filled('date'), fn($qq) => $qq->whereDate('delivery_date', $request->date))
+            ->when($request->filled('s'), function ($qq) use ($request) {
+                $term = '%'.$request->s.'%';
+                $qq->whereHas('beneficiary', fn($b) => $b->where('full_name', 'like', $term));
+            })
+            ->orderByDesc('delivery_date')
+            ->orderBy('meal_type')
+            ->limit(500);
 
-        // Filtrar por diet_type si existe
-        if (Schema::hasColumn('menus', 'diet_type')) {
-            $q->where('diet_type', 'Libre');
-        }
+        $records = $q->get();
 
-        // Si existe una columna meal_type, la usamos
-        if (Schema::hasColumn('menus', 'meal_type')) {
-            $q->where('meal_type', $mealType);
-        } else {
-            // Fallback: buscar por texto en el nombre
-            $needle = match ($mealType) {
-                'desayuno' => 'desayuno',
-                'almuerzo' => 'almuerzo',
-                'cena'     => 'cena',
-            };
-            $q->where('name', 'like', '%' . $needle . '%');
-        }
+        return view('staff_meals.index', compact('records'));
+    }
 
-        return $q->orderBy('name')->get(['id', 'name']);
+    // DELETE /staff_meals/{record}
+    public function destroy(StaffMealRecord $record)
+    {
+        $record->delete();
+        return redirect()->route('staff_meals.index')->with('success', 'Entrega anulada.');
     }
 }

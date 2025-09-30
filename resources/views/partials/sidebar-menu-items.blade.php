@@ -132,7 +132,7 @@
         </a>
         <ul class="slide-menu" role="menu">
             <li class="slide">
-                <a href="{{ route('staff.meals.create') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
+                <a href="{{ route('staff_meals.delivery') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
                     <i class="ri-bowl-line"></i>
                     Entregas
                 </a>

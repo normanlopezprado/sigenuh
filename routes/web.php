@@ -28,21 +28,18 @@ Route::get('/', function () {
 
 });
 
+// recuperar contraseña
 Route::middleware('guest')->group(function () {
-    // Form para solicitar el enlace
     Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
         ->name('password.request');
 
-    // Enviar email con enlace
     Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
         ->middleware('throttle:6,1')
         ->name('password.email');
 
-    // Form de reset (desde el email)
     Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
         ->name('password.reset');
 
-    // Guardar nueva contraseña
     Route::post('reset-password', [ResetPasswordController::class, 'reset'])
         ->name('password.update');
 });
@@ -53,7 +50,7 @@ Route::get('/email/verify', function () {
 })->middleware('auth')->name('verification.notice');
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill(); // marca email como verificado
+    $request->fulfill(); 
     return redirect()->route('dashboard')->with('success','Email verificado.');
 })->middleware(['auth','signed','throttle:6,1'])->name('verification.verify');
 
@@ -187,22 +184,18 @@ Route::middleware(['auth'])->group(function () {
 
 Route::resource('calendars', CalendarController::class)
     ->middleware('auth');
-
 Route::middleware('auth')->group(function () {
     Route::get('/calendars', function () {
         return view('calendars.index');
     })->name('calendars.index');
 });
-
+Route::get('/calendar/month', [CalendarController::class, 'monthData'])
+    ->name('calendar.month');
 Route::get('/calendar/month', [CalendarController::class, 'monthData'])
     ->name('calendar.month');
 
-
-Route::get('/calendar/month', [CalendarController::class, 'monthData'])
-    ->name('calendar.month');
-
-    Route::middleware(['auth'])->group(function () {
-    Route::resource('staff-beneficiaries', StaffBeneficiaryController::class);
+Route::middleware(['auth'])->group(function () {
+Route::resource('staff-beneficiaries', StaffBeneficiaryController::class);
 });
 
 Route::middleware(['auth','verified'])->group(function () {
@@ -218,25 +211,28 @@ Route::middleware(['auth','verified'])->group(function () {
 });
 
 
+//entregas
 Route::middleware(['auth'])->group(function () {
-    
-    // Pantalla principal de entrega
-    Route::get('/staff-meals/entrega', [StaffMealController::class, 'create'])
-        ->name('staff.meals.create'); 
+    // Pantalla rápida para registrar entregas
+    Route::get('staff_meals/delivery', [StaffMealController::class, 'delivery'])
+        ->name('staff_meals.delivery');
 
-    // Registrar entrega
-    Route::post('/staff-meals/entrega', [StaffMealController::class, 'store'])
-        ->name('staff.meals.store');  
+    // Búsqueda de beneficiarios (AJAX)
+    Route::get('staff_meals/search-beneficiaries', [StaffMealController::class, 'searchBeneficiaries'])
+        ->name('staff_meals.search_beneficiaries');
 
-    // AJAX: cargar menús filtrados por desayuno / almuerzo / cena
-    Route::get('/staff-meals/menus', [StaffMealController::class, 'menusByMealType'])
-        ->name('staff.meals.menus');
+    // (Opcional) sugerencias de menú por tipo (si no tienes columnas, devuelve vacío y usa texto libre)
+    Route::get('staff_meals/suggest-menus', [StaffMealController::class, 'suggestMenus'])
+        ->name('staff_meals.suggest_menus');
 
-    // AJAX: buscar beneficiarios
-    Route::get('/staff-meals/beneficiarios/search', [StaffMealController::class, 'searchBeneficiaries'])
-        ->name('staff.meals.search');
+    // Guardar entrega
+    Route::post('staff_meals', [StaffMealController::class, 'store'])
+        ->name('staff_meals.store');
 
-    // AJAX: entregas del día
-    Route::get('/staff-meals/hoy', [StaffMealController::class, 'todayDeliveries'])
-        ->name('staff.meals.today');
+    // Historial y anulación
+    Route::get('staff_meals', [StaffMealController::class, 'index'])
+        ->name('staff_meals.index');
+
+    Route::delete('staff_meals/{record}', [StaffMealController::class, 'destroy'])
+        ->name('staff_meals.destroy');
 });
