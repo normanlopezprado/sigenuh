@@ -21,6 +21,8 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\StaffBeneficiaryController;
 use App\Http\Controllers\StaffMealController;
+use App\Http\Controllers\StaffMealReportController;
+
 
 
 Route::get('/', function () {
@@ -234,4 +236,10 @@ Route::middleware(['auth'])->group(function () {
     // Listado entregas del día (para la tabla)
     Route::get('staff_meals/list-deliveries', [StaffMealController::class, 'listDeliveries'])
         ->name('staff_meals.list-deliveries');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('staff_meals/report', [StaffMealReportController::class, 'deliveriesReport'])
+        ->name('staff_meals.report');
 });

@@ -46,12 +46,20 @@
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
                     <ul class="slide-menu" role="menu">
+
+                        <li class="slide">
+                            <a href="{{ route('staff_meals.report') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                                <i class="ri-file-chart-line"></i>
+                                Reportes
+                            </a>    
+                        </li>
                         <li class="slide">
                             <a href="{{ route('staff-beneficiaries.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
                                 <i class="ri-user-settings-line"></i>
                                 Gestionar
                             </a>
                         </li>
+
                     </ul>
                 </li>
 

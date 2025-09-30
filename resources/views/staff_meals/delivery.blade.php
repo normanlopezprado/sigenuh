@@ -1,8 +1,8 @@
 {{-- resources/views/staff_meals/delivery.blade.php --}}
 @extends('partials.layouts.master')
 
-@section('title', 'Entrega de alimentos')
-@section('sub-title', 'Staff -> Entrega')
+@section('title', '')
+@section('sub-title', 'Entrega de alimentos')
 @section('pagetitle', 'Entrega de alimentos')
 
 @section('content')
