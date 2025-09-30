@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\StaffBeneficiaryController;
+use App\Http\Controllers\StaffMealController;
 
 
 Route::get('/', function () {
@@ -182,15 +184,3 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('menus/{menu}', [MenuController::class,'destroy'])->name('menus.destroy')->middleware('permission:menus.delete');
 });
 //Calendar
-
-Route::resource('calendars', CalendarController::class)
-    ->middleware('auth');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/calendars', function () {
-        return view('calendars.index');
-    })->name('calendars.index');
-});
-
-Route::get('/calendar/month', [CalendarController::class, 'monthData'])
-    ->name('calendar.month');
