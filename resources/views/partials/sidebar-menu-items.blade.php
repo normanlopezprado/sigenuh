@@ -7,12 +7,19 @@
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
         <ul class="slide-menu" role="menu">
+            
             <li class="slide">
-                <a href="index" class="side-menu__item" role="menuitem" data-lang="hr-dashboards-ecommerce">Resumen diario</a>
+                <a href="index" class="side-menu__item" role="menuitem" data-lang="hr-dashboards-ecommerce">Calendario de dietas</a>
             </li>
+
             <li class="slide">
-                <a href="dashboard-project-management" data-lang="hr-dashboards-project-management" class="side-menu__item" role="menuitem">Historial</a>
+                <a href="dashboard-project-management" data-lang="hr-dashboards-project-management" class="side-menu__item" role="menuitem">Carritos</a>
             </li>
+
+            <li class="slide">
+                <a href="dashboard-project-management" data-lang="hr-dashboards-project-management" class="side-menu__item" role="menuitem">Historia</a>
+            </li>
+
         </ul>
     </li>
 
