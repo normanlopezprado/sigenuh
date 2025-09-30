@@ -136,17 +136,28 @@ class CalendarController extends Controller
         $month = (int) $request->query('month', now()->month);
         $start = Carbon::create($year, $month, 1)->startOfMonth()->toDateString();
         $end   = Carbon::create($year, $month, 1)->endOfMonth()->toDateString();
-        $calendars = Calendar::with('menu')
-            ->whereBetween('date', [$start, $end])
-            ->orderBy('date')
+        $calendars = Calendar::query()
+            ->with('menu')
+            ->whereBetween('calendars.date', [$start, $end])
+            ->join('menus', 'calendars.menu_id', '=', 'menus.id')
+            ->orderByRaw("
+                    CASE menus.category
+                        WHEN 'Desayuno' THEN 1
+                        WHEN 'Almuerzo' THEN 2
+                        WHEN 'Cena' THEN 3
+                        ELSE 4
+                    END
+                ")
+            ->orderBy('calendars.date')
+            ->select('calendars.*')
             ->get();
         $events = [];
         foreach ($calendars as $cal) {
             if ($cal->menu) {
                 $color = match ($cal->menu->category) {
-                    'desayuno' => 'blue',
-                    'almuerzo' => 'orange',
-                    'cena'     => 'green',
+                    'Desayuno' => 'blue',
+                    'Almuerzo' => 'orange',
+                    'Cena'     => 'green',
                 };
                 $events[] = [
                     'date'  => $cal->date->format('Y-m-d'),
