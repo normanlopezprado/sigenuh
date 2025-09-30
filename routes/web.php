@@ -184,3 +184,59 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('menus/{menu}', [MenuController::class,'destroy'])->name('menus.destroy')->middleware('permission:menus.delete');
 });
 //Calendar
+
+Route::resource('calendars', CalendarController::class)
+    ->middleware('auth');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/calendars', function () {
+        return view('calendars.index');
+    })->name('calendars.index');
+});
+
+Route::get('/calendar/month', [CalendarController::class, 'monthData'])
+    ->name('calendar.month');
+
+
+Route::get('/calendar/month', [CalendarController::class, 'monthData'])
+    ->name('calendar.month');
+
+    Route::middleware(['auth'])->group(function () {
+    Route::resource('staff-beneficiaries', StaffBeneficiaryController::class);
+});
+
+Route::middleware(['auth','verified'])->group(function () {
+    Route::get('/staff-beneficiaries', [StaffBeneficiaryController::class, 'index'])->name('staff-beneficiaries.index');
+    Route::get('/staff-beneficiaries/create', [StaffBeneficiaryController::class, 'create'])->name('staff-beneficiaries.create');
+    Route::post('/staff-beneficiaries', [StaffBeneficiaryController::class, 'store'])->name('staff-beneficiaries.store');
+    Route::get('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'show'])->name('staff-beneficiaries.show');
+    Route::get('/staff-beneficiaries/{staff_beneficiary}/edit', [StaffBeneficiaryController::class, 'edit'])->name('staff-beneficiaries.edit');
+    Route::put('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'update'])->name('staff-beneficiaries.update');
+    Route::delete('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'destroy'])->name('staff-beneficiaries.destroy');
+    Route::patch('/staff-beneficiaries/{staff_beneficiary}/toggle-status', [StaffBeneficiaryController::class, 'toggleStatus'])->name('staff-beneficiaries.toggle-status')->middleware(['auth','verified']);
+
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    
+    // Pantalla principal de entrega
+    Route::get('/staff-meals/entrega', [StaffMealController::class, 'create'])
+        ->name('staff.meals.create'); 
+
+    // Registrar entrega
+    Route::post('/staff-meals/entrega', [StaffMealController::class, 'store'])
+        ->name('staff.meals.store');  
+
+    // AJAX: cargar menús filtrados por desayuno / almuerzo / cena
+    Route::get('/staff-meals/menus', [StaffMealController::class, 'menusByMealType'])
+        ->name('staff.meals.menus');
+
+    // AJAX: buscar beneficiarios
+    Route::get('/staff-meals/beneficiarios/search', [StaffMealController::class, 'searchBeneficiaries'])
+        ->name('staff.meals.search');
+
+    // AJAX: entregas del día
+    Route::get('/staff-meals/hoy', [StaffMealController::class, 'todayDeliveries'])
+        ->name('staff.meals.today');
+});
