@@ -47,7 +47,7 @@
                     </a>
                     <ul class="slide-menu" role="menu">
                         <li class="slide">
-                            <a href="{{ route('staff.meals.create') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                            <a href="{{ route('staff-beneficiaries.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
                                 <i class="ri-settings-4-line"></i>
                                 Gestionar
                             </a>
@@ -120,7 +120,7 @@
             </li>
 
             <li class="slide">
-                <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
+                <a href="{{ route('staff.meals.create') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
                     <i class="ri-user-smile-line"></i>
                     Beneficiarios
                 </a>
