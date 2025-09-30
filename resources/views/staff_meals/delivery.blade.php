@@ -108,7 +108,7 @@
       <div><strong>Tipo de dieta:</strong> <span id="sumDiet">—</span></div>
       <div><strong>Menú:</strong> <span id="sumMenu">—</span></div>
       <div><strong>Beneficiario:</strong> <span id="sumBeneficiary">—</span></div>
-      <div><strong>Usuario:</strong> <span id="sumUser">{{ auth()->user()->name ?? '—' }}</span></div>
+      <div><strong>Entregado por:</strong> <span id="sumUser">{{ auth()->user()->name ?? '—' }}</span></div>
     </div>
 
     <div class="row g-3 align-items-end mb-2">
