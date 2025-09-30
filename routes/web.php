@@ -20,6 +20,9 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
 
+use App\Http\Controllers\StaffMealController;
+
+
 Route::get('/', function () {
     return view('welcome');
 
@@ -182,3 +185,15 @@ Route::middleware(['auth'])->group(function () {
     Route::put('menus/{menu}',    [MenuController::class,'update'])->name('menus.update')->middleware('permission:menus.edit');
     Route::delete('menus/{menu}', [MenuController::class,'destroy'])->name('menus.destroy')->middleware('permission:menus.delete');
 });
+
+
+
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/staff-meals/entrega', [StaffMealController::class, 'create'])
+        ->name('staff.meals.create'); // Pantalla de entrega (mock)
+    Route::post('/staff-meals/entrega', [StaffMealController::class, 'store'])
+        ->name('staff.meals.store');  // Confirmación (mock)
+});
+
