@@ -1,314 +1,504 @@
+{{-- resources/views/staff_meals/delivery.blade.php --}}
 @extends('partials.layouts.master')
 
-@section('title', 'Entrega de Comidas')
-@section('sub-title', 'Registro diario')
-@section('pagetitle', 'Nutrición')
+@section('title', 'Entrega de alimentos')
+@section('sub-title', 'Staff -> Entrega')
+@section('pagetitle', 'Entrega de alimentos')
 
 @section('content')
-<div class="container-xxl">
-    {{-- CSRF para fetch --}}
-    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- ALERTA --}}
-    <div id="alertBox" class="alert d-none" role="alert"></div>
-
-    {{-- CARD: Selección + Búsqueda + Confirmación --}}
-    <div class="card mb-3">
-        <div class="card-body">
-            {{-- 1) Selección de comida + menú (solo dietas libres) --}}
-            <h5 class="mb-3">1) Selecciona Comida y Menú</h5>
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Tipo de comida</label>
-                    <select class="form-select" id="mealType">
-                        <option value="desayuno" {{ ($mealType ?? 'desayuno') === 'desayuno' ? 'selected' : '' }}>Desayuno</option>
-                        <option value="almuerzo" {{ ($mealType ?? '') === 'almuerzo' ? 'selected' : '' }}>Almuerzo</option>
-                        <option value="cena"     {{ ($mealType ?? '') === 'cena' ? 'selected' : '' }}>Cena</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Menú (dietas libres)</label>
-                    <select class="form-select" id="menuId">
-                        <option value="">-- Selecciona --</option>
-                        @isset($menus)
-                            @foreach ($menus as $m)
-                                <option value="{{ $m->id }}">{{ $m->name }}</option>
-                            @endforeach
-                        @endisset
-                    </select>
-                    <small class="text-muted">Solo se muestran menús activos de dieta <b>Libre</b>.</small>
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            {{-- 2) Búsqueda de beneficiario (autocompletar por nombre) --}}
-            <h5 class="mb-3">2) Buscar beneficiario</h5>
-            <div class="row g-3 align-items-end">
-                <div class="col-md-6 position-relative">
-                    <label class="form-label">Nombre del beneficiario</label>
-                    <input type="text" class="form-control" id="beneficiarySearch" placeholder="Escribe el nombre completo">
-                    <input type="hidden" id="beneficiaryId"> {{-- aquí se guarda el ID seleccionado --}}
-                    {{-- Contenedor de sugerencias --}}
-                    <div id="beneficiarySuggestions" class="list-group position-absolute w-100 mt-1 d-none"
-                        style="z-index: 1000; max-height: 240px; overflow-y: auto;">
-                        {{-- items dinámicos --}}
-                    </div>
-                    <small class="text-muted">Escribe al menos 2 letras y selecciona un resultado.</small>
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            {{-- 3) Confirmación de entrega --}}
-            <h5 class="mb-3">3) Confirmar entrega</h5>
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label">Usuario</label>
-                    <input type="text" class="form-control" value="{{ auth()->user()->name }}" disabled>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Anotaciones</label>
-                    <input type="text" class="form-control" id="notes" placeholder="Opcional">
-                </div>
-                <div class="col-md-2 d-flex gap-2">
-                    <button class="btn btn-primary w-50" id="btnConfirm">Confirmar</button>
-                    <button class="btn btn-outline-secondary w-50" id="btnReset">Limpiar</button>
-                </div>
-            </div>
-        </div>
+{{-- === SECCIÓN 1: SELECCIÓN INICIAL (category, diet_type, menú del día) === --}}
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Selección inicial</h5>
+    <div class="small text-muted mt-1">
+      Fecha: <strong>{{ ($today ?? \Carbon\Carbon::today())->format('Y-m-d') }}</strong>
     </div>
+  </div>
+  <div class="card-body">
+    <form id="deliveryForm" autocomplete="off">
+      @csrf
 
-    {{-- CARD: Tabla de entregas de HOY por tipo seleccionado --}}
-    <div class="card">
-        <div class="card-body">
-            <h5 class="mb-3">
-                4) Entregas de hoy — <span id="mealTypeLabel" class="text-capitalize">{{ $mealType ?? 'desayuno' }}</span>
-            </h5>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle">
-                    <thead>
-                        <tr>
-                            <th>Beneficiario</th>
-                            <th>Puesto</th>
-                            <th>Menú</th>
-                            <th>Entregado por</th>
-                            <th>Fecha/Hora</th>
-                            <th>Anotaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="deliveriesTbody">
-                        <tr><td colspan="6" class="text-muted">Cargando…</td></tr>
-                    </tbody>
-                </table>
-            </div>
+      <div class="row g-3 align-items-end">
+        {{-- TIEMPO DE COMIDA (menus.category) --}}
+        <div class="col-md-4">
+          <label for="category" class="form-label">Tiempo de comida</label>
+          <select id="category" name="category" class="form-select" required>
+            @php
+              $fallbackCategories = ['desayuno','almuerzo','cena'];
+              $cats = isset($categories) && count($categories) ? $categories : $fallbackCategories;
+              $selectedCategory = old('category', $mealType ?? 'desayuno');
+            @endphp
+            @foreach($cats as $cat)
+              <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>
+                {{ ucfirst($cat) }}
+              </option>
+            @endforeach
+          </select>
         </div>
-    </div>
+
+        {{-- TIPO DE DIETA (menus.diet_type) --}}
+        <div class="col-md-4">
+          <label for="diet_type" class="form-label">Tipo de dieta</label>
+          <select id="diet_type" name="diet_type" class="form-select" required disabled>
+            <option value="">— Selecciona tipo de dieta —</option>
+          </select>
+        </div>
+
+        {{-- MENÚ DEL DÍA (calendars filtrado por fecha hoy + category + diet_type) --}}
+        <div class="col-md-4">
+          <label for="calendar_menu_id" class="form-label">Menú del día</label>
+          <select id="calendar_menu_id" name="calendar_menu_id" class="form-select" required disabled>
+            <option value="">— Selecciona un menú —</option>
+          </select>
+        </div>
+      </div>
+
+      {{-- Resumen rápido de selección --}}
+      <div class="mt-3 d-flex gap-2 flex-wrap">
+        <span class="badge bg-primary" id="badgeCategory">Categoría: {{ ucfirst($selectedCategory) }}</span>
+        <span class="badge bg-secondary" id="badgeDiet">Dieta: —</span>
+        <span class="badge bg-info text-dark" id="badgeMenu">Menú: —</span>
+      </div>
+
+      {{-- Hidden para usar luego en el registro --}}
+      <input type="hidden" id="selected_calendar_id" name="selected_calendar_id" value="">
+      <input type="hidden" id="selected_menu_id" name="selected_menu_id" value="">
+    </form>
+  </div>
 </div>
+
+{{-- === SECCIÓN 2: BUSCAR BENEFICIARIO (staff_beneficiaries) === --}}
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="mb-0">Buscar beneficiario</h5>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="beneficiarySearch" class="form-label">Nombre del beneficiario</label>
+        <input type="text" id="beneficiarySearch" class="form-control" placeholder="Escribe al menos 2 letras...">
+        <div class="form-text">Busca por <strong>nombre completo</strong> de beneficiarios activos.</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Coincidencias</label>
+        <ul id="beneficiaryResults" class="list-group" style="max-height: 220px; overflow-y: auto;">
+          {{-- Resultados por JS --}}
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <span class="badge bg-success" id="badgeBeneficiary">Beneficiario: —</span>
+      <input type="hidden" id="selected_beneficiary_id" value="">
+    </div>
+  </div>
+</div>
+
+{{-- === SECCIÓN 3: REGISTRAR ENTREGA === --}}
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="mb-0">Registrar entrega</h5>
+  </div>
+  <div class="card-body">
+    <div class="alert alert-secondary" id="summaryBox">
+      <div><strong>Fecha:</strong> {{ ($today ?? \Carbon\Carbon::today())->format('Y-m-d') }}</div>
+      <div><strong>Tiempo de comida:</strong> <span id="sumCategory">—</span></div>
+      <div><strong>Tipo de dieta:</strong> <span id="sumDiet">—</span></div>
+      <div><strong>Menú:</strong> <span id="sumMenu">—</span></div>
+      <div><strong>Beneficiario:</strong> <span id="sumBeneficiary">—</span></div>
+      <div><strong>Usuario:</strong> <span id="sumUser">{{ auth()->user()->name ?? '—' }}</span></div>
+    </div>
+
+    <div class="row g-3 align-items-end mb-2">
+      <div class="col-md-4">
+        <label class="form-label">Entregado por</label>
+        <input type="text" class="form-control" value="{{ auth()->user()->name ?? '' }}" readonly>
+      </div>
+      <div class="col-md-4">
+        <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+        <input type="password" id="confirmPassword" class="form-control" placeholder="Requerido para confirmar">
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="button" id="btnRegister" class="btn btn-primary" disabled>
+        <i class="ri-check-line"></i> Registrar entrega
+      </button>
+      <button type="button" id="btnClear" class="btn btn-outline-secondary">
+        <i class="ri-close-line"></i> Limpiar selección
+      </button>
+    </div>
+
+    <div class="mt-3">
+      <div id="feedback" class="small"></div>
+    </div>
+  </div>
+</div>
+
+{{-- === SECCIÓN 4: ENTREGAS DE HOY (según selección de tiempo de comida) === --}}
+<div class="card mt-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Entregas de hoy</h5>
+    <span class="small text-muted">Filtrado por tiempo de comida seleccionado</span>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle">
+        <thead>
+          <tr>
+            <th style="width: 36px;">#</th>
+            <th>Beneficiario</th>
+            <th>Menú</th>
+            <th>Hora</th>
+            <th>Entregado por</th> {{-- nueva --}}
+          </tr>
+        </thead>
+        <tbody id="deliveriesTbody">
+          <tr><td colspan="5" class="text-muted">Sin datos…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 @endsection
 
-@section('js')
+@push('scripts')
 <script>
-const routes = {
-    search: "{{ route('staff_meals.search_beneficiaries') }}",
-    suggest: "{{ route('staff_meals.suggest_menus') }}",
-    store: "{{ route('staff_meals.store') }}"
-};
+(function() {
+  // === DOM refs ===
+  const $category  = document.getElementById('category');
+  const $dietType  = document.getElementById('diet_type');
+  const $menuSel   = document.getElementById('calendar_menu_id');
 
-function showAlert(type, msg) {
-    const box = document.getElementById('alertBox');
-    box.className = 'alert alert-' + type;
-    box.textContent = msg;
-    box.classList.remove('d-none');
-    setTimeout(() => box.classList.add('d-none'), 3500);
-}
+  const $badgeCategory = document.getElementById('badgeCategory');
+  const $badgeDiet     = document.getElementById('badgeDiet');
+  const $badgeMenu     = document.getElementById('badgeMenu');
 
-async function fetchJSON(url) {
-    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
-}
+  const $selectedCalendar = document.getElementById('selected_calendar_id');
+  const $selectedMenuId   = document.getElementById('selected_menu_id');
 
-async function loadMenus() {
-    const mealType = document.getElementById('mealType').value;
-    const menuSel = document.getElementById('menuId');
-    menuSel.innerHTML = '<option value="">Cargando…</option>';
+  const $beneficiarySearch  = document.getElementById('beneficiarySearch');
+  const $beneficiaryResults = document.getElementById('beneficiaryResults');
+  const $badgeBeneficiary   = document.getElementById('badgeBeneficiary');
+  const $selectedBenefId    = document.getElementById('selected_beneficiary_id');
+
+  const $sumCategory = document.getElementById('sumCategory');
+  const $sumDiet     = document.getElementById('sumDiet');
+  const $sumMenu     = document.getElementById('sumMenu');
+  const $sumBenef    = document.getElementById('sumBeneficiary');
+
+  const $btnRegister = document.getElementById('btnRegister');
+  const $btnClear    = document.getElementById('btnClear');
+  const $feedback    = document.getElementById('feedback');
+
+  const $deliveriesTbody = document.getElementById('deliveriesTbody');
+  const $confirmPassword = document.getElementById('confirmPassword');
+
+  // === Constantes ===
+  const TODAY = @json(($today ?? \Carbon\Carbon::today())->format('Y-m-d'));
+
+  // Rutas backend
+  const ROUTE_DIET_TYPES     = @json(route('staff_meals.diet-types'));
+  const ROUTE_MENUS_TODAY    = @json(route('staff_meals.menus-today'));
+  const ROUTE_SEARCH_BENEF   = @json(route('staff_meals.search-beneficiaries'));
+  const ROUTE_DELIVER        = @json(route('staff_meals.deliver'));
+  const ROUTE_LIST           = @json(route('staff_meals.list-deliveries'));
+
+  // === Utilitarios ===
+  function setBadge(el, label, value) {
+    el.textContent = `${label}: ${value || '—'}`;
+  }
+  function resetMenu() {
+    $menuSel.innerHTML = '<option value="">— Selecciona un menú —</option>';
+    $menuSel.disabled = true;
+    setBadge($badgeMenu, 'Menú', '—');
+    $selectedCalendar.value = '';
+    $selectedMenuId.value = '';
+    $sumMenu.textContent = '—';
+  }
+  function updateSummary() {
+    const cat = $category.value;
+    const diet = $dietType.value;
+    const menuText = $menuSel.options[$menuSel.selectedIndex]?.text || '—';
+    const benefText = $badgeBeneficiary.textContent.replace('Beneficiario: ', '') || '—';
+    $sumCategory.textContent = cat ? cat.charAt(0).toUpperCase() + cat.slice(1) : '—';
+    $sumDiet.textContent     = diet || '—';
+    $sumMenu.textContent     = menuText;
+    $sumBenef.textContent    = benefText;
+    $btnRegister.disabled = !($selectedMenuId.value && $selectedBenefId.value && $confirmPassword.value.length > 0);
+  }
+  function showFeedback(msg, ok=true) {
+    $feedback.className = 'small ' + (ok ? 'text-success' : 'text-danger');
+    $feedback.textContent = msg;
+  }
+  function clearFeedback() {
+    $feedback.textContent = '';
+    $feedback.className = 'small';
+  }
+
+  // === Cargar diet types por categoría ===
+  async function loadDietTypes() {
+    const category = $category.value;
+    setBadge($badgeCategory, 'Categoría', category ? category.charAt(0).toUpperCase() + category.slice(1) : '—');
+
+    $dietType.innerHTML = '<option value="">Cargando...</option>';
+    $dietType.disabled = true;
+
     try {
-        const data = await fetchJSON(`${routes.menus}?meal_type=${encodeURIComponent(mealType)}`);
-        menuSel.innerHTML = '<option value="">-- Selecciona --</option>';
-        data.forEach(m => {
-            const opt = document.createElement('option');
-            opt.value = m.id;
-            opt.textContent = m.name;
-            menuSel.appendChild(opt);
-        });
-        document.getElementById('mealTypeLabel').textContent = mealType;
+      const url = new URL(ROUTE_DIET_TYPES, window.location.origin);
+      url.searchParams.set('category', category);
+
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const data = await res.json(); // ['libre','blanda',...]
+
+      $dietType.innerHTML = '<option value="">— Selecciona tipo de dieta —</option>';
+      (data || []).forEach(dt => {
+        const opt = document.createElement('option');
+        opt.value = dt;
+        opt.textContent = dt;
+        $dietType.appendChild(opt);
+      });
+
+      $dietType.disabled = false;
+      setBadge($badgeDiet, 'Dieta', '—');
+      resetMenu();
+      updateSummary();
+      loadDeliveries(); // recarga tabla por cambio de categoría
     } catch (e) {
-        menuSel.innerHTML = '<option value="">Error cargando menús</option>';
+      console.error(e);
+      $dietType.innerHTML = '<option value="">No se pudieron cargar tipos</option>';
     }
-}
+  }
 
-/* ===== Autocompletado por nombre ===== */
-let searchTimer = null;
+  // === Cargar menús del día por categoría + diet_type ===
+  async function loadMenusToday() {
+    const category = $category.value;
+    const dietType = $dietType.value;
 
-function clearSuggestions() {
-    const box = document.getElementById('beneficiarySuggestions');
-    box.innerHTML = '';
-    box.classList.add('d-none');
-}
+    setBadge($badgeDiet, 'Dieta', dietType || '—');
 
-function showSuggestions(items) {
-    const box = document.getElementById('beneficiarySuggestions');
-    box.innerHTML = '';
+    if (!category || !dietType) {
+      resetMenu();
+      updateSummary();
+      return;
+    }
 
-    items.forEach(item => {
-        const a = document.createElement('a');
-        a.href = '#';
-        a.className = 'list-group-item list-group-item-action';
-        a.textContent = item.name;
-        a.dataset.id = item.id;
-        a.addEventListener('click', (ev) => {
-            ev.preventDefault();
-            document.getElementById('beneficiarySearch').value = item.name;
-            document.getElementById('beneficiaryId').value = item.id;
-            clearSuggestions();
-        });
-        box.appendChild(a);
-    });
+    $menuSel.innerHTML = '<option value="">Cargando...</option>';
+    $menuSel.disabled = true;
 
-    box.classList.toggle('d-none', items.length === 0);
-}
+    try {
+      const url = new URL(ROUTE_MENUS_TODAY, window.location.origin);
+      url.searchParams.set('category', category);
+      url.searchParams.set('diet_type', dietType);
+      url.searchParams.set('date', TODAY);
 
-async function onBeneficiaryInput() {
-    const q = document.getElementById('beneficiarySearch').value.trim();
-    document.getElementById('beneficiaryId').value = ''; // reset ID si cambia el texto
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      // Esperado: [{id: calendar_id, menu_id: uuid, text: 'Nombre'}, ...]
+      const data = await res.json();
 
+      $menuSel.innerHTML = '<option value="">— Selecciona un menú —</option>';
+      (data || []).forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;                // calendar_id (opcional)
+        opt.textContent = item.text;
+        opt.dataset.menuId = item.menu_id;  // ← guardamos menu_id aquí
+        $menuSel.appendChild(opt);
+      });
+
+      $menuSel.disabled = false;
+      setBadge($badgeMenu, 'Menú', '—');
+      $selectedCalendar.value = '';
+      $selectedMenuId.value = '';
+      updateSummary();
+    } catch (e) {
+      console.error(e);
+      $menuSel.innerHTML = '<option value="">No se pudieron cargar menús</option>';
+      setBadge($badgeMenu, 'Menú', '—');
+      $selectedCalendar.value = '';
+      $selectedMenuId.value = '';
+      updateSummary();
+    }
+  }
+
+  // Eventos de selects
+  $category.addEventListener('change', () => { loadDietTypes(); clearFeedback(); });
+  $dietType.addEventListener('change', () => { loadMenusToday(); clearFeedback(); });
+  $menuSel?.addEventListener('change', () => {
+    const text = $menuSel.options[$menuSel.selectedIndex]?.text || '—';
+    const menuId = $menuSel.options[$menuSel.selectedIndex]?.dataset?.menuId || '';
+    setBadge($badgeMenu, 'Menú', text);
+    $selectedCalendar.value = $menuSel.value || '';
+    $selectedMenuId.value   = menuId || '';
+    updateSummary();
+    clearFeedback();
+  });
+
+  // Init
+  loadDietTypes();
+
+  // === BÚSQUEDA DE BENEFICIARIOS ===
+  let beneficiaryTimeout = null;
+
+  $beneficiarySearch.addEventListener('keyup', function () {
+    const q = this.value.trim();
     if (q.length < 2) {
-        clearSuggestions();
-        return;
+      $beneficiaryResults.innerHTML = '';
+      setBadge($badgeBeneficiary, 'Beneficiario', '—');
+      $selectedBenefId.value = '';
+      updateSummary();
+      return;
     }
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(async () => {
-        try {
-            const data = await fetchJSON(`${routes.search}?q=${encodeURIComponent(q)}`);
-            if (!data.length) {
-                clearSuggestions();
-                return;
-            }
-            showSuggestions(data);
-        } catch (e) {
-            clearSuggestions();
-        }
-    }, 250);
-}
+    clearTimeout(beneficiaryTimeout);
+    beneficiaryTimeout = setTimeout(() => searchBeneficiaries(q), 300);
+  });
 
-/* Cerrar sugerencias si hace clic fuera */
-document.addEventListener('click', (e) => {
-    const box = document.getElementById('beneficiarySuggestions');
-    const input = document.getElementById('beneficiarySearch');
-    if (!box.contains(e.target) && e.target !== input) {
-        clearSuggestions();
-    }
-});
-
-/* ===================================== */
-
-async function loadTodayTable() {
-    const mealType = document.getElementById('mealType').value;
-    const tbody = document.getElementById('deliveriesTbody');
-    tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Cargando…</td></tr>';
+  async function searchBeneficiaries(query) {
     try {
-        const data = await fetchJSON(`${routes.today}?meal_type=${encodeURIComponent(mealType)}`);
-        if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Sin entregas registradas hoy.</td></tr>';
-            return;
-        }
-        tbody.innerHTML = '';
-        data.forEach(r => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${r.beneficiary ?? ''}</td>
-                <td>${r.position ?? ''}</td>
-                <td>${r.menu ?? ''}</td>
-                <td>${r.delivered_by ?? ''}</td>
-                <td>${r.delivered_at ?? ''}</td>
-                <td>${r.notes ?? ''}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+      const url = new URL(ROUTE_SEARCH_BENEF, window.location.origin);
+      url.searchParams.set('q', query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const data = await res.json(); // [{id, full_name}, ...]
+
+      $beneficiaryResults.innerHTML = '';
+      if (!data || !data.length) {
+        $beneficiaryResults.innerHTML = '<li class="list-group-item text-muted">Sin resultados</li>';
+        return;
+      }
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item list-group-item-action';
+        li.textContent = item.full_name;
+        li.title = 'Seleccionar beneficiario';
+        li.dataset.id = item.id;
+        li.addEventListener('click', () => selectBeneficiary(item));
+        $beneficiaryResults.appendChild(li);
+      });
     } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-danger">Error cargando entregas.</td></tr>';
+      console.error(e);
     }
-}
+  }
 
-async function confirmDelivery() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-    const payload = {
-        meal_type: document.getElementById('mealType').value,
-        menu_id: document.getElementById('menuId').value,
-        beneficiary_id: document.getElementById('beneficiaryId').value, // <- viene del hidden
-        notes: document.getElementById('notes').value.trim(),
-    };
+  function selectBeneficiary(item) {
+    setBadge($badgeBeneficiary, 'Beneficiario', item.full_name);
+    $selectedBenefId.value = item.id;
+    updateSummary();
+    clearFeedback();
+  }
 
-    if (!payload.menu_id)        return showAlert('warning', 'Selecciona un menú.');
-    if (!payload.beneficiary_id) return showAlert('warning', 'Selecciona un beneficiario de la lista.');
+  // Habilitar/deshabilitar botón cuando el usuario escribe la contraseña
+  document.getElementById('confirmPassword').addEventListener('input', updateSummary);
 
-    const res = await fetch(routes.store, {
+  // === REGISTRAR ENTREGA ===
+  $btnRegister.addEventListener('click', async function () {
+    clearFeedback();
+
+    const benefId  = $selectedBenefId.value;
+    const mealType = $category.value;       // desayuno | almuerzo | cena
+    const date     = TODAY;                 // fecha del header
+    const menuId   = $selectedMenuId.value; // obligatorio
+    const pwd      = $confirmPassword.value;
+
+    if (!mealType)  { showFeedback('Selecciona el tiempo de comida.', false); return; }
+    if (!menuId)    { showFeedback('Selecciona el menú del día.', false); return; }
+    if (!benefId)   { showFeedback('Selecciona un beneficiario.', false); return; }
+    if (!pwd)       { showFeedback('Ingresa tu contraseña para confirmar.', false); return; }
+
+    const token = document.querySelector('input[name="_token"]')?.value || '';
+    $btnRegister.disabled = true;
+
+    try {
+      const res = await fetch(ROUTE_DELIVER, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': token,
-            'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': token,
         },
-        body: JSON.stringify(payload),
-    });
+        body: JSON.stringify({
+          staff_beneficiary_id: benefId,
+          meal_type: mealType,
+          delivery_date: date,
+          menu_id: menuId,
+          confirm_password: pwd, // ← se valida en backend con current_password
+        })
+      });
 
-    if (!res.ok) {
-        const msg = await res.text();
-        return showAlert('danger', 'Error al registrar: ' + msg);
+      const data = await res.json();
+
+      if (!res.ok) {
+        showFeedback(data?.message || 'No se pudo registrar la entrega.', false);
+      } else {
+        showFeedback(data?.message || 'Entrega registrada con éxito.', true);
+        // limpiar solo la contraseña
+        $confirmPassword.value = '';
+        updateSummary();
+        // recargar tabla
+        await loadDeliveries();
+      }
+    } catch (e) {
+      console.error(e);
+      showFeedback('Error de red al registrar la entrega.', false);
+    } finally {
+      $btnRegister.disabled = false;
     }
-    const data = await res.json();
-    if (data.ok) {
-        showAlert('success', data.message);
-        // limpiar campos
-        document.getElementById('notes').value = '';
-        document.getElementById('beneficiarySearch').value = '';
-        document.getElementById('beneficiaryId').value = '';
-        clearSuggestions();
-        await loadTodayTable();
-    } else {
-        showAlert('danger', data.message ?? 'Error desconocido');
+  });
+
+  $btnClear.addEventListener('click', () => {
+    $dietType.value = '';
+    resetMenu();
+    setBadge($badgeDiet, 'Dieta', '—');
+
+    setBadge($badgeBeneficiary, 'Beneficiario', '—');
+    $selectedBenefId.value = '';
+    $beneficiarySearch.value = '';
+    $beneficiaryResults.innerHTML = '';
+
+    document.getElementById('confirmPassword').value = '';
+
+    updateSummary();
+    clearFeedback();
+    loadDeliveries();
+  });
+
+  // === TABLA: ENTREGAS DE HOY (según selección de tiempo de comida) ===
+  async function loadDeliveries() {
+    const mealType = $category.value || 'desayuno';
+    const url = new URL(ROUTE_LIST, window.location.origin);
+    url.searchParams.set('date', TODAY);
+    url.searchParams.set('meal_type', mealType);
+
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const data = await res.json(); // [{id, beneficiary, menu_name, delivered_at, delivered_by_name}]
+      $deliveriesTbody.innerHTML = '';
+
+      if (!data || !data.length) {
+        $deliveriesTbody.innerHTML = '<tr><td colspan="5" class="text-muted">Sin datos…</td></tr>';
+        return;
+      }
+
+      data.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${row.beneficiary}</td>
+          <td>${row.menu_name}</td>
+          <td>${row.delivered_at}</td>
+          <td>${row.delivered_by_name}</td>
+        `;
+        $deliveriesTbody.appendChild(tr);
+      });
+    } catch (e) {
+      console.error(e);
+      $deliveriesTbody.innerHTML = '<tr><td colspan="5" class="text-danger">Error al cargar</td></tr>';
     }
-}
+  }
 
-function resetAll() {
-    document.getElementById('menuId').value = '';
-    document.getElementById('beneficiarySearch').value = '';
-    document.getElementById('beneficiaryId').value = '';
-    clearSuggestions();
-    document.getElementById('notes').value = '';
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('mealType').addEventListener('change', async () => {
-        await loadMenus();
-        await loadTodayTable();
-    });
-    document.getElementById('beneficiarySearch').addEventListener('input', onBeneficiaryInput);
-    document.getElementById('btnConfirm').addEventListener('click', confirmDelivery);
-    document.getElementById('btnReset').addEventListener('click', resetAll);
-
-    await loadTodayTable(); // primera carga
-});
+  // Cargar tabla al entrar y al cambiar categoría
+  document.addEventListener('DOMContentLoaded', loadDeliveries);
+})();
 </script>
-@endsection
-
-@push('css')
-<style>
-#beneficiarySuggestions.list-group > a {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-</style>
 @endpush
