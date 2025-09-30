@@ -144,9 +144,9 @@ class CalendarController extends Controller
         foreach ($calendars as $cal) {
             if ($cal->menu) {
                 $color = match ($cal->menu->category) {
-                    'desayuno' => 'blue',
-                    'almuerzo' => 'orange',
-                    'cena'     => 'green',
+                    'Desayuno' => 'blue',
+                    'Almuerzo' => 'orange',
+                    'Cena'     => 'green',
                 };
                 $events[] = [
                     'date'  => $cal->date->format('Y-m-d'),

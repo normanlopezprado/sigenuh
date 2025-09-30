@@ -53,8 +53,9 @@
                         <i class="ri-book-line"></i>
                     </div>
                     <div>
-                        <span class="mb-2 fs-12 text-muted">Total Courses</span>
+                        <span class="mb-2 fs-12 text-muted">Menús</span>
                         <h5 class="fw-medium mb-1">30</h5>
+                        @include('calendars.dia', ['fecha' => \Carbon\Carbon::today()->toDateString()])
                     </div>
                 </div>
                 <div class="card-body bg-light py-2 bg-opacity-40 hstack justify-content-between gap-3">
