@@ -26,12 +26,11 @@ return new class extends Migration {
             $table->uuid('menu_id');
             $table->foreign('menu_id')->references('id')->on('menus');
 
-            // users.id: si users es UUID, usa uuid; si es BIGINT, cambia a foreignId
             $table->uuid('delivered_by');
             $table->foreign('delivered_by')->references('id')->on('users');
 
             $table->timestamp('delivered_at')->useCurrent();
-            $table->date('delivery_date')->storedAs('DATE(`delivered_at`)');
+            $table->date('delivery_date');
             $table->text('notes')->nullable();
 
             $table->timestamps();
