@@ -104,22 +104,11 @@
         <div class="col-md-6 col-xl-4">
             <div class="card">
                 <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h6 class="card-title mb-0">Leave Application</h6>
-                    <div class="dropdown">
-                        <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="ri-more-2-fill"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#!">Approve All</a></li>
-                            <li><a class="dropdown-item" href="#!">Reject All</a></li>
-                            <li><a class="dropdown-item" href="#!">View Report</a></li>
-                        </ul>
-                    </div>
+                    <h6 class="card-title mb-0">Calendario de menús</h6>
+
                 </div>
-                <div class="card-body">
-                    <div class="full-picker full-picker-scrollable">
-                        <input type="text" class="form-control d-none" id="inline-date-picker" placeholder="Select a date">
-                    </div>
+                <div class="card-body calendarContainer" style="height: 558px;">
+                    @include('calendars.show')
                 </div>
             </div>
             <div class="swiper leave-application-swiper">
