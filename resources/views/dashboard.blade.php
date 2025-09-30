@@ -53,7 +53,7 @@
                         <i class="ri-book-line"></i>
                     </div>
                     <div>
-                        <span class="mb-2 fs-12 text-muted">Total Courses</span>
+                        <span class="mb-2 fs-12 text-muted">Menús</span>
                         <h5 class="fw-medium mb-1">30</h5>
                     </div>
                 </div>
@@ -111,162 +111,16 @@
                     @include('calendars.show')
                 </div>
             </div>
-            <div class="swiper leave-application-swiper">
-                <div class="swiper-wrapper">
-                    <!-- First leave application (already existing) -->
-                    <div class="swiper-slide">
-                        <div class="card mb-0 border border-light">
-                            <div class="card-body p-3">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div class="hstack gap-2 overflow-hidden">
-                                        <img class="avatar-lg avatar-item rounded-2 border-0" src="{{ asset('assets/images/avatar/avatar-1.jpg') }}" alt="student">
-                                        <div class="overflow-hidden">
-                                            <h6 class="hstack gap-2 mb-1 text-truncate">
-                                                <a href="#!">James</a><span class="badge bg-danger-subtle text-danger">Emergency</span>
-                                            </h6>
-                                            <p class="text-truncate text-muted fs-13 mb-0">Physics Teacher</p>
-                                        </div>
-                                    </div>
-                                    <div class="hstack gap-2">
-                                        <a href="#!" class="btn icon-btn-sm btn-success"><i class="ri-check-double-line"></i></a>
-                                        <a href="#!" class="btn icon-btn-sm btn-danger"><i class="ri-close-line"></i></a>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
-                                    <p class="mb-0 text-muted fs-12">Leave : <span class="fw-semibold text-body">12 -13 May</span></p>
-                                    <p class="mb-0 text-muted fs-12">Apply on : <span class="fw-semibold text-body">12 May</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Second leave application -->
-                    <div class="swiper-slide">
-                        <div class="card mb-0 border border-light">
-                            <div class="card-body p-3">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div class="hstack gap-2 overflow-hidden">
-                                        <img class="avatar-lg avatar-item rounded-2 border-0" src="{{ asset('assets/images/avatar/avatar-2.jpg') }}" alt="student">
-                                        <div class="overflow-hidden">
-                                            <h6 class="hstack gap-2 mb-1 text-truncate">
-                                                <a href="#!">Sophia</a><span class="badge bg-warning-subtle text-warning">Sick</span>
-                                            </h6>
-                                            <p class="text-truncate text-muted fs-13 mb-0">Mathematics Teacher</p>
-                                        </div>
-                                    </div>
-                                    <div class="hstack gap-2">
-                                        <a href="#!" class="btn icon-btn-sm btn-success"><i class="ri-check-double-line"></i></a>
-                                        <a href="#!" class="btn icon-btn-sm btn-danger"><i class="ri-close-line"></i></a>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
-                                    <p class="mb-0 text-muted fs-12">Leave : <span class="fw-semibold text-body">15 - 16 May</span></p>
-                                    <p class="mb-0 text-muted fs-12">Apply on : <span class="fw-semibold text-body">14 May</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Third leave application -->
-                    <div class="swiper-slide">
-                        <div class="card mb-0 border border-light">
-                            <div class="card-body p-3">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div class="hstack gap-2 overflow-hidden">
-                                        <img class="avatar-lg avatar-item rounded-2 border-0" src="{{ asset('assets/images/avatar/avatar-3.jpg') }}" alt="student">
-                                        <div class="overflow-hidden">
-                                            <h6 class="hstack gap-2 mb-1 text-truncate">
-                                                <a href="#!">Liam</a><span class="badge bg-info-subtle text-info">Personal</span>
-                                            </h6>
-                                            <p class="text-truncate text-muted fs-13 mb-0">Computer Science Teacher</p>
-                                        </div>
-                                    </div>
-                                    <div class="hstack gap-2">
-                                        <a href="#!" class="btn icon-btn-sm btn-success"><i class="ri-check-double-line"></i></a>
-                                        <a href="#!" class="btn icon-btn-sm btn-danger"><i class="ri-close-line"></i></a>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
-                                    <p class="mb-0 text-muted fs-12">Leave : <span class="fw-semibold text-body">18 - 20 May</span></p>
-                                    <p class="mb-0 text-muted fs-12">Apply on : <span class="fw-semibold text-body">17 May</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Fourth leave application -->
-                    <div class="swiper-slide">
-                        <div class="card mb-0 border border-light">
-                            <div class="card-body p-3">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div class="hstack gap-2 overflow-hidden">
-                                        <img class="avatar-lg avatar-item rounded-2 border-0" src="{{ asset('assets/images/avatar/avatar-4.jpg') }}" alt="student">
-                                        <div class="overflow-hidden">
-                                            <h6 class="hstack gap-2 mb-1 text-truncate">
-                                                <a href="#!">Oliver</a><span class="badge bg-success-subtle text-success">Vacation</span>
-                                            </h6>
-                                            <p class="text-truncate text-muted fs-13 mb-0">History Teacher</p>
-                                        </div>
-                                    </div>
-                                    <div class="hstack gap-2">
-                                        <a href="#!" class="btn icon-btn-sm btn-success"><i class="ri-check-double-line"></i></a>
-                                        <a href="#!" class="btn icon-btn-sm btn-danger"><i class="ri-close-line"></i></a>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
-                                    <p class="mb-0 text-muted fs-12">Leave : <span class="fw-semibold text-body">25 - 27 May</span></p>
-                                    <p class="mb-0 text-muted fs-12">Apply on : <span class="fw-semibold text-body">24 May</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Fifth leave application -->
-                    <div class="swiper-slide">
-                        <div class="card mb-0 border border-light">
-                            <div class="card-body p-3">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div class="hstack gap-2 overflow-hidden">
-                                        <img class="avatar-lg avatar-item rounded-2 border-0" src="{{ asset('assets/images/avatar/avatar-5.jpg') }}" alt="student">
-                                        <div class="overflow-hidden">
-                                            <h6 class="hstack gap-2 mb-1 text-truncate">
-                                                <a href="#!">Emma</a><span class="badge bg-primary-subtle text-primary">Training</span>
-                                            </h6>
-                                            <p class="text-truncate text-muted fs-13 mb-0">Chemistry Teacher</p>
-                                        </div>
-                                    </div>
-                                    <div class="hstack gap-2">
-                                        <a href="#!" class="btn icon-btn-sm btn-success"><i class="ri-check-double-line"></i></a>
-                                        <a href="#!" class="btn icon-btn-sm btn-danger"><i class="ri-close-line"></i></a>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
-                                    <p class="mb-0 text-muted fs-12">Leave : <span class="fw-semibold text-body">1 - 3 June</span></p>
-                                    <p class="mb-0 text-muted fs-12">Apply on : <span class="fw-semibold text-body">30 May</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="col-md-6 col-xl-4">
             <div class="card h-100 mb-0">
                 <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Weekly Activity Overview</h5>
-                    <div class="dropdown">
-                        <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="ri-more-2-fill"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#!">Refresh</a></li>
-                            <li><a class="dropdown-item" href="#!">View Full Report</a></li>
-                        </ul>
-                    </div>
+                    <h5 class="card-title mb-0">Menú de hoy</h5>
                 </div>
                 <div class="card-body">
-                    <div id="orderAnalyticsDashboard" class="apexcharts-container apexcharts-white"></div>
+                    @include('calendars.dia', ['fecha' => \Carbon\Carbon::today()->toDateString()])
                     <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
 
                     <div class="row g-4">
@@ -291,142 +145,56 @@
         <div class="col-md-6 col-xl-4">
             <div class="card h-100 mb-0">
                 <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Top Categories</h5>
-                    <div class="dropdown">
-                        <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="ri-more-2-fill"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#!">Add Category</a></li>
-                            <li><a class="dropdown-item" href="#!">Edit Categories</a></li>
-                            <li><a class="dropdown-item" href="#!">Generate Report</a></li>
-                        </ul>
-                    </div>
+                    <h5 class="card-title mb-0">Menú de mañana</h5>
                 </div>
-                <div class="card-body p-0 online-course-scroll" data-simplebar>
-                    <ul class="d-flex flex-column list-group">
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-primary bg-primary-subtle">
-                                    <i class="ri-dashboard-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">UI / UX Design</h6>
-                                    <p class="fs-12 text-muted mb-0">10,000 + Courses</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$199.99</span>
-                            </div>
-                        </li>
+                <div class="card-body">
+                    @include('calendars.dia',  ['fecha' => \Carbon\Carbon::tomorrow()->toDateString()])
+                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
 
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-secondary bg-secondary-subtle">
-                                    <i class="ri-brush-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">UI/UX Design & Development</h6>
-                                    <p class="fs-12 text-muted mb-0">25,000+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$299.99</span>
+                    <div class="row g-4">
+                        <div class="col-6">
+                            <div class="p-4 rounded bg-light bg-opacity-40">
+                                <span class="text-muted fs-12">Total Active Hours</span>
+                                <h6 class="mt-1 mb-0">35 hrs</h6>
                             </div>
-                        </li>
-
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-success bg-success-subtle">
-                                    <i class="ri-code-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">Full Stack Web Development</h6>
-                                    <p class="fs-12 text-muted mb-0">18,500+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$249.99</span>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-4 rounded bg-light bg-opacity-40">
+                                <span class="text-muted fs-12">Active Days</span>
+                                <h6 class="mt-1 mb-0">5 Days</h6>
                             </div>
-                        </li>
+                        </div>
+                    </div>
 
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-danger bg-danger-subtle">
-                                    <i class="ri-database-2-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">Database Management & SQL</h6>
-                                    <p class="fs-12 text-muted mb-0">22,000+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$199.99</span>
-                            </div>
-                        </li>
-
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-warning bg-warning-subtle">
-                                    <i class="ri-smartphone-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">Mobile App Development</h6>
-                                    <p class="fs-12 text-muted mb-0">15,000+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$249.99</span>
-                            </div>
-                        </li>
-
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-primary bg-primary-subtle">
-                                    <i class="ri-search-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">Digital Marketing & SEO</h6>
-                                    <p class="fs-12 text-muted mb-0">12,500+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$179.99</span>
-                            </div>
-                        </li>
-
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-info bg-info-subtle">
-                                    <i class="ri-camera-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">Photography & Video Editing</h6>
-                                    <p class="fs-12 text-muted mb-0">8,500+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$159.99</span>
-                            </div>
-                        </li>
-
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-danger bg-danger-subtle">
-                                    <i class="ri-robot-line fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">Artificial Intelligence & Machine Learning</h6>
-                                    <p class="fs-12 text-muted mb-0">20,000+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$299.99</span>
-                            </div>
-                        </li>
-
-                        <li class="list-group-item list-group-item-action border-0">
-                            <div class="hstack">
-                                <span class="avatar avatar-item border-0 rounded-3 flex-shrink-0 text-primary bg-primary-subtle">
-                                    <i class="bi bi-shield-lock fs-20 leading-none"></i>
-                                </span>
-                                <div class="ms-3 flex-grow-1">
-                                    <h6 class="fw-semibold mb-0">Cybersecurity & Ethical Hacking</h6>
-                                    <p class="fs-12 text-muted mb-0">17,500+ Enrollments</p>
-                                </div>
-                                <span class="fs-14 fw-medium flex-shrink-0">$279.99</span>
-                            </div>
-                        </li>
-
-                    </ul>
                 </div>
             </div>
         </div>
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-100 mb-0">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <h5 class="card-title mb-0">Menú de Pasado Mañana</h5>
+                </div>
+                <div class="card-body">
+                    @include('calendars.dia', ['fecha' => \Carbon\Carbon::today()->addDays(2)->toDateString()])
+                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
+                    <div class="row g-4">
+                        <div class="col-6">
+                            <div class="p-4 rounded bg-light bg-opacity-40">
+                                <span class="text-muted fs-12">Total Active Hours</span>
+                                <h6 class="mt-1 mb-0">35 hrs</h6>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-4 rounded bg-light bg-opacity-40">
+                                <span class="text-muted fs-12">Active Days</span>
+                                <h6 class="mt-1 mb-0">5 Days</h6>
+                            </div>
+                        </div>
+                    </div>
 
+                </div>
+            </div>
+        </div>
         <div class="col-md-6">
             <div class="card h-100 mb-0">
                 <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
