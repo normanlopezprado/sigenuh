@@ -213,26 +213,25 @@ Route::middleware(['auth','verified'])->group(function () {
 
 //entregas
 Route::middleware(['auth'])->group(function () {
-    // Pantalla rápida para registrar entregas
     Route::get('staff_meals/delivery', [StaffMealController::class, 'delivery'])
         ->name('staff_meals.delivery');
 
-    // Búsqueda de beneficiarios (AJAX)
+    // Opciones dinámicas (JSON)
+    Route::get('staff_meals/options/diet-types', [StaffMealController::class, 'dietTypes'])
+        ->name('staff_meals.diet-types');
+
+    Route::get('staff_meals/options/menus-today', [StaffMealController::class, 'menusToday'])
+        ->name('staff_meals.menus-today');
+
+    // Búsqueda de beneficiarios (JSON)
     Route::get('staff_meals/search-beneficiaries', [StaffMealController::class, 'searchBeneficiaries'])
-        ->name('staff_meals.search_beneficiaries');
+        ->name('staff_meals.search-beneficiaries');
 
-    // (Opcional) sugerencias de menú por tipo (si no tienes columnas, devuelve vacío y usa texto libre)
-    Route::get('staff_meals/suggest-menus', [StaffMealController::class, 'suggestMenus'])
-        ->name('staff_meals.suggest_menus');
+    // Registrar entrega
+    Route::post('staff_meals/deliver', [StaffMealController::class, 'deliver'])
+        ->name('staff_meals.deliver');
 
-    // Guardar entrega
-    Route::post('staff_meals', [StaffMealController::class, 'store'])
-        ->name('staff_meals.store');
-
-    // Historial y anulación
-    Route::get('staff_meals', [StaffMealController::class, 'index'])
-        ->name('staff_meals.index');
-
-    Route::delete('staff_meals/{record}', [StaffMealController::class, 'destroy'])
-        ->name('staff_meals.destroy');
+    // Listado entregas del día (para la tabla)
+    Route::get('staff_meals/list-deliveries', [StaffMealController::class, 'listDeliveries'])
+        ->name('staff_meals.list-deliveries');
 });
