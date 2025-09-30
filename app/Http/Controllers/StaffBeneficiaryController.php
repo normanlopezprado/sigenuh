@@ -17,13 +17,19 @@ class StaffBeneficiaryController extends Controller
         $hospitalId = $user->hospital_selected ?? null;
 
         $beneficiaries = \App\Models\StaffBeneficiary::with('hospital:id,name')
-            ->when($hospitalId, fn($q) => $q->where('hospital_id', $hospitalId))
+            ->when($hospitalId, function ($q) use ($hospitalId) {
+                $q->where(function ($qq) use ($hospitalId) {
+                    $qq->where('hospital_id', $hospitalId)
+                    ->orWhereNull('hospital_id'); 
+                });
+            })
             ->when(!$showInactive, fn($q) => $q->where('status', 1))
             ->orderBy('full_name')
             ->get();
 
         return view('staff_beneficiaries.index', compact('beneficiaries', 'showInactive'));
     }
+
 
 
     /**
@@ -112,11 +118,11 @@ class StaffBeneficiaryController extends Controller
             'job_title' => ['nullable','string','max:120'],
         ]);
 
-        $user = $request->user();
+        $user       = $request->user();
         $hospitalId = $user->hospital_selected ?? null;
 
         // ¿Existe activo con mismo nombre y hospital?
-        $existsActive = \App\Models\StaffBeneficiary::where([
+        $existsActive = StaffBeneficiary::where([
             ['full_name', '=', $data['full_name']],
             ['hospital_id', '=', $hospitalId],
             ['status', '=', 1],
@@ -127,6 +133,18 @@ class StaffBeneficiaryController extends Controller
                 'full_name' => 'Ya existe un beneficiario activo con este nombre en este hospital.'
             ])->withInput();
         }
+
+        
+        StaffBeneficiary::create([
+            'hospital_id' => $hospitalId, 
+            'full_name'   => $data['full_name'],
+            'job_title'   => $data['job_title'] ?? null,
+            'status'      => true,
+        ]);
+
+        return redirect()
+            ->route('staff-beneficiaries.index')
+            ->with('success', 'Beneficiario creado.');
     }
 
     
