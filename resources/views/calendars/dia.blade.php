@@ -8,20 +8,30 @@
         $fechaISO = now()->toDateString();
     }
 
-    $calendars = \App\Models\Calendar::with([
+    $calendars = \App\Models\Calendar::query()
+    ->with([
         'menu',
         'menu.menuIngredients.ingredient',
         'optionalMenuIngredients.ingredient',
     ])
-    ->whereDate('date', $fechaISO)
-    ->orderBy('date')
+    ->whereDate('calendars.date', $fechaISO)
+    ->join('menus', 'calendars.menu_id', '=', 'menus.id')
+    ->orderByRaw("
+        CASE menus.category
+            WHEN 'Desayuno' THEN 1
+            WHEN 'Almuerzo' THEN 2
+            WHEN 'Cena' THEN 3
+            ELSE 4
+        END
+    ")
+    ->orderBy('calendars.date')
+    ->select('calendars.*')
     ->get();
 @endphp
 
 <div class="card">
     <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="mb-0">Menús del día — {{ \Carbon\Carbon::parse($fechaISO)->locale('es')->isoFormat('dddd D [de] MMMM YYYY') }}</h5>
-        <a href="{{ route('calendars.create', ['date' => $fechaISO]) }}" class="btn btn-sm btn-primary">➕ Crear menú</a>
+        <h6 class="mb-0">Menús del día — {{ \Carbon\Carbon::parse($fechaISO)->locale('es')->isoFormat('dddd D [de] MMMM YYYY') }}</h6>
     </div>
 
     <div class="card-body">
@@ -71,25 +81,14 @@
                                     <p class="mb-2 text-muted"><em>{{ $cal->notes }}</em></p>
                                 @endif
                             </div>
-                            <div class="ms-3">
-                                <a href="{{ route('calendars.edit', $cal->id) }}" class="btn btn-sm btn-outline-primary">
-                                    Editar
-                                </a>
-                            </div>
                         </div>
-
-                        {{-- Ingredientes --}}
                         @if($ingredientesDelDia->isEmpty())
                             <div class="text-muted small">Sin ingredientes configurados para este menú.</div>
                         @else
-                            <ul class="mt-2 mb-0">
+                            <ul class="mt-2 mb-0" style="margin-left: 15px;">
                                 @foreach($ingredientesDelDia as $mi)
                                     @php
-                                        // Determinar si este ingrediente es opcional seleccionado
                                         $esOpcionalSel = (bool) ($mi->is_optional ?? false);
-                                        // Cuando viene desde $opcSeleccionados, seguro es opcional
-                                        // Si viene desde obligatorios, is_optional es false.
-                                        // qty / unit pueden existir en menu_ingredient
                                         $qty = $fmtQty($mi->qty ?? null);
                                         $unit = $mi->unit ?? null;
                                     @endphp
