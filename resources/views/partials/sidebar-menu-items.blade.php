@@ -41,14 +41,14 @@
 
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
-                        <i class="ri-user-smile-line"></i>
+                        <i class="ri-team-line"></i>
                         <span class="side-menu__label" data-lang="hr-apps-email">Beneficiarios</span>
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
                     <ul class="slide-menu" role="menu">
                         <li class="slide">
                             <a href="{{ route('staff-beneficiaries.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
-                                <i class="ri-settings-4-line"></i>
+                                <i class="ri-user-settings-line"></i>
                                 Gestionar
                             </a>
                         </li>
@@ -75,7 +75,7 @@
 
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
-                        <i class="ri-circle-line"></i>
+                        <i class="ri-restaurant-2-line"></i>
                         <span class="side-menu__label" data-lang="hr-apps-email">Dietas</span>
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
@@ -94,7 +94,7 @@
                         @canany(['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.delete'])
                         <li class="slide">
                             <a href="{{ route('ingredients.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
-                                <i class="ri-restaurant-2-line"></i>
+                                <i class="ri-fridge-line"></i>
                                 Ingredientes
                             </a>
                         </li>
@@ -103,29 +103,40 @@
                 </li>
         </ul>
     </li>
-    <li class="menu-title" role="presentation" data-lang="hr-title-pages">Recolección - Reparto</li>
+    {{-- === RECOLECCIÓN === --}}
+    <li class="menu-title" role="presentation" data-lang="hr-title-pages">Recolección</li>
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
-            <span class="side_menu_icon"><i class="ri-list-check-3"></i></span>
+            <span class="side_menu_icon"><i class="ri-service-bell-line"></i></span>
             <span class="side-menu__label" data-lang="hr-pages">Dietas</span>
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
         <ul class="slide-menu" role="menu">
-
             <li class="slide">
+                {{-- Ajusta la ruta si ya tienes la pantalla de recolección --}}
                 <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
                     <i class="ri-keyboard-box-line"></i>
                     Recolectar
                 </a>
             </li>
+        </ul>
+    </li>
 
+    {{-- === ENTREGAS === --}}
+    <li class="menu-title" role="presentation" data-lang="hr-title-pages">Entregas</li>
+    <li class="slide">
+        <a href="#!" class="side-menu__item" role="menuitem">
+            <span class="side_menu_icon"><i class="ri-team-line"></i></span>
+            <span class="side-menu__label" data-lang="hr-pages">Beneficiarios</span>
+            <i class="ri-arrow-down-s-line side-menu__angle"></i>
+        </a>
+        <ul class="slide-menu" role="menu">
             <li class="slide">
                 <a href="{{ route('staff.meals.create') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
-                    <i class="ri-user-smile-line"></i>
-                    Beneficiarios
+                    <i class="ri-bowl-line"></i>
+                    Entregas
                 </a>
             </li>
-
         </ul>
     </li>
 

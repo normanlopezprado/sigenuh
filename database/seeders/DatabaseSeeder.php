@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             HospitalSeeder::class,
             NivelesSeeder::class,
             IngredientSeeder::class,
+            StaffBeneficiarySeeder::class,
 
         ]);
 
