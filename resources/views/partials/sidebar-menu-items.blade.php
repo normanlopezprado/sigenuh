@@ -103,29 +103,40 @@
                 </li>
         </ul>
     </li>
-    <li class="menu-title" role="presentation" data-lang="hr-title-pages">Recolección - Reparto</li>
+    {{-- === RECOLECCIÓN === --}}
+    <li class="menu-title" role="presentation" data-lang="hr-title-pages">Recolección</li>
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
-            <span class="side_menu_icon"><i class="ri-list-check-3"></i></span>
+            <span class="side_menu_icon"><i class="ri-service-bell-line"></i></span>
             <span class="side-menu__label" data-lang="hr-pages">Dietas</span>
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
         <ul class="slide-menu" role="menu">
-
             <li class="slide">
+                {{-- Ajusta la ruta si ya tienes la pantalla de recolección --}}
                 <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
                     <i class="ri-keyboard-box-line"></i>
                     Recolectar
                 </a>
             </li>
+        </ul>
+    </li>
 
+    {{-- === ENTREGAS === --}}
+    <li class="menu-title" role="presentation" data-lang="hr-title-pages">Entregas</li>
+    <li class="slide">
+        <a href="#!" class="side-menu__item" role="menuitem">
+            <span class="side_menu_icon"><i class="ri-user-smile-line"></i></span>
+            <span class="side-menu__label" data-lang="hr-pages">Beneficiarios</span>
+            <i class="ri-arrow-down-s-line side-menu__angle"></i>
+        </a>
+        <ul class="slide-menu" role="menu">
             <li class="slide">
                 <a href="{{ route('staff.meals.create') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
-                    <i class="ri-user-smile-line"></i>
-                    Beneficiarios
+                    <i class="ri-bowl-line"></i>
+                    Entregas
                 </a>
             </li>
-
         </ul>
     </li>
 
