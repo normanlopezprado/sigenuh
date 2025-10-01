@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CollectController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\DashboardController;
@@ -54,7 +55,7 @@ Route::get('/email/verify', function () {
 })->middleware('auth')->name('verification.notice');
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill(); 
+    $request->fulfill();
     return redirect()->route('dashboard')->with('success','Email verificado.');
 })->middleware(['auth','signed','throttle:6,1'])->name('verification.verify');
 
@@ -256,4 +257,14 @@ Route::middleware(['auth','verified'])->prefix('carts')->name('carts.')->group(f
 Route::middleware(['auth'])->group(function () {
     Route::get('carts/routes',  [CartRouteController::class, 'edit'])->name('carts.routes.index');
     Route::post('carts/routes', [CartRouteController::class, 'update'])->name('carts.routes.update');
+});
+
+// Collect
+Route::middleware(['auth'])->group(function () {
+    Route::get('/collects', [CollectController::class, 'index'])->name('collects.index');
+
+    Route::post('/collects/bulk', [CollectController::class, 'bulkUpsert'])->name('collects.bulk');
+
+    Route::patch('/collects/bed/{bed}/toggle', [CollectController::class, 'toggleBedStatus'])
+        ->name('collects.toggle-bed');
 });
