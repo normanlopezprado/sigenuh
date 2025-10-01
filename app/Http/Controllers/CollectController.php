@@ -3,7 +3,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Bed;
 use App\Models\Collect;
+use App\Models\Hospital;
 use App\Models\Service;
+use App\Support\MealWindow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -26,6 +28,7 @@ class CollectController extends Controller
             return redirect()->route('dashboard')
                 ->with('warning','Selecciona un hospital.');
         }
+        $hospital = Hospital::findOrFail($hospitalId);
 
         $date = $request->query('date', now()->toDateString());
         $meal = $request->query('meal', 'Desayuno');
@@ -33,7 +36,7 @@ class CollectController extends Controller
 
         $services = Service::orderBy('name')->get();
 
-        // Camas del hospital (y opcionalmente del servicio)
+
         $bedsQuery = Bed::query()
             ->whereHas('hospitalFloorService.hospitalFloor', fn($q) => $q->where('hospital_id', $hospitalId))
             ->with(['hospitalFloorService.service:id,name'])
@@ -46,7 +49,7 @@ class CollectController extends Controller
         $beds    = $bedsQuery->get();
         $bedIds  = $beds->pluck('id')->all();
 
-        // Datos del turno actual
+
         $collects = Collect::whereIn('bed_id', $bedIds)
             ->whereDate('date', $date)
             ->where('meal', $meal)
@@ -71,7 +74,6 @@ class CollectController extends Controller
                     $prevMeal = 'Almuerzo';
                     break;
             }
-
             if ($prevMeal) {
                 $prevCollects = Collect::whereIn('bed_id', $bedIds)
                     ->whereDate('date', $prevDate)
@@ -88,6 +90,14 @@ class CollectController extends Controller
                 }
             }
         }
+        $meal = $request->query('meal');
+        if (!$meal || !in_array($meal, ['Desayuno','Almuerzo','Cena'])) {
+            $meal = MealWindow::currentMealPeriod($hospital);
+        }
+
+        $isOpen = in_array($meal, ['Desayuno','Almuerzo','Cena'])
+            ? MealWindow::nowWithinHospitalWindow($hospital, $meal)
+            : false;
 
         return view('collects.index', [
             'date'           => $date,
@@ -95,6 +105,7 @@ class CollectController extends Controller
             'serviceId'      => $serviceId,
             'services'       => $services,
             'beds'           => $beds,
+            'isOpen'         => $isOpen,
             'collectsByBed'  => $collects,
             'diets'          => self::DIETS,
             'prefillSource'  => $prefillSource
@@ -108,14 +119,12 @@ class CollectController extends Controller
         if (!$hospitalId) {
             return back()->with('warning','Selecciona un hospital.');
         }
-
+        $hospital = Hospital::findOrFail($hospitalId);
         $data = $request->validate([
             'date' => ['required','date'],
-            'meal' => ['required', Rule::in(['Desayuno','Almuerzo','Cena'])],
+            'meal' => ['required','in:Desayuno,Almuerzo,Cena'],
             'rows' => ['array'],
-            'rows.*.diet_type' => ['nullable', Rule::in([
-                'Libre','Blanda','Hiposódica','Diabético 1,200','Diabético 1,500','Renal','Licuada','Especial',
-            ])],
+            'rows.*.diet_type' => ['nullable','in:Libre,Blanda,Hiposódica,Diabético 1,200,Diabético 1,500,Renal,Licuada,Especial'],
             'rows.*.trays' => ['nullable','integer','min:0'],
             'rows.*.disposables' => ['nullable','integer','min:0'],
             'rows.*.notes' => ['nullable','string'],
@@ -124,7 +133,9 @@ class CollectController extends Controller
         $date = $data['date'];
         $meal = $data['meal'];
         $rows = $data['rows'] ?? [];
-
+        if (!MealWindow::nowWithinHospitalWindow($hospital, $data['meal'])) {
+            return back()->with('warning', 'Aún no está abierta la ventana de recolección para ' . $data['meal'] . '.');
+        }
         DB::transaction(function() use ($rows, $date, $meal, $hospitalId, $user) {
             foreach ($rows as $bedId => $row) {
                 // Verifica que la cama pertenece al hospital del usuario

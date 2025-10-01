@@ -65,6 +65,19 @@
                 Al guardar, se registrarán para la fecha y comida actuales.
             </div>
         @endif
+        @if($meal === 'Fuera de rango')
+            <div class="alert alert-warning">
+                Ahora mismo no hay ventana activa de recolección.
+            </div>
+        @elseif(!$isOpen)
+            <div class="alert alert-warning">
+                Aún no está abierta la ventana de recolección para <strong>{{ $meal }}</strong>.
+            </div>
+        @else
+            <div class="alert alert-success">
+                Ventana activa: <strong>{{ $meal }}</strong>. Puedes registrar datos.
+            </div>
+        @endif
         <div class="table-responsive">
             <table class="table table-bordered align-middle">
                 <thead>
@@ -142,7 +155,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            <button class="btn btn-primary">Guardar</button>
+            <button class="btn btn-primary" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
             <a href="{{ route('collects.index', ['service'=>$serviceId]) }}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
