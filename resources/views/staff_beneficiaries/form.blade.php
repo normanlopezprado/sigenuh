@@ -19,6 +19,5 @@
     <div class="col-md-8">
         <label class="form-label">Hospital</label>
         <input type="text" class="form-control" value="Se asignará automáticamente" disabled>
-        {{-- Si más adelante quieres elegir hospital manualmente, aquí va un <select> --}}
     </div>
 </div>

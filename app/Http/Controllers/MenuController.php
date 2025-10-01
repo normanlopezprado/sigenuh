@@ -10,9 +10,6 @@ use Illuminate\Support\Str;
 
 class MenuController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
 
     public function index()
     {
@@ -20,9 +17,6 @@ class MenuController extends Controller
         return view('menus.index', compact('menus'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $diets = [
@@ -40,9 +34,6 @@ class MenuController extends Controller
         return view('menus.create', compact('categories', 'dietOptions'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $diets = [
@@ -70,23 +61,17 @@ class MenuController extends Controller
             ->with('success','Menú creado correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(Menu $menu)
     {
-        //
+        
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Menu $menu)
     {
-        // Listado de ingredientes disponibles para agregar
         $ingredients = Ingredient::where('status', true)->orderBy('name')->get();
 
-        // Ingredientes ya asociados (con sus pivotes)
         $current = $menu->ingredients()->orderBy('name')->get();
         $categories = ['Desayuno','Almuerzo','Cena'];
         $diets = [
@@ -103,9 +88,6 @@ class MenuController extends Controller
         return view('menus.edit', compact('menu','ingredients','current', 'categories', 'dietOptions'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Menu $menu)
     {
         $diets = [
@@ -125,9 +107,7 @@ class MenuController extends Controller
             'diet_type'   => ['nullable', Rule::in($dietOptions)],
             'description' => ['nullable','string'],
             'notes'       => ['nullable','string'],
-
-            // Gestión de ingredientes (opcional en el mismo submit)
-            'ingredient_id' => ['array'],                 // ids para sync
+            'ingredient_id' => ['array'],                 
             'ingredient_id.*' => ['uuid','exists:ingredients,id'],
             'qty' => ['array'],
             'qty.*' => ['nullable','numeric','min:0'],
@@ -139,25 +119,21 @@ class MenuController extends Controller
 
         $menu->update($data);
 
-        // Si viene la sección de ingredientes en el mismo form:
         if ($request->has('ingredient_id')) {
             $ids = $request->input('ingredient_id', []);
             $qtys = $request->input('qty', []);
             $opts = $request->input('is_optional', []);
             $notes= $request->input('pivot_notes', []);
 
-            // Construir arreglo para sync con atributos
             $syncPayload = [];
             foreach ($ids as $idx => $ingId) {
                 $syncPayload[$ingId] = [
-                    // El id de la pivote es opcional; Laravel lo ignora en sync. Si quieres guardarlo, debes crear/actualizar manualmente.
                     'qty'         => isset($qtys[$idx]) ? (float) $qtys[$idx] : 0,
                     'is_optional' => isset($opts[$idx]) ? (bool) $opts[$idx] : false,
                     'notes'       => $notes[$idx] ?? null,
                 ];
             }
 
-            // Evita violar unique(menu_id,ingredient_id): sync reemplaza sin duplicar
             $menu->ingredients()->sync($syncPayload);
         }
 
@@ -165,9 +141,6 @@ class MenuController extends Controller
             ->with('success','Menú actualizado correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $menu)
     {
         Ingredient::where('id', $menu)->update(['status' => false]);

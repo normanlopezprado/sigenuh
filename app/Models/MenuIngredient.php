@@ -20,7 +20,7 @@ class MenuIngredient extends Pivot
             if (empty($pivot->id)) {
                 $pivot->id = (string) Str::uuid();
             }
-            // Por si los checkboxes vienen nulos:
+            
             if ($pivot->is_optional === null) {
                 $pivot->is_optional = false;
             }

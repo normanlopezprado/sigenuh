@@ -13,7 +13,7 @@
 
 @section('content')
     <div class="row g-4">
-        <div class="col-12 col-lg-8"><!-- un poco más ancho para la lista doble -->
+        <div class="col-12 col-lg-8">
             <div class="card h-100 mb-0">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Asignar servicios a plantas</h5>
@@ -150,7 +150,7 @@
 
                         @push('scripts')
                             <script>
-                                // Utilidad: alternar selección visual (clase active)
+                                
                                 function toggleActive(li) {
                                     li.classList.toggle('active');
                                 }
@@ -159,7 +159,7 @@
                                     listEl.querySelectorAll('.list-group-item.active').forEach(el => el.classList.remove('active'));
                                 }
 
-                                // Mover items de A -> B
+                                
                                 function moveSelected(fromEl, toEl, toLeft) {
                                     const selected = fromEl.querySelectorAll('.list-group-item.active');
                                     selected.forEach(li => moveOne(li, toEl, toLeft));
@@ -172,15 +172,15 @@
 
                                 function moveOne(li, toEl, toLeft) {
                                     li.classList.remove('active');
-                                    // Si va a "Seleccionados", agregamos input hidden; si vuelve a "Disponibles", lo removemos
+                                    
                                     if (toEl.id === 'listSelected') {
-                                        // agregar icono hacia la izquierda
+                                        
                                         li.querySelector('i')?.remove();
                                         const icon = document.createElement('i');
                                         icon.className = 'ri-arrow-left-line';
                                         li.appendChild(icon);
 
-                                        // crear hidden si no existe
+                                        
                                         if (!li.querySelector('input[type="hidden"]')) {
                                             const hid = document.createElement('input');
                                             hid.type = 'hidden';
@@ -189,12 +189,11 @@
                                             li.appendChild(hid);
                                         }
                                     } else {
-                                        // cambiar icono hacia la derecha
+                                        
                                         li.querySelector('i')?.remove();
                                         const icon = document.createElement('i');
                                         icon.className = 'ri-arrow-right-line';
                                         li.appendChild(icon);
-                                        // quitar hidden si existiera
                                         li.querySelector('input[type="hidden"]')?.remove();
                                     }
                                     toEl.appendChild(li);
@@ -221,7 +220,6 @@
                                     const btnRemove    = document.getElementById('btnRemove');
                                     const btnRemoveAll = document.getElementById('btnRemoveAll');
 
-                                    // Click para seleccionar item (toggle active)
                                     [listAvailable, listSelected].forEach(list => {
                                         list?.addEventListener('click', (e) => {
                                             const li = e.target.closest('.list-group-item');
@@ -230,17 +228,14 @@
                                         });
                                     });
 
-                                    // Filtros
                                     filterAvailable?.addEventListener('input', () => applyFilter(filterAvailable, listAvailable));
                                     filterSelected?.addEventListener('input', () => applyFilter(filterSelected, listSelected));
 
-                                    // Botones
                                     btnAddAll?.addEventListener('click', () => moveAll(listAvailable, listSelected, true));
                                     btnAdd?.addEventListener('click', () => moveSelected(listAvailable, listSelected, true));
                                     btnRemove?.addEventListener('click', () => moveSelected(listSelected, listAvailable, false));
                                     btnRemoveAll?.addEventListener('click', () => moveAll(listSelected, listAvailable, false));
 
-                                    // Doble clic para mover rápidamente
                                     listAvailable?.addEventListener('dblclick', (e) => {
                                         const li = e.target.closest('.list-group-item');
                                         if (li) moveOne(li, listSelected, true);

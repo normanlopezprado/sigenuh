@@ -168,7 +168,7 @@
 @push('scripts')
 <script>
 (function() {
-  // === DOM refs ===
+  
   const $category  = document.getElementById('category');
   const $dietType  = document.getElementById('diet_type');
   const $menuSel   = document.getElementById('calendar_menu_id');
@@ -197,17 +197,16 @@
   const $deliveriesTbody = document.getElementById('deliveriesTbody');
   const $confirmPassword = document.getElementById('confirmPassword');
 
-  // === Constantes ===
+
   const TODAY = @json(($today ?? \Carbon\Carbon::today())->format('Y-m-d'));
 
-  // Rutas backend
   const ROUTE_DIET_TYPES     = @json(route('staff_meals.diet-types'));
   const ROUTE_MENUS_TODAY    = @json(route('staff_meals.menus-today'));
   const ROUTE_SEARCH_BENEF   = @json(route('staff_meals.search-beneficiaries'));
   const ROUTE_DELIVER        = @json(route('staff_meals.deliver'));
   const ROUTE_LIST           = @json(route('staff_meals.list-deliveries'));
 
-  // === Utilitarios ===
+
   function setBadge(el, label, value) {
     el.textContent = `${label}: ${value || '—'}`;
   }
@@ -239,7 +238,6 @@
     $feedback.className = 'small';
   }
 
-  // === Cargar diet types por categoría ===
   async function loadDietTypes() {
     const category = $category.value;
     setBadge($badgeCategory, 'Categoría', category ? category.charAt(0).toUpperCase() + category.slice(1) : '—');
@@ -252,7 +250,7 @@
       url.searchParams.set('category', category);
 
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      const data = await res.json(); // ['libre','blanda',...]
+      const data = await res.json(); 
 
       $dietType.innerHTML = '<option value="">— Selecciona tipo de dieta —</option>';
       (data || []).forEach(dt => {
@@ -266,14 +264,13 @@
       setBadge($badgeDiet, 'Dieta', '—');
       resetMenu();
       updateSummary();
-      loadDeliveries(); // recarga tabla por cambio de categoría
+      loadDeliveries(); 
     } catch (e) {
       console.error(e);
       $dietType.innerHTML = '<option value="">No se pudieron cargar tipos</option>';
     }
   }
 
-  // === Cargar menús del día por categoría + diet_type ===
   async function loadMenusToday() {
     const category = $category.value;
     const dietType = $dietType.value;
@@ -296,15 +293,14 @@
       url.searchParams.set('date', TODAY);
 
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      // Esperado: [{id: calendar_id, menu_id: uuid, text: 'Nombre'}, ...]
       const data = await res.json();
 
       $menuSel.innerHTML = '<option value="">— Selecciona un menú —</option>';
       (data || []).forEach(item => {
         const opt = document.createElement('option');
-        opt.value = item.id;                // calendar_id (opcional)
+        opt.value = item.id;                
         opt.textContent = item.text;
-        opt.dataset.menuId = item.menu_id;  // ← guardamos menu_id aquí
+        opt.dataset.menuId = item.menu_id;  
         $menuSel.appendChild(opt);
       });
 
@@ -323,7 +319,6 @@
     }
   }
 
-  // Eventos de selects
   $category.addEventListener('change', () => { loadDietTypes(); clearFeedback(); });
   $dietType.addEventListener('change', () => { loadMenusToday(); clearFeedback(); });
   $menuSel?.addEventListener('change', () => {
@@ -335,11 +330,9 @@
     updateSummary();
     clearFeedback();
   });
-
-  // Init
+  
   loadDietTypes();
 
-  // === BÚSQUEDA DE BENEFICIARIOS ===
   let beneficiaryTimeout = null;
 
   $beneficiarySearch.addEventListener('keyup', function () {
@@ -360,7 +353,7 @@
       const url = new URL(ROUTE_SEARCH_BENEF, window.location.origin);
       url.searchParams.set('q', query);
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      const data = await res.json(); // [{id, full_name}, ...]
+      const data = await res.json(); 
 
       $beneficiaryResults.innerHTML = '';
       if (!data || !data.length) {
@@ -388,17 +381,16 @@
     clearFeedback();
   }
 
-  // Habilitar/deshabilitar botón cuando el usuario escribe la contraseña
+  
   document.getElementById('confirmPassword').addEventListener('input', updateSummary);
 
-  // === REGISTRAR ENTREGA ===
   $btnRegister.addEventListener('click', async function () {
     clearFeedback();
 
     const benefId  = $selectedBenefId.value;
-    const mealType = $category.value;       // desayuno | almuerzo | cena
-    const date     = TODAY;                 // fecha del header
-    const menuId   = $selectedMenuId.value; // obligatorio
+    const mealType = $category.value;       
+    const date     = TODAY;                 
+    const menuId   = $selectedMenuId.value; 
     const pwd      = $confirmPassword.value;
 
     if (!mealType)  { showFeedback('Selecciona el tiempo de comida.', false); return; }
@@ -422,7 +414,7 @@
           meal_type: mealType,
           delivery_date: date,
           menu_id: menuId,
-          confirm_password: pwd, // ← se valida en backend con current_password
+          confirm_password: pwd, 
         })
       });
 
@@ -432,10 +424,10 @@
         showFeedback(data?.message || 'No se pudo registrar la entrega.', false);
       } else {
         showFeedback(data?.message || 'Entrega registrada con éxito.', true);
-        // limpiar solo la contraseña
+        
         $confirmPassword.value = '';
         updateSummary();
-        // recargar tabla
+        
         await loadDeliveries();
       }
     } catch (e) {
@@ -463,7 +455,7 @@
     loadDeliveries();
   });
 
-  // === TABLA: ENTREGAS DE HOY (según selección de tiempo de comida) ===
+  
   async function loadDeliveries() {
     const mealType = $category.value || 'desayuno';
     const url = new URL(ROUTE_LIST, window.location.origin);
@@ -472,7 +464,7 @@
 
     try {
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      const data = await res.json(); // [{id, beneficiary, menu_name, delivered_at, delivered_by_name}]
+      const data = await res.json(); 
       $deliveriesTbody.innerHTML = '';
 
       if (!data || !data.length) {
@@ -497,7 +489,6 @@
     }
   }
 
-  // Cargar tabla al entrar y al cambiar categoría
   document.addEventListener('DOMContentLoaded', loadDeliveries);
 })();
 </script>

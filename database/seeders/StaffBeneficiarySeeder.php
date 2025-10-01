@@ -26,7 +26,7 @@ class StaffBeneficiarySeeder extends Seeder
         foreach ($beneficiaries as $b) {
             StaffBeneficiary::create([
                 'id'          => (string) Str::uuid(),
-                'hospital_id' => $b['hospital_id'],  // puedes cambiar luego por un ID real
+                'hospital_id' => $b['hospital_id'],  
                 'full_name'   => $b['full_name'],
                 'job_title'   => $b['job_title'],
                 'status'      => true,
