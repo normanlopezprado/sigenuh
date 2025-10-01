@@ -37,4 +37,11 @@ class HospitalFloorService extends Pivot
     {
         return $this->belongsTo(Service::class);
     }
+    public function carts()
+    {
+        return $this->belongsToMany(\App\Models\Cart::class, 'cart_service', 'hospital_floor_service_id', 'cart_id')
+            ->using(\App\Models\CartService::class)
+            ->withPivot(['id','order','assigned_by','assigned_at'])
+            ->withTimestamps();
+    }
 }
