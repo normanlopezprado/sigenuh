@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             NivelesSeeder::class,
             IngredientSeeder::class,
             StaffBeneficiarySeeder::class,
+            CartSeeder::class,
 
         ]);
 
