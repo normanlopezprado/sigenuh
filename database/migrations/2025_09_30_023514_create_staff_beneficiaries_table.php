@@ -10,7 +10,6 @@ return new class extends Migration {
         Schema::create('staff_beneficiaries', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            // hospital_id como UUID con FK
             $table->uuid('hospital_id')->nullable();
             $table->foreign('hospital_id')
                   ->references('id')->on('hospitals')

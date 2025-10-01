@@ -24,15 +24,11 @@ class HospitalFloorController extends Controller
             ->values()
         ;
 
-
         $hospital = Hospital::where('id', $hospital)->first();
-
         $seleccionados = $hospital->niveles()->pluck('nivels.id')->toArray();
-
         return view('hospital_floors.edit', compact('hospital','niveles','seleccionados'));
     }
 
-    // Sincroniza la selección (asignar/retirar)
     public function update(Request $request)
     {
         $user = $request->user();
@@ -52,7 +48,6 @@ class HospitalFloorController extends Controller
 
         $hospital = Hospital::where('id', $hospital)->first();
         $hospital->niveles()->sync($ids);
-
-        return redirect()->route('hospital-floors.edit')->with('success', 'Niveles asignados correctamente.');
+            return redirect()->route('hospital-floors.edit')->with('success', 'Niveles asignados correctamente.');
     }
 }

@@ -14,9 +14,6 @@ use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
-    /* ========================
-     * CRUD de Carts (Carritos)
-     * ======================== */
 
    public function index(Request $request)
     {
@@ -63,7 +60,7 @@ class CartController extends Controller
 
     public function show(Cart $cart)
     {
-        // Vista simple de detalle (opcional)
+
         $cart->load(['hospital','services']);
         return view('carts.show', compact('cart'));
     }
@@ -103,11 +100,6 @@ class CartController extends Controller
         return redirect()->route('carts.index')->with('success', 'Carrito eliminado.');
     }
 
-    /* =======================================
-     * Editor de Ruta (asignación de servicios)
-     * ======================================= */
-
-    // GET /carts/{cart}/route
     public function editRoute(Request $request, Cart $cart)
     {
         $hospitalId = $request->user()->hospital_selected;
@@ -117,7 +109,7 @@ class CartController extends Controller
         $available = HospitalFloorService::with([
                 'service:id,name,abbreviation',
                 'hospitalFloor:id,name,nivel_id,hospital_id',
-                'hospitalFloor.nivel:id,name', // no pedimos abbrev aquí
+                'hospitalFloor.nivel:id,name', 
             ])
             ->whereHas('hospitalFloor', fn($q)=>$q->where('hospital_id',$hospitalId))
             ->whereNotIn('id', $assignedServiceIds)
@@ -136,8 +128,6 @@ class CartController extends Controller
         return view('carts.route', compact('cart','available','selected'));
     }
 
-
-    // PUT /carts/{cart}/route
     public function updateRoute(Request $request, Cart $cart)
     {
         $validated = $request->validate([
@@ -149,10 +139,8 @@ class CartController extends Controller
 
         try {
             DB::transaction(function () use ($ids, $cart) {
-                // Borramos asignaciones actuales de este cart
                 DB::table('cart_service')->where('cart_id', $cart->id)->delete();
 
-                // Insertamos nuevas asignaciones respetando el orden
                 $now = now();
                 foreach ($ids as $index => $hfsId) {
                     DB::table('cart_service')->insert([
@@ -168,18 +156,13 @@ class CartController extends Controller
                 }
             });
         } catch (QueryException $e) {
-            // Esto atrapará violaciones de UNIQUE (exclusividad) si otra sesión asignó algo en paralelo
             return back()->with('error', 'No se pudo guardar la ruta: uno o más servicios ya fueron asignados a otro carrito. Actualiza la página e intenta de nuevo.');
         }
 
         return redirect()->route('carts.route.edit', $cart)->with('success', 'Ruta de reparto actualizada.');
     }
 
-    /* ==========================================
-     * Endpoints auxiliares (para UI con buscador)
-     * ========================================== */
 
-    // GET /carts/{cart}/services/available?q=...
     public function availableServices(Request $request, Cart $cart)
     {
         $hospitalId = $request->user()->hospital_selected;
@@ -220,8 +203,6 @@ class CartController extends Controller
         return response()->json($rows);
     }
 
-
-    // GET /carts/{cart}/services/selected
     public function selectedServices(Request $request, Cart $cart)
     {
         $hospitalId = $request->user()->hospital_selected;

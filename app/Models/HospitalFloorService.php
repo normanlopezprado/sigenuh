@@ -27,7 +27,6 @@ class HospitalFloorService extends Pivot
         });
     }
 
-    // Relaciones
     public function hospitalFloor()
     {
         return $this->belongsTo(HospitalFloor::class);

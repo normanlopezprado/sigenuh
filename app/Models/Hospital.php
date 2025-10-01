@@ -41,7 +41,7 @@ class Hospital extends Model
             }
         });
     }
-    // Accesor para obtener URL pública del logo
+    
     public function getLogoUrlAttribute(): ?string
     {
         return $this->logo_path ? asset('storage/' . $this->logo_path) : null;

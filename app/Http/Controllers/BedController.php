@@ -46,7 +46,6 @@ class BedController extends Controller
             ->sortByDesc(function ($x) {
                 $level = (int) preg_replace('/\D+/', '', $x->hospitalFloor?->nivel?->name ?? '0');
                 $serviceName = mb_strtolower($x->service?->name ?? '');
-                // clave compuesta: primero nivel desc, luego servicio desc
                 return sprintf('%05d-%s', $level, $serviceName);
             })
             ->values();

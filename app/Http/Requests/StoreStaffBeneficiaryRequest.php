@@ -8,7 +8,7 @@ class StoreStaffBeneficiaryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Ajusta si usas políticas/roles
+        return true; 
     }
 
     public function rules(): array

@@ -19,7 +19,6 @@ class HospitalFloorServiceController extends Controller
 
         $hospital = Hospital::with(['floors.nivel'])->findOrFail($hospitalId);
 
-        // 🔹 Ordena los pisos por número dentro de nivel->name en forma DESCENDENTE
         $floors = $hospital->floors
             ->sortByDesc(fn ($f) => (int) preg_replace('/\D+/', '', $f->nivel?->name ?? '0'))
             ->values();
@@ -29,12 +28,10 @@ class HospitalFloorServiceController extends Controller
             ? HospitalFloor::where('hospital_id', $hospital->id)->where('id', $floorId)->first()
             : $floors->first();
 
-        // Servicios ya asignados al piso actual
         $selectedServiceIds = $selectedFloor
             ? $selectedFloor->services()->pluck('services.id')->toArray()
             : [];
 
-        // Servicios asignados en otros pisos del mismo hospital (excluye el actual)
         $inUseElsewhere = Service::whereHas('hospitalFloors', function ($q) use ($hospitalId, $selectedFloor) {
                 $q->where('hospital_id', $hospitalId);
                 if ($selectedFloor) {
@@ -44,9 +41,8 @@ class HospitalFloorServiceController extends Controller
             ->pluck('services.id')
             ->toArray();
 
-        // Lista de servicios disponibles
         $services = Service::whereNotIn('id', $inUseElsewhere)
-            ->orderBy('name') // servicios siguen en ascendente, cámbialo a orderByDesc si quieres
+            ->orderBy('name') 
             ->get();
 
         return view('hospital_floor_services.edit', [

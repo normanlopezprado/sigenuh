@@ -18,11 +18,11 @@ class Cart extends Model
 
     protected $fillable = [
         'hospital_id',
-        'name',       // Nombre del carrito (UI)
-        'code_name',  // Apodo / código interno (UI)
-        'color',      // Color para UI (badge)
-        'order',      // Orden en listados
-        'status',     // Activo/Inactivo
+        'name',       
+        'code_name',  
+        'color',      
+        'order',      
+        'status',     
         'notes',
     ];
 
@@ -31,15 +31,12 @@ class Cart extends Model
         'order'  => 'integer',
     ];
 
-    /* --- Relaciones --- */
-
-    // Hospital propietario del carrito
     public function hospital()
     {
         return $this->belongsTo(\App\Models\Hospital::class, 'hospital_id', 'id');
     }
 
-    // Servicios (ruta de reparto) a través del pivot cart_service
+
     public function services()
     {
         return $this->belongsToMany(\App\Models\HospitalFloorService::class, 'cart_service', 'cart_id', 'hospital_floor_service_id')
@@ -49,7 +46,7 @@ class Cart extends Model
             ->orderBy('cart_service.order');
     }
 
-    // Usuario(s) que han asignado servicios (útil si necesitas consultarlo desde el carrito)
+
     public function assignedByUsers()
     {
         return $this->belongsToMany(\App\Models\User::class, 'cart_service', 'cart_id', 'assigned_by')
@@ -57,29 +54,22 @@ class Cart extends Model
             ->withTimestamps();
     }
 
-    /* --- Scopes útiles --- */
-
-    // Solo activos
     public function scopeActive($q)
     {
         return $q->where('status', true);
     }
 
-    // Por hospital
+
     public function scopeForHospital($q, string $hospitalId)
     {
         return $q->where('hospital_id', $hospitalId);
     }
 
-    // Ordenados para UI
     public function scopeOrdered($q)
     {
         return $q->orderBy('order')->orderBy('name');
     }
 
-    /* --- Atributos de ayuda para UI --- */
-
-    // Etiqueta compuesta: "Cart #1 — Servicios"
     public function getDisplayLabelAttribute(): string
     {
         $name = $this->name ?? '';
@@ -87,9 +77,9 @@ class Cart extends Model
         return "{$name}{$code}";
     }
 
-    // Clase/valor de color usable en badge
     public function getUiColorAttribute(): ?string
     {
-        return $this->color; // puede ser "success" o "#198754" según tu implementación
+        return $this->color; 
     }
+    
 }

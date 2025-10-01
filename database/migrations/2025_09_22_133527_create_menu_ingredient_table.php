@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
             $table->foreign('ingredient_id')->references('id')->on('ingredients')->onDelete('cascade');
-            $table->unique(['menu_id','ingredient_id']); // 1 ingrediente por menú
+            $table->unique(['menu_id','ingredient_id']); 
         });
     }
 

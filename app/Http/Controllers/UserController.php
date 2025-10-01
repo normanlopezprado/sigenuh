@@ -11,10 +11,7 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    /** Roles permitidos en la app (sin CRUD de roles) */
     private const ALLOWED_ROLES = ['Administrador','Nutrición','Recolector','Visualizador'];
-
-
 
     public function index()
     {
@@ -51,14 +48,11 @@ class UserController extends Controller
             ],
         ]);
 
-        // Username sugerido → base única
         $base = $request->input('user') ?: \App\Models\User::baseUsernameFromName($data['name']);
         $data['user'] = \App\Models\User::generateUniqueUsername($base);
 
-        // Password auto si no viene (tu modelo lo hashea con cast 'hashed')
         $data['password'] = $data['password'] ?? Str::random(12);
 
-        // UUID manual para nombrar avatar
         $uuid = (string) Str::uuid();
         $data['id'] = $uuid;
 
@@ -71,7 +65,6 @@ class UserController extends Controller
 
         $user = User::create($data);
 
-        // Asignar ÚNICO rol
         $user->syncRoles([$data['role']]);
 
         return redirect()->route('usuarios.index')->with('success','Usuario creado y rol asignado.');
@@ -135,7 +128,6 @@ class UserController extends Controller
 
         $usuario->update($data);
 
-        // Mantener SOLO el rol elegido
         $usuario->syncRoles([$data['role']]);
 
         return redirect()->route('usuarios.index')->with('success','Usuario actualizado y rol sincronizado.');
@@ -154,9 +146,6 @@ class UserController extends Controller
                 return back()->with('error', 'No puedes eliminar al último Administrador.');
             }
         }
-        // (opcional) Evitar borrarte a ti mismo o al último Administrador:
-        // if (auth()->id() === $usuario->id) { abort(403, 'No puedes eliminar tu propio usuario.'); }
-        // if ($usuario->hasRole('Administrador') && User::role('Administrador')->count() <= 1) { abort(403, 'Debe existir al menos un Administrador.'); }
 
         if ($usuario->avatar) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($usuario->avatar);
