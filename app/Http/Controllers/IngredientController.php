@@ -8,13 +8,8 @@ use Illuminate\Validation\Rule;
 
 class IngredientController extends Controller
 {
-    // Catálogo fijo de categorías
     private const CATEGORIES = ['Condimento','Fruta', 'Lácteos', 'Proteína','Verdura'];
 
-
-
-
-    // Valores EXACTOS del ENUM => etiqueta visible
     private const UNITS = [
         'g.'   => 'g. — gramo',
         'lb.'  => 'lb. — libra',
@@ -42,7 +37,7 @@ class IngredientController extends Controller
         $data = $request->validate([
             'name'     => ['required','string','max:255','unique:ingredients,name'],
             'category' => ['required', Rule::in(self::CATEGORIES)],
-            'unit'     => ['required', Rule::in(array_keys(self::UNITS))], // <-- usa ENUM exacto
+            'unit'     => ['required', Rule::in(array_keys(self::UNITS))], 
             'notes'    => ['nullable','string'],
         ]);
 

@@ -11,16 +11,12 @@ use App\Models\StaffMealRecord;
 
 class StaffMealController extends Controller
 {
-    /**
-     * GET /staff_meals/delivery
-     * Renderiza la vista principal con categorías y fecha de hoy.
-     */
+
     public function delivery(Request $request)
     {
-        $mealType = $request->get('meal_type', 'desayuno'); // valor inicial opcional
+        $mealType = $request->get('meal_type', 'desayuno'); 
         $today    = Carbon::today();
 
-        // Distinct de categorías (menus.category)
         $categories = Menu::query()
             ->where('status', 1)
             ->select('category')
@@ -32,28 +28,21 @@ class StaffMealController extends Controller
         return view('staff_meals.delivery', compact('mealType', 'today', 'categories'));
     }
 
-    /**
-     * POST /staff_meals/deliver
-     * Evita duplicados por (staff_beneficiary_id, meal_type, delivery_date).
-     * Requiere confirmar contraseña del usuario autenticado.
-     */
     public function deliver(Request $request)
     {
         $data = $request->validate([
             'staff_beneficiary_id' => ['required', 'uuid', 'exists:staff_beneficiaries,id'],
-            'meal_type'            => ['required', 'string'], // desayuno | almuerzo | cena
+            'meal_type'            => ['required', 'string'], 
             'delivery_date'        => ['required', 'date'],
             'menu_id'              => ['required', 'uuid', 'exists:menus,id'],
-            'confirm_password'     => ['required', 'current_password'], // ← valida contra el usuario logueado
+            'confirm_password'     => ['required', 'current_password'], 
         ]);
 
-        // Derivar hospital si aplica
         $hospitalId = $request->user()->hospital_selected ?? null;
         if (!$hospitalId) {
             $hospitalId = StaffBeneficiary::where('id', $data['staff_beneficiary_id'])->value('hospital_id');
         }
 
-        // Duplicado por beneficiario + tiempo + fecha
         $exists = StaffMealRecord::query()
             ->where('staff_beneficiary_id', $data['staff_beneficiary_id'])
             ->where('meal_type', $data['meal_type'])
@@ -71,9 +60,9 @@ class StaffMealController extends Controller
         $rec->meal_type            = $data['meal_type'];
         $rec->delivery_date        = Carbon::parse($data['delivery_date'])->toDateString();
         $rec->menu_id              = $data['menu_id'];
-        $rec->delivered_at         = now(); // hora exacta
-        $rec->hospital_id          = $hospitalId ?? null;            // si existe en tu tabla
-        $rec->delivered_by         = optional($request->user())->id; // si existe en tu tabla
+        $rec->delivered_at         = now(); 
+        $rec->hospital_id          = $hospitalId ?? null;            
+        $rec->delivered_by         = optional($request->user())->id; 
         $rec->save();
 
         return response()->json([
@@ -82,10 +71,6 @@ class StaffMealController extends Controller
         ]);
     }
 
-    /**
-     * GET /staff_meals/options/diet-types?category=desayuno
-     * -> ['libre','blanda', ...]
-     */
     public function dietTypes(Request $request)
     {
         $request->validate(['category' => ['required', 'string']]);
@@ -101,10 +86,6 @@ class StaffMealController extends Controller
         return response()->json($dietTypes);
     }
 
-    /**
-     * GET /staff_meals/options/menus-today?category=desayuno&diet_type=libre&date=YYYY-MM-DD
-     * -> [{id: 'calendar_id', menu_id: 'uuid', text: 'Nombre del menú'}, ...] (solo UI)
-     */
     public function menusToday(Request $request)
     {
         $request->validate([
@@ -131,18 +112,14 @@ class StaffMealController extends Controller
             ]);
 
         $out = $rows->map(fn ($r) => [
-            'id'      => $r->calendar_id, // id de calendars (opcional para UI)
-            'menu_id' => $r->menu_id,     // necesario para guardar
+            'id'      => $r->calendar_id,
+            'menu_id' => $r->menu_id,    
             'text'    => $r->name,
         ])->values();
 
         return response()->json($out);
     }
 
-    /**
-     * GET /staff_meals/search-beneficiaries?q=...
-     * -> [{id, full_name}, ...] (solo activos)
-     */
     public function searchBeneficiaries(Request $request)
     {
         $q = trim((string) $request->get('q', ''));
@@ -160,10 +137,6 @@ class StaffMealController extends Controller
         return response()->json($beneficiaries);
     }
 
-    /**
-     * GET /staff_meals/list-deliveries?date=YYYY-MM-DD&meal_type=desayuno
-     * Devuelve entregas del día por tiempo de comida (para la tabla).
-     */
     public function listDeliveries(Request $request)
     {
         $request->validate([
@@ -176,7 +149,7 @@ class StaffMealController extends Controller
         $rows = StaffMealRecord::query()
             ->join('staff_beneficiaries as sb', 'sb.id', '=', 'staff_meal_records.staff_beneficiary_id')
             ->leftJoin('menus', 'menus.id', '=', 'staff_meal_records.menu_id')
-            ->leftJoin('users as u', 'u.id', '=', 'staff_meal_records.delivered_by') // ← traer quién entregó
+            ->leftJoin('users as u', 'u.id', '=', 'staff_meal_records.delivered_by') 
             ->whereDate('staff_meal_records.delivery_date', $day)
             ->where('staff_meal_records.meal_type', $request->input('meal_type'))
             ->orderBy('staff_meal_records.delivered_at', 'desc')

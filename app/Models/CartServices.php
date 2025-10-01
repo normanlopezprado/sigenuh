@@ -11,7 +11,6 @@ class CartService extends Pivot
 
     protected $table = 'cart_service';
 
-    // ids UUID en pivot
     public $incrementing = false;
     protected $keyType = 'string';
 
@@ -21,9 +20,9 @@ class CartService extends Pivot
         'id',
         'cart_id',
         'hospital_floor_service_id',
-        'order',         // orden de visita en la ruta
-        'assigned_by',   // usuario que asignó
-        'assigned_at',   // fecha/hora de asignación
+        'order',         
+        'assigned_by',   
+        'assigned_at',   
     ];
 
     protected $casts = [
@@ -31,7 +30,6 @@ class CartService extends Pivot
         'assigned_at' => 'datetime',
     ];
 
-    /* Relaciones de apoyo (opcionales pero convenientes) */
 
     public function cart()
     {
@@ -47,4 +45,5 @@ class CartService extends Pivot
     {
         return $this->belongsTo(\App\Models\User::class, 'assigned_by', 'id');
     }
+    
 }

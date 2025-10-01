@@ -219,23 +219,14 @@ Route::middleware(['auth','verified'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('staff_meals/delivery', [StaffMealController::class, 'delivery'])
         ->name('staff_meals.delivery');
-
-    // Opciones dinámicas (JSON)
     Route::get('staff_meals/options/diet-types', [StaffMealController::class, 'dietTypes'])
         ->name('staff_meals.diet-types');
-
     Route::get('staff_meals/options/menus-today', [StaffMealController::class, 'menusToday'])
         ->name('staff_meals.menus-today');
-
-    // Búsqueda de beneficiarios (JSON)
     Route::get('staff_meals/search-beneficiaries', [StaffMealController::class, 'searchBeneficiaries'])
         ->name('staff_meals.search-beneficiaries');
-
-    // Registrar entrega
     Route::post('staff_meals/deliver', [StaffMealController::class, 'deliver'])
         ->name('staff_meals.deliver');
-
-    // Listado entregas del día (para la tabla)
     Route::get('staff_meals/list-deliveries', [StaffMealController::class, 'listDeliveries'])
         ->name('staff_meals.list-deliveries');
 });
@@ -244,6 +235,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('staff_meals/report', [StaffMealReportController::class, 'deliveriesReport'])
         ->name('staff_meals.report');
+
 });
 
 // Carritos
@@ -254,20 +246,14 @@ Route::middleware(['auth','verified'])->prefix('carts')->name('carts.')->group(f
     Route::get('/{cart}/edit', [CartController::class, 'edit'])->name('edit');
     Route::put('/{cart}', [CartController::class, 'update'])->name('update');
     Route::delete('/{cart}', [CartController::class, 'destroy'])->name('destroy');
-
     Route::get('/{cart}/route', [CartController::class, 'editRoute'])->name('route.edit');
     Route::put('/{cart}/route', [CartController::class, 'updateRoute'])->name('route.update');
-
     Route::get('/{cart}/services/available', [CartController::class, 'availableServices'])->name('services.available');
     Route::get('/{cart}/services/selected', [CartController::class, 'selectedServices'])->name('services.selected');
 });
 
 // rutas
-
 Route::middleware(['auth'])->group(function () {
-    // Vista (Hospital -> Carrito -> Dual-list)
     Route::get('carts/routes',  [CartRouteController::class, 'edit'])->name('carts.routes.index');
-
-    // Guardar cambios (mismo formulario)
     Route::post('carts/routes', [CartRouteController::class, 'update'])->name('carts.routes.update');
 });

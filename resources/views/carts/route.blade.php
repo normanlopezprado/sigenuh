@@ -144,20 +144,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Click para seleccionar (toggle)
     [listAvailable, listSelected].forEach(list => {
         list.addEventListener('click', e => {
             const li = e.target.closest('li'); if (!li) return;
             li.classList.toggle('active');
         });
-        // Doble click para mover
+    
         list.addEventListener('dblclick', e => {
             const li = e.target.closest('li'); if (!li) return;
             move(li, list.id === 'listAvailable' ? listSelected : listAvailable);
         });
     });
 
-    // Botones
     document.getElementById('btnAdd').onclick = () => {
         [...listAvailable.querySelectorAll('.active')].forEach(li => move(li, listSelected));
     };
@@ -165,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
         [...listSelected.querySelectorAll('.active')].forEach(li => move(li, listAvailable));
     };
 
-    // Filtros
     document.getElementById('filterAvailable').oninput = e => filter(e.target, listAvailable);
     document.getElementById('filterSelected').oninput  = e => filter(e.target, listSelected);
 });

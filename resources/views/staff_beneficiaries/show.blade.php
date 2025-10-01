@@ -21,7 +21,6 @@
                 <dt class="col-sm-3">Estado</dt>
                 <dd class="col-sm-9">
                     <span class="badge {{ $beneficiary->status ? 'bg-success' : 'bg-secondary' }}">
-                        {{ $beneficiary->status ? 'Activo' : 'Inactivo' }}
                     </span>
                 </dd>
 

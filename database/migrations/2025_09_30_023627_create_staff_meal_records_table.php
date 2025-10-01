@@ -15,7 +15,6 @@ return new class extends Migration {
                   ->references('id')->on('staff_beneficiaries')
                   ->cascadeOnDelete();
 
-            // hospital_id como UUID con FK
             $table->uuid('hospital_id')->nullable();
             $table->foreign('hospital_id')
                   ->references('id')->on('hospitals')

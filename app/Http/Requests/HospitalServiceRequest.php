@@ -8,7 +8,7 @@ class HospitalRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // ajusta si usas policies
+        return true;
     }
 
     public function rules(): array

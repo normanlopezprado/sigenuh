@@ -13,18 +13,9 @@ use App\Models\HospitalFloorService;
 
 class CartRouteController extends Controller
 {
-    /**
-     * Flujo:
-     * 1) Seleccionar hospital
-     * 2) Seleccionar carrito
-     * 3) Dual-list: disponibles (no asignados a ningún carrito) ↔ asignados (de este carrito)
-     *
-     * Listas ordenadas DESC por nivel (primer token numérico de nivels.name).
-     * Texto de ítems: "5to - {abbr} - {service_name} {category}".
-     */
+    
     public function edit(Request $request)
     {
-        // --- HOSPITALES ---
         $hospitals = DB::table('hospitals')
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -34,7 +25,6 @@ class CartRouteController extends Controller
             $selectedHospital = $hospitals->firstWhere('id', $request->string('hospital'));
         }
 
-        // --- CARRITOS ---
         $carts = Cart::query()
             ->orderBy('name')
             ->get(['id', 'name', 'code_name']);
@@ -44,7 +34,6 @@ class CartRouteController extends Controller
             $selectedCart = $carts->firstWhere('id', $request->string('cart'));
         }
 
-        // Si no hay hospital todavía, muestra solo select de hospital
         if (!$selectedHospital) {
             return view('carts_routes.route', [
                 'hospitals'        => $hospitals,
@@ -56,7 +45,6 @@ class CartRouteController extends Controller
             ]);
         }
 
-        // Si hay hospital pero no carrito, muestra selects y no el dual-list
         if (!$selectedCart) {
             return view('carts_routes.route', [
                 'hospitals'        => $hospitals,
@@ -68,7 +56,6 @@ class CartRouteController extends Controller
             ]);
         }
 
-        // --- ASIGNADOS (del carrito seleccionado), limitados al hospital elegido ---
         $assignedRows = DB::table('cart_service as cs')
             ->where('cs.cart_id', $selectedCart->id)
             ->join('hospital_floor_services as hfs', 'hfs.id', '=', 'cs.hospital_floor_service_id')
@@ -76,20 +63,19 @@ class CartRouteController extends Controller
             ->where('hf.hospital_id', $selectedHospital->id)
             ->join('nivels as n', 'n.id', '=', 'hf.nivel_id')
             ->join('services as s', 's.id', '=', 'hfs.service_id')
-            // Orden descendente por el primer token numérico de n.name (5to, 4to, 3ro, etc.)
+            
             ->orderByRaw("CAST(SUBSTRING_INDEX(n.name, ' ', 1) AS UNSIGNED) DESC")
             ->orderBy('s.name')
             ->get([
                 'hfs.id as hfs_id',
-                'n.name as floor_name',      // "5to Piso"
-                's.name  as service_name',   // "Cirugía Mujeres"
-                's.abbreviation as abbr',    // "CM"
-                's.category as category',    // "Medicina Interna"
+                'n.name as floor_name',      
+                's.name  as service_name',   
+                's.abbreviation as abbr',    
+                's.category as category',    
             ]);
 
         $selectedIds = $assignedRows->pluck('hfs_id')->all();
 
-        // --- DISPONIBLES (del hospital seleccionado), excluyendo los ya asignados a cualquier carrito ---
         $availableRows = HospitalFloorService::query()
             ->from('hospital_floor_services as hfs')
             ->join('hospital_floors as hf', 'hf.id', '=', 'hfs.hospital_floor_id')
@@ -97,7 +83,7 @@ class CartRouteController extends Controller
             ->join('nivels as n', 'n.id', '=', 'hf.nivel_id')
             ->join('services as s', 's.id', '=', 'hfs.service_id')
             ->leftJoin('cart_service as cs_any', 'cs_any.hospital_floor_service_id', '=', 'hfs.id')
-            ->whereNull('cs_any.id') // excluye HFS ya asignados a cualquier carrito (cumple UNIQUE)
+            ->whereNull('cs_any.id') 
             ->orderByRaw("CAST(SUBSTRING_INDEX(n.name, ' ', 1) AS UNSIGNED) DESC")
             ->orderBy('s.name')
             ->get([
@@ -108,21 +94,17 @@ class CartRouteController extends Controller
                 's.category as category',
             ]);
 
-        // Helper: "5to - {abbr} - {service_name} {category}"
         $makeText = function ($floorName, $abbr, $category, $serviceName) {
-            // primer token del nivel ("5to" de "5to Piso")
             $level = trim(strtok($floorName, ' ')) ?: $floorName;
 
-            $abbrTxt = $abbr ?: $serviceName; // si no hay abreviatura, usa nombre del servicio
-            $catTxt  = $category ?: '';       // si no hay categoría, queda vacío
+            $abbrTxt = $abbr ?: $serviceName; 
+            $catTxt  = $category ?: '';       
 
-            // "5to - CM - Cirugía Mujeres Medicina Interna"  (sin paréntesis)
             $tail = trim($serviceName . ' ' . $catTxt);
 
             return sprintf('%s - %s - %s', $level, $abbrTxt, $tail);
         };
 
-        // Mapear a objetos para la vista
         $selected = $assignedRows->map(function ($r) use ($makeText) {
             return (object)[
                 'id'   => $r->hfs_id,
@@ -147,10 +129,6 @@ class CartRouteController extends Controller
         ]);
     }
 
-    /**
-     * Actualiza la ruta del carrito (reemplaza las asignaciones por el orden enviado).
-     * Usa SOLO columnas existentes en cart_service (según tu migración).
-     */
     public function update(Request $request)
     {
         $data = $request->validate([
@@ -167,7 +145,6 @@ class CartRouteController extends Controller
         $cartId     = $data['cart'];
         $services   = $data['services'] ?? [];
 
-        // Validación: todos los services[] deben pertenecer al hospital elegido
         if (!empty($services)) {
             $countBelong = DB::table('hospital_floor_services as hfs')
                 ->join('hospital_floors as hf', 'hf.id', '=', 'hfs.hospital_floor_id')
@@ -179,7 +156,6 @@ class CartRouteController extends Controller
                 return back()->withErrors('Hay servicios que no pertenecen al hospital seleccionado.')->withInput();
             }
 
-            // Validación de unicidad global: ninguno debe estar ya asignado a otro carrito
             $conflicts = DB::table('cart_service')
                 ->whereIn('hospital_floor_service_id', $services)
                 ->where('cart_id', '!=', $cartId)
@@ -191,7 +167,6 @@ class CartRouteController extends Controller
         }
 
         DB::transaction(function () use ($cartId, $services) {
-            // Borrar asignaciones previas del carrito
             DB::table('cart_service')->where('cart_id', $cartId)->delete();
 
             if (empty($services)) return;

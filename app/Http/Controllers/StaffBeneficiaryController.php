@@ -30,16 +30,6 @@ class StaffBeneficiaryController extends Controller
         return view('staff_beneficiaries.index', compact('beneficiaries', 'showInactive'));
     }
 
-
-
-    /**
-     * Endpoint JSON server-side para la tabla (estilo DataTables).
-     * Soporta:
-     * - search[value]
-     * - order[0][column], order[0][dir]
-     * - start, length
-     * - draw
-     */
     public function datatable(Request $request)
     {
         $draw   = (int) $request->get('draw', 1);
@@ -49,7 +39,6 @@ class StaffBeneficiaryController extends Controller
         $orderColIdx = (int) data_get($request->input('order', [0 => ['column' => 0]]), '0.column', 0);
         $orderDir    = data_get($request->input('order', [0 => ['dir' => 'asc']]), '0.dir', 'asc');
 
-        // Columnas permitidas para ordenar (mantén el orden del thead)
         $columns = ['full_name', 'job_title', 'status', 'created_at'];
         $orderBy = $columns[$orderColIdx] ?? 'full_name';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
@@ -80,7 +69,6 @@ class StaffBeneficiaryController extends Controller
             ->take($length)
             ->get();
 
-        // Armar filas para la tabla (cada fila es un array por columna visible)
         $data = $rows->map(function (StaffBeneficiary $b) {
             $estadoBadge = $b->status
                 ? '<span class="badge bg-success">Activo</span>'
@@ -133,7 +121,6 @@ class StaffBeneficiaryController extends Controller
                 'full_name' => 'Ya existe un beneficiario activo con este nombre en este hospital.'
             ])->withInput();
         }
-
         
         StaffBeneficiary::create([
             'hospital_id' => $hospitalId, 
@@ -146,9 +133,6 @@ class StaffBeneficiaryController extends Controller
             ->route('staff-beneficiaries.index')
             ->with('success', 'Beneficiario creado.');
     }
-
-    
-
 
     public function show(StaffBeneficiary $staff_beneficiary)
     {
@@ -164,9 +148,6 @@ class StaffBeneficiaryController extends Controller
 
    public function edit(\App\Models\StaffBeneficiary $staff_beneficiary)
     {
-        // Cargar hospitales para el <select>
-        // Si tienes columna status en hospitals, puedes filtrar activos:
-        // $hospitals = Hospital::where('status', true)->orderBy('name')->get(['id','name']);
         $hospitals = Hospital::orderBy('name')->get(['id','name']);
 
         return view('staff_beneficiaries.edit', [
@@ -190,7 +171,6 @@ class StaffBeneficiaryController extends Controller
             ->route('staff-beneficiaries.index')
             ->with('success', 'Beneficiario actualizado.');
     }
-
 
     public function destroy(StaffBeneficiary $staff_beneficiary)
     {

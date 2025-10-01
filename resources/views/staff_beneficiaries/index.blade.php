@@ -52,11 +52,7 @@
                             <td class="text-muted">{{ optional($b->created_at)->format('Y-m-d H:i') }}</td>
                             {{-- Acciones en la tabla --}}
                             <td class="d-flex gap-2 justify-content-end">
-                                
                                 <a class="btn btn-sm btn-warning" href="{{ route('staff-beneficiaries.edit', $b) }}">Editar</a>
-                                
-
-                                
                                 @if($b->status)
                                     <form method="POST" action="{{ route('staff-beneficiaries.toggle-status', $b) }}">
                                         @csrf @method('PATCH')

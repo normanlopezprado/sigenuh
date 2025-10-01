@@ -67,10 +67,8 @@ class CalendarController extends Controller
 
     public function edit(Calendar $calendar, Request $request)
     {
-        // Carga menú para mostrar su nombre/categoría
         $calendar->load(['menu']);
 
-        // Opcionales disponibles del menú seleccionado
         $optionalItems = collect();
         if ($calendar->menu_id) {
             $optionalItems = MenuIngredient::where('menu_id', $calendar->menu_id)
@@ -80,7 +78,6 @@ class CalendarController extends Controller
                 ->get();
         }
 
-        // IDs ya seleccionados en el calendario (para marcar checkboxes)
         $selectedOptionalIds = $calendar->optionalMenuIngredients()
             ->pluck('menu_ingredient.id')
             ->toArray();
@@ -92,7 +89,6 @@ class CalendarController extends Controller
 
     public function update(Request $request, Calendar $calendar)
     {
-        // Validación de fecha y notas (puedes omitir si no se editan aquí)
         $data = $request->validate([
             'notes' => ['nullable','string','max:500'],
             'selected_menu_ingredient_id'   => ['array'],
@@ -169,11 +165,7 @@ class CalendarController extends Controller
                     ]],
                 ];
             } else {
-                // Si hay calendar sin menú, puedes decidir mostrar “Sin menú” o no incluirlo.
-                // $events[] = [
-                //     'date'  => $cal->date->format('Y-m-d'),
-                //     'items' => [[ 'label'=>'Menú', 'color'=>'yellow', 'summary'=>'(Sin menú)' ]],
-                // ];
+
             }
         }
 

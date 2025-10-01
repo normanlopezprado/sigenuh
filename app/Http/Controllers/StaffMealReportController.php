@@ -10,13 +10,9 @@ use App\Models\StaffMealRecord;
 
 class StaffMealReportController extends Controller
 {
-    /**
-     * GET /staff_meals/report
-     * Vista con filtros + tabla paginada y export CSV.
-     */
+
     public function deliveriesReport(Request $request)
     {
-        // Defaults (últimos 7 días)
         $defaults = [
             'date_from'   => now()->subDays(7)->toDateString(),
             'date_to'     => now()->toDateString(),
@@ -63,7 +59,6 @@ class StaffMealReportController extends Controller
                 'u.name as delivered_by_name',
             ]);
 
-        // Filtros (aplican a base y export)
         if ($filters['date_from']) {
             $base->whereDate('staff_meal_records.delivery_date', '>=', $filters['date_from']);
         }
@@ -101,9 +96,7 @@ class StaffMealReportController extends Controller
 
             $callback = function () use ($rows) {
                 $out = fopen('php://output', 'w');
-                // BOM UTF-8
                 fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
-                // Encabezados
                 fputcsv($out, ['Fecha', 'Hora', 'Tiempo de comida', 'Beneficiario', 'Menú', 'Tipo de dieta', 'Entregado por']);
                 foreach ($rows as $r) {
                     fputcsv($out, [
@@ -122,14 +115,12 @@ class StaffMealReportController extends Controller
             return Response::stream($callback, 200, $headers);
         }
 
-        // Paginación (listado principal)
         $rows = (clone $base)
             ->orderBy('staff_meal_records.delivery_date', 'desc')
             ->orderBy('staff_meal_records.delivered_at', 'desc')
             ->paginate($filters['per_page'])
             ->appends($filters);
 
-        // Opciones para selects
         $dietTypes = Menu::query()
             ->select('diet_type')
             ->whereNotNull('diet_type')
@@ -151,11 +142,9 @@ class StaffMealReportController extends Controller
             ->pluck('u.name')
             ->all();
 
-        // ===== FIX ONLY_FULL_GROUP_BY =====
-        // Resumen por meal_type con select reseteado y groupBy limpio.
         $summary = (clone $base)
-            ->reorder() // limpia orderBy previos
-            ->select('staff_meal_records.meal_type') // reemplaza columnas
+            ->reorder() 
+            ->select('staff_meal_records.meal_type') 
             ->selectRaw('COUNT(*) AS c')
             ->groupBy('staff_meal_records.meal_type')
             ->pluck('c', 'staff_meal_records.meal_type');
