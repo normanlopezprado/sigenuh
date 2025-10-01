@@ -81,7 +81,7 @@
                     <ul class="slide-menu" role="menu">
                         <li class="slide">
 
-                            <a href="{{ route('carts.routes') }}" class="side-menu__item" role="menuitem" >
+                            <a href="{{ route('carts.routes.update') }}" class="side-menu__item" role="menuitem" >
                                 <i class="ri-guide-line"></i>
                                 Rutas
                             </a>

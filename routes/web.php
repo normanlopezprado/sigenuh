@@ -23,6 +23,7 @@ use App\Http\Controllers\StaffBeneficiaryController;
 use App\Http\Controllers\StaffMealController;
 use App\Http\Controllers\StaffMealReportController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CartRouteController;
 
 
 
@@ -261,9 +262,12 @@ Route::middleware(['auth','verified'])->prefix('carts')->name('carts.')->group(f
     Route::get('/{cart}/services/selected', [CartController::class, 'selectedServices'])->name('services.selected');
 });
 
-Route::get('carts/routes', function () {
-    $first = \App\Models\Cart::orderBy('created_at')->first();
-    return $first
-        ? redirect()->route('carts.route.edit', $first)
-        : redirect()->route('carts.index');
-})->middleware(['auth','verified'])->name('carts.routes');
+// rutas
+
+Route::middleware(['auth'])->group(function () {
+    // Vista (Hospital -> Carrito -> Dual-list)
+    Route::get('carts/routes',  [CartRouteController::class, 'edit'])->name('carts.routes.index');
+
+    // Guardar cambios (mismo formulario)
+    Route::post('carts/routes', [CartRouteController::class, 'update'])->name('carts.routes.update');
+});
