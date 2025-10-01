@@ -22,6 +22,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\StaffBeneficiaryController;
 use App\Http\Controllers\StaffMealController;
 use App\Http\Controllers\StaffMealReportController;
+use App\Http\Controllers\CartController;
 
 
 
@@ -243,3 +244,26 @@ Route::middleware(['auth'])->group(function () {
     Route::get('staff_meals/report', [StaffMealReportController::class, 'deliveriesReport'])
         ->name('staff_meals.report');
 });
+
+// Carritos
+Route::middleware(['auth','verified'])->prefix('carts')->name('carts.')->group(function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::get('/create', [CartController::class, 'create'])->name('create');
+    Route::post('/', [CartController::class, 'store'])->name('store');
+    Route::get('/{cart}/edit', [CartController::class, 'edit'])->name('edit');
+    Route::put('/{cart}', [CartController::class, 'update'])->name('update');
+    Route::delete('/{cart}', [CartController::class, 'destroy'])->name('destroy');
+
+    Route::get('/{cart}/route', [CartController::class, 'editRoute'])->name('route.edit');
+    Route::put('/{cart}/route', [CartController::class, 'updateRoute'])->name('route.update');
+
+    Route::get('/{cart}/services/available', [CartController::class, 'availableServices'])->name('services.available');
+    Route::get('/{cart}/services/selected', [CartController::class, 'selectedServices'])->name('services.selected');
+});
+
+Route::get('carts/routes', function () {
+    $first = \App\Models\Cart::orderBy('created_at')->first();
+    return $first
+        ? redirect()->route('carts.route.edit', $first)
+        : redirect()->route('carts.index');
+})->middleware(['auth','verified'])->name('carts.routes');

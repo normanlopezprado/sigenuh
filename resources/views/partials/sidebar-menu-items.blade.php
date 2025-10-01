@@ -80,8 +80,14 @@
                     </a>
                     <ul class="slide-menu" role="menu">
                         <li class="slide">
-                            <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
-                                <i class="ri-settings-4-line"></i>
+
+                            <a href="{{ route('carts.routes') }}" class="side-menu__item" role="menuitem" >
+                                <i class="ri-guide-line"></i>
+                                Rutas
+                            </a>
+
+                            <a href="{{ route('carts.index') }}" class="side-menu__item" role="menuitem">
+                                <i class="ri-shopping-cart-2-line"></i>
                                 Gestionar
                             </a>
                         </li>
