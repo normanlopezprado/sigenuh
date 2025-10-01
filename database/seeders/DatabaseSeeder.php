@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             HospitalSeeder::class,
             NivelesSeeder::class,
+            IngredientSeeder::class,
+            StaffBeneficiarySeeder::class,
+
         ]);
 
         // 2) Usuario root (idempotente)

@@ -34,4 +34,8 @@ class Menu extends Model
             ->withPivot(['id','qty','is_optional','notes'])
             ->withTimestamps();
     }
+    public function menuIngredients()
+    {
+        return $this->hasMany(MenuIngredient::class, 'menu_id');
+    }
 }

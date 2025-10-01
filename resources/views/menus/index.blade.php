@@ -22,8 +22,7 @@
                     <tr>
                         <th>Nombre</th>
                         <th>Categoría</th>
-                        <th>Descripción</th>
-                        <th>Notas</th>
+                        <th>Tipo de dieta</th> 
                         <th>Acciones</th>
                     </tr>
                     </thead>
@@ -33,13 +32,11 @@
                             <td>{{ $m->name }}</td>
                             <td>{{ $m->category }}</td>
                             <td>{{ $m->diet_type }}</td>
-                            <td>{{ $m->description }}</td>
-                            <td>{{ $m->notes }}</td>
                             <td>
-                                @canany('menu.edit')
+                                @canany('menus.edit')
                                     <a href="{{ route('menus.edit', $m) }}" class="btn btn-sm btn-warning">Editar</a>
                                 @endcan
-                                @canany( 'menu.delete')
+                                @canany( 'menus.delete')
                                     <form action="{{ route('menus.destroy', $m->id) }}" method="POST" style="display:inline-block">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente?')">Desactivar</button>
@@ -51,7 +48,7 @@
                         <tr>
                             <td colspan="6">
                                 Sin registros
-                                @canany('menu.create')
+                                @canany('menus.create')
                                 <a href="{{ route('menus.create') }}" class="btn btn-primary">Nuevo</a>
                                 @endcan
                             </td>

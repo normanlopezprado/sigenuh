@@ -12,15 +12,14 @@
 @endsection
 
 @section('content')
-    <form method="POST" action="{{ route('ingredients.store') }}">
-        @csrf
-        @include('ingredients.form')
-        <button class="btn btn-success">Guardar</button>
-        <a href="{{ route('ingredients.index') }}" class="btn btn-secondary">Volver</a>
-    </form>
+    @include('ingredients.form', [
+        'action'    => route('ingredients.store'),
+        'btnText'   => 'Guardar',
+        'cancelUrl' => route('ingredients.index'),
+    ])
 @endsection
-@section('js')
 
+@section('js')
     <!-- Air Datepicker js -->
     <script src="{{ asset('assets/libs/air-datepicker/air-datepicker.js') }}"></script>
 

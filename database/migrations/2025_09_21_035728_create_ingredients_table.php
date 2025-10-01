@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->string('name')->unique();
             $table->string('category');
-            $table->enum('unit', ['g','kg','ml','L','botella', 'galón','unidad']);
+            $table->enum('unit', ['g.','lb.','ml.','L.','gal.', 'ud.']);
             $table->boolean('status')->default(true);
             $table->text('notes')->nullable();
 

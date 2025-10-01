@@ -18,6 +18,13 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\StaffBeneficiaryController;
+use App\Http\Controllers\StaffMealController;
+use App\Http\Controllers\StaffMealReportController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CartRouteController;
+
 
 
 Route::get('/', function () {
@@ -25,21 +32,18 @@ Route::get('/', function () {
 
 });
 
+// recuperar contraseña
 Route::middleware('guest')->group(function () {
-    // Form para solicitar el enlace
     Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
         ->name('password.request');
 
-    // Enviar email con enlace
     Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
         ->middleware('throttle:6,1')
         ->name('password.email');
 
-    // Form de reset (desde el email)
     Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
         ->name('password.reset');
 
-    // Guardar nueva contraseña
     Route::post('reset-password', [ResetPasswordController::class, 'reset'])
         ->name('password.update');
 });
@@ -50,7 +54,7 @@ Route::get('/email/verify', function () {
 })->middleware('auth')->name('verification.notice');
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill(); // marca email como verificado
+    $request->fulfill(); 
     return redirect()->route('dashboard')->with('success','Email verificado.');
 })->middleware(['auth','signed','throttle:6,1'])->name('verification.verify');
 
@@ -171,8 +175,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('usuarios/{usuario}',   [UserController::class,'destroy'])->name('usuarios.destroy')->middleware('permission:users.delete');
 });
 // menus
-Route::resource('menus', MenuController::class)
-    ->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('menus',                 [MenuController::class,'index'])->name('menus.index')->middleware('permission:menus.index');
@@ -181,4 +183,91 @@ Route::middleware(['auth'])->group(function () {
     Route::get('menus/{menu}/edit',[MenuController::class,'edit'])->name('menus.edit')->middleware('permission:menus.edit');
     Route::put('menus/{menu}',    [MenuController::class,'update'])->name('menus.update')->middleware('permission:menus.edit');
     Route::delete('menus/{menu}', [MenuController::class,'destroy'])->name('menus.destroy')->middleware('permission:menus.delete');
+});
+//Calendar
+
+Route::resource('calendars', CalendarController::class)
+    ->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::get('/calendars', function () {
+        return view('calendars.index');
+    })->name('calendars.index');
+});
+Route::get('/calendar/month', [CalendarController::class, 'monthData'])
+    ->name('calendar.month');
+Route::get('/calendar/month', [CalendarController::class, 'monthData'])
+    ->name('calendar.month');
+
+Route::middleware(['auth'])->group(function () {
+Route::resource('staff-beneficiaries', StaffBeneficiaryController::class);
+});
+
+Route::middleware(['auth','verified'])->group(function () {
+    Route::get('/staff-beneficiaries', [StaffBeneficiaryController::class, 'index'])->name('staff-beneficiaries.index');
+    Route::get('/staff-beneficiaries/create', [StaffBeneficiaryController::class, 'create'])->name('staff-beneficiaries.create');
+    Route::post('/staff-beneficiaries', [StaffBeneficiaryController::class, 'store'])->name('staff-beneficiaries.store');
+    Route::get('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'show'])->name('staff-beneficiaries.show');
+    Route::get('/staff-beneficiaries/{staff_beneficiary}/edit', [StaffBeneficiaryController::class, 'edit'])->name('staff-beneficiaries.edit');
+    Route::put('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'update'])->name('staff-beneficiaries.update');
+    Route::delete('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'destroy'])->name('staff-beneficiaries.destroy');
+    Route::patch('/staff-beneficiaries/{staff_beneficiary}/toggle-status', [StaffBeneficiaryController::class, 'toggleStatus'])->name('staff-beneficiaries.toggle-status')->middleware(['auth','verified']);
+
+});
+
+
+//entregas
+Route::middleware(['auth'])->group(function () {
+    Route::get('staff_meals/delivery', [StaffMealController::class, 'delivery'])
+        ->name('staff_meals.delivery');
+
+    // Opciones dinámicas (JSON)
+    Route::get('staff_meals/options/diet-types', [StaffMealController::class, 'dietTypes'])
+        ->name('staff_meals.diet-types');
+
+    Route::get('staff_meals/options/menus-today', [StaffMealController::class, 'menusToday'])
+        ->name('staff_meals.menus-today');
+
+    // Búsqueda de beneficiarios (JSON)
+    Route::get('staff_meals/search-beneficiaries', [StaffMealController::class, 'searchBeneficiaries'])
+        ->name('staff_meals.search-beneficiaries');
+
+    // Registrar entrega
+    Route::post('staff_meals/deliver', [StaffMealController::class, 'deliver'])
+        ->name('staff_meals.deliver');
+
+    // Listado entregas del día (para la tabla)
+    Route::get('staff_meals/list-deliveries', [StaffMealController::class, 'listDeliveries'])
+        ->name('staff_meals.list-deliveries');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('staff_meals/report', [StaffMealReportController::class, 'deliveriesReport'])
+        ->name('staff_meals.report');
+});
+
+// Carritos
+Route::middleware(['auth','verified'])->prefix('carts')->name('carts.')->group(function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::get('/create', [CartController::class, 'create'])->name('create');
+    Route::post('/', [CartController::class, 'store'])->name('store');
+    Route::get('/{cart}/edit', [CartController::class, 'edit'])->name('edit');
+    Route::put('/{cart}', [CartController::class, 'update'])->name('update');
+    Route::delete('/{cart}', [CartController::class, 'destroy'])->name('destroy');
+
+    Route::get('/{cart}/route', [CartController::class, 'editRoute'])->name('route.edit');
+    Route::put('/{cart}/route', [CartController::class, 'updateRoute'])->name('route.update');
+
+    Route::get('/{cart}/services/available', [CartController::class, 'availableServices'])->name('services.available');
+    Route::get('/{cart}/services/selected', [CartController::class, 'selectedServices'])->name('services.selected');
+});
+
+// rutas
+
+Route::middleware(['auth'])->group(function () {
+    // Vista (Hospital -> Carrito -> Dual-list)
+    Route::get('carts/routes',  [CartRouteController::class, 'edit'])->name('carts.routes.index');
+
+    // Guardar cambios (mismo formulario)
+    Route::post('carts/routes', [CartRouteController::class, 'update'])->name('carts.routes.update');
 });

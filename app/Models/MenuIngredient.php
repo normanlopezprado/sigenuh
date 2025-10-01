@@ -29,4 +29,14 @@ class MenuIngredient extends Pivot
             }
         });
     }
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class, 'menu_id');
+    }
+
+    public function ingredient()
+    {
+        return $this->belongsTo(Ingredient::class, 'ingredient_id');
+    }
+
 }

@@ -8,33 +8,41 @@ use Illuminate\Validation\Rule;
 
 class IngredientController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Catálogo fijo de categorías
+    private const CATEGORIES = ['Condimento','Fruta', 'Lácteos', 'Proteína','Verdura'];
+
+
+
+
+    // Valores EXACTOS del ENUM => etiqueta visible
+    private const UNITS = [
+        'g.'   => 'g. — gramo',
+        'lb.'  => 'lb. — libra',
+        'ml.'  => 'ml. — mililitro',
+        'L.'   => 'L. — litro',
+        'gal.' => 'gal. — galón',
+        'ud.'  => 'ud. — unidad',
+    ];
+
     public function index()
     {
         $ingredients = Ingredient::where('status', true)->latest()->get();
         return view('ingredients.index', compact('ingredients'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $units = ['g', 'kg', 'ml', 'L', 'unidad'];
-        return view('ingredients.create', compact('units'));
+        $categories = self::CATEGORIES;
+        $unitsMap   = self::UNITS;
+        return view('ingredients.create', compact('categories','unitsMap'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
             'name'     => ['required','string','max:255','unique:ingredients,name'],
-            'category' => ['required','string','max:255'],
-            'unit'     => ['required', Rule::in(['g','kg','ml','L','unidad'])],
+            'category' => ['required', Rule::in(self::CATEGORIES)],
+            'unit'     => ['required', Rule::in(array_keys(self::UNITS))], // <-- usa ENUM exacto
             'notes'    => ['nullable','string'],
         ]);
 
@@ -44,32 +52,24 @@ class IngredientController extends Controller
             ->with('success', 'Ingrediente creado correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Ingredient $ingredient)
     {
         return view('ingredients.show', compact('ingredient'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Ingredient $ingredient)
     {
-        $units = ['g','kg','ml','L','botella', 'galón','unidad'];
-        return view('ingredients.edit', compact('ingredient','units'));
+        $categories = self::CATEGORIES;
+        $unitsMap   = self::UNITS;
+        return view('ingredients.edit', compact('ingredient','categories','unitsMap'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Ingredient $ingredient)
     {
         $data = $request->validate([
             'name'     => ['required','string','max:255', Rule::unique('ingredients','name')->ignore($ingredient->id)],
-            'category' => ['required','string','max:255'],
-            'unit'     => ['required', Rule::in(['g','kg','ml','L','botella', 'galón','unidad'])],
+            'category' => ['required', Rule::in(self::CATEGORIES)],
+            'unit'     => ['required', Rule::in(array_keys(self::UNITS))],
             'notes'    => ['nullable','string'],
         ]);
 
@@ -79,9 +79,6 @@ class IngredientController extends Controller
             ->with('success', 'Ingrediente actualizado correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $ingredient)
     {
         Ingredient::where('id', $ingredient)->update(['status' => false]);
