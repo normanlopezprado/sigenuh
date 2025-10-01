@@ -31,7 +31,17 @@ class CollectController extends Controller
         $hospital = Hospital::findOrFail($hospitalId);
 
         $date = $request->query('date', now()->toDateString());
-        $meal = $request->query('meal', 'Desayuno');
+        $requestedMeal = $request->query('meal');
+        $validMeals = ['Desayuno','Almuerzo','Cena'];
+
+        if ($requestedMeal && in_array($requestedMeal, $validMeals, true)) {
+            $meal = $requestedMeal;
+        } else {
+            $meal = MealWindow::currentMealPeriod($hospital);
+            if (!$meal || !in_array($meal, $validMeals, true)) {
+                $meal = 'Desayuno';
+            }
+        }
         $serviceId = $request->query('service');
 
         $services = Service::orderBy('name')->get();
@@ -90,11 +100,6 @@ class CollectController extends Controller
                 }
             }
         }
-        $meal = $request->query('meal');
-        if (!$meal || !in_array($meal, ['Desayuno','Almuerzo','Cena'])) {
-            $meal = MealWindow::currentMealPeriod($hospital);
-        }
-
         $isOpen = in_array($meal, ['Desayuno','Almuerzo','Cena'])
             ? MealWindow::nowWithinHospitalWindow($hospital, $meal)
             : false;
