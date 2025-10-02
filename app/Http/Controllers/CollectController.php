@@ -68,29 +68,33 @@ class CollectController extends Controller
         $prefillSource = null;
 
         if ($collects->isEmpty() && !empty($bedIds)) {
-            // calcular el turno anterior
-            $prevDate = Carbon::parse($date)->toDateString();
-            $prevMeal = null;
+            $prevMeal = in_array($meal, $validMeals, true) ? $meal : null;
+            $prevDate = Carbon::parse($date)->subDay()->toDateString();
 
-            switch ($meal) {
-                case 'Desayuno':
-                    $prevDate = Carbon::parse($date)->subDay()->toDateString();
-                    $prevMeal = 'Cena';
-                    break;
-                case 'Almuerzo':
-                    $prevMeal = 'Desayuno';
-                    break;
-                case 'Cena':
-                    $prevMeal = 'Almuerzo';
-                    break;
-            }
             if ($prevMeal) {
-                $prevCollects = Collect::whereIn('bed_id', $bedIds)
+                $prevCollectsQuery = Collect::whereIn('bed_id', $bedIds)
+                    ->where('meal', $prevMeal);
+
+                $prevCollects = (clone $prevCollectsQuery)
                     ->whereDate('date', $prevDate)
-                    ->where('meal', $prevMeal)
                     ->get()
                     ->keyBy('bed_id');
 
+                if ($prevCollects->isEmpty()) {
+                    $fallbackDate = (clone $prevCollectsQuery)
+                        ->whereDate('date', '<', $date)
+                        ->orderBy('date', 'desc')
+                        ->value('date');
+
+                    if ($fallbackDate) {
+                        $prevDate = Carbon::parse($fallbackDate)->toDateString();
+                        $prevCollects = (clone $prevCollectsQuery)
+                            ->whereDate('date', $prevDate)
+                            ->get()
+                            ->keyBy('bed_id');
+                    }
+                }
+                
                 if ($prevCollects->isNotEmpty()) {
                     $collects      = $prevCollects;
                     $prefillSource = [
