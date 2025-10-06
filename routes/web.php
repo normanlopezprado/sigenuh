@@ -267,4 +267,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::patch('/collects/bed/{bed}/toggle', [CollectController::class, 'toggleBedStatus'])
         ->name('collects.toggle-bed');
+
+    Route::patch('/collects/bed/{bed}/companion', [CollectController::class, 'saveCompanion'])
+        ->name('collects.save-companion');
 });

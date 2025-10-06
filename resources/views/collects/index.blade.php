@@ -84,6 +84,7 @@
                 <tr>
                     <th style="white-space: nowrap;">Cama</th>
                     <th style="white-space: nowrap;">Estado cama</th>
+                    <th class="text-center" style="white-space: nowrap;">Menor/Acomp.</th>
                     {{-- Cabeceras de dietas como radios --}}
                     @foreach($diets as $d)
                         <th class="text-center">{{ $d }}</th>
@@ -118,7 +119,30 @@
                                 {{ $bed->status ?? 'Disponible' }}
                             </button>
                         </td>
+                        <td class="text-center">
+                            @php
+                                $hasMinor = (bool)($col->has_minor ?? false);
+                                $hasComp  = (bool)($col->has_companion ?? false);
+                                $compDiet = $col->companion_diet_type ?? null;
+                            @endphp
 
+                            @if($hasComp)
+                                <span class="badge bg-info mb-1">Acompañante: {{ $compDiet ?? '—' }}</span><br>
+                            @endif
+                            @if($hasMinor)
+                                <span class="badge bg-secondary mb-1">Menor</span><br>
+                            @endif
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    onclick="openCompanionModal('{{ $bed->id }}', {{ json_encode([
+                                    'has_minor' => $hasMinor,
+                                    'has_companion' => $hasComp,
+                                    'companion_diet_type' => $compDiet,
+                                  ]) }})">
+                                                        Configurar
+                            </button>
+                        </td>
                         {{-- Radios de dieta --}}
                         @foreach($diets as $d)
                             <td class="text-center">
@@ -185,4 +209,125 @@
             alert('No se pudo cambiar el estado de la cama.');
         }
     }
+    let companionModal, bootstrapModal;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalEl = document.getElementById('companionModal');
+        bootstrapModal = new bootstrap.Modal(modalEl, { keyboard: false });
+
+        const hasCompanion = document.getElementById('comp-has-companion');
+        const dietWrapper  = document.getElementById('companionDietWrapper');
+        hasCompanion.addEventListener('change', () => {
+            dietWrapper.style.display = hasCompanion.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('comp-save-btn').addEventListener('click', saveCompanion);
+    });
+
+    function openCompanionModal(bedId, preset) {
+        document.getElementById('comp-bed-id').value = bedId;
+
+        const hasMinorEl = document.getElementById('comp-has-minor');
+        const hasCompEl  = document.getElementById('comp-has-companion');
+        const dietEl     = document.getElementById('comp-diet');
+
+        hasMinorEl.checked = !!(preset?.has_minor);
+        hasCompEl.checked  = !!(preset?.has_companion);
+        dietEl.value       = preset?.companion_diet_type || '';
+
+        document.getElementById('companionDietWrapper').style.display = hasCompEl.checked ? 'block' : 'none';
+
+        bootstrapModal.show();
+    }
+
+    async function saveCompanion() {
+        const bedId  = document.getElementById('comp-bed-id').value;
+        const date   = document.getElementById('comp-date').value;
+        const meal   = document.getElementById('comp-meal').value;
+
+        const hasMinor = document.getElementById('comp-has-minor').checked ? 1 : 0;
+        const hasComp  = document.getElementById('comp-has-companion').checked ? 1 : 0;
+        const diet     = document.getElementById('comp-diet').value || null;
+        const notes    = document.getElementById('comp-notes').value || null;
+
+        try {
+            const res = await fetch(`{{ url('/collects/bed') }}/${bedId}/companion`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type':'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    date: date,
+                    meal: meal,
+                    has_minor: hasMinor,
+                    has_companion: hasComp,
+                    companion_diet_type: diet,
+                    companion_notes: notes,
+                }),
+            });
+
+            if (!res.ok) {
+                const txt = await res.text();
+                throw new Error(txt || ('HTTP '+res.status));
+            }
+
+            /
+            bootstrapModal.hide();
+            window.location.href = window.location.href;
+        } catch (e) {
+            console.error(e);
+            alert('No se pudieron guardar los datos del acompañante.');
+        }
+    }
 </script>
+{{-- Modal Menor/Acompañante --}}
+<div class="modal fade" id="companionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Menor y acompañante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="companionForm">
+                    @csrf
+                    <input type="hidden" id="comp-bed-id">
+                    <input type="hidden" id="comp-date" value="{{ $date ?? now()->toDateString() }}">
+                    <input type="hidden" id="comp-meal" value="{{ $meal ?? 'Desayuno' }}">
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="comp-has-minor">
+                        <label class="form-check-label" for="comp-has-minor">Paciente es menor</label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="comp-has-companion">
+                        <label class="form-check-label" for="comp-has-companion">¿Tiene acompañante?</label>
+                    </div>
+
+                    <div id="companionDietWrapper" class="mb-3" style="display:none;">
+                        <label class="form-label">Dieta para acompañante</label>
+                        <select id="comp-diet" class="form-select">
+                            <option value="">— Selecciona una dieta —</option>
+                            @foreach($diets as $d)
+                                <option value="{{ $d }}">{{ $d }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Notas de acompañante (opcional)</label>
+                      <textarea id="comp-notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="comp-save-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

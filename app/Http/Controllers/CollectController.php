@@ -94,7 +94,7 @@ class CollectController extends Controller
                             ->keyBy('bed_id');
                     }
                 }
-                
+
                 if ($prevCollects->isNotEmpty()) {
                     $collects      = $prevCollects;
                     $prefillSource = [
@@ -192,5 +192,52 @@ class CollectController extends Controller
             return response()->json(['ok' => true, 'status' => $new]);
         }
         return back();
+    }
+    public function saveCompanion(Request $request, Bed $bed)
+    {
+        $user = $request->user();
+        $hospitalId = $user->hospital_selected;
+        if (!$hospitalId) abort(403);
+
+        $belongs = Bed::where('id', $bed->id)
+            ->whereHas('hospitalFloorService.hospitalFloor', fn($q) => $q->where('hospital_id', $hospitalId))
+            ->exists();
+        if (!$belongs) abort(403);
+
+        $data = $request->validate([
+            'date'  => ['required','date'],
+            'meal'  => ['required', Rule::in(['Desayuno','Almuerzo','Cena'])],
+            'has_minor' => ['required','boolean'],
+            'has_companion' => ['required','boolean'],
+            'companion_diet_type' => [
+                'nullable',
+                Rule::in(['Libre','Blanda','Hiposódica','Diabético 1,200','Diabético 1,500','Renal','Licuada','Especial']),
+            ],
+            'companion_notes' => ['nullable','string'],
+        ]);
+
+        if (!$data['has_companion']) {
+            $data['companion_diet_type'] = null;
+            $data['companion_notes'] = null;
+        }
+
+        $collect = \App\Models\Collect::updateOrCreate(
+            ['bed_id' => $bed->id, 'date' => $data['date'], 'meal' => $data['meal']],
+            [
+                'user_id'            => $user->id, // quién modifica
+                'has_minor'          => (bool)$data['has_minor'],
+                'has_companion'      => (bool)$data['has_companion'],
+                'companion_diet_type'=> $data['companion_diet_type'] ?? null,
+                'companion_notes'    => $data['companion_notes'] ?? null,
+            ]
+        );
+
+        return response()->json([
+            'ok' => true,
+            'collect_id' => $collect->id,
+            'has_minor' => $collect->has_minor,
+            'has_companion' => $collect->has_companion,
+            'companion_diet_type' => $collect->companion_diet_type,
+        ]);
     }
 }
