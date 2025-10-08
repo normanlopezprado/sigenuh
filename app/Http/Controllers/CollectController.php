@@ -147,7 +147,6 @@ class CollectController extends Controller
         }
         DB::transaction(function() use ($rows, $date, $meal, $hospitalId, $user) {
             foreach ($rows as $bedId => $row) {
-                // Verifica que la cama pertenece al hospital del usuario
                 $belongs = Bed::where('id', $bedId)
                     ->whereHas('hospitalFloorService.hospitalFloor', fn($q) => $q->where('hospital_id', $hospitalId))
                     ->exists();
@@ -221,7 +220,7 @@ class CollectController extends Controller
             $data['companion_notes'] = null;
         }
 
-        $collect = \App\Models\Collect::updateOrCreate(
+        $collect = Collect::updateOrCreate(
             ['bed_id' => $bed->id, 'date' => $data['date'], 'meal' => $data['meal']],
             [
                 'user_id'            => $user->id, // quién modifica
