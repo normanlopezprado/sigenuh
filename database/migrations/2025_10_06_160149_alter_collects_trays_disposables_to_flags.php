@@ -1,42 +1,65 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration {
+    private string $table = 'collects';
+
     public function up(): void
     {
-        Schema::table('collects', function (Blueprint $table) {
-            $table->tinyInteger('has_disposable')->default(0)->after('notes');
-            $table->tinyInteger('companion_has_disposable')->default(0)->after('has_disposable');
-            if (Schema::hasColumn('collects', 'trays_count')) {
-                $table->dropColumn('trays_count');
-            }
-            if (Schema::hasColumn('collects', 'disposables_count')) {
-                $table->dropColumn('disposables_count');
-            }
-        });
+        if (!Schema::hasTable($this->table)) {
+            return;
+        }
+
+        $this->convertToBoolean('trays');
+        $this->convertToBoolean('disposables');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('collects', function (Blueprint $table) {
-            $table->unsignedInteger('trays_count')->default(0)->after('diet_type');
-            $table->unsignedInteger('disposables_count')->default(0)->after('trays_count');
-            if (Schema::hasColumn('collects', 'has_disposable')) {
-                $table->dropColumn('has_disposable');
-            }
-            if (Schema::hasColumn('collects', 'companion_has_disposable')) {
-                $table->dropColumn('companion_has_disposable');
-            }
-        });
+        if (!Schema::hasTable($this->table)) {
+            return;
+        }
+
+        $this->revertToInteger('trays');
+        $this->revertToInteger('disposables');
+    }
+
+    private function convertToBoolean(string $column): void
+    {
+        if (!$this->columnExists($column)) {
+            return;
+        }
+
+        DB::statement(sprintf(
+            'ALTER TABLE `%s` MODIFY `%s` TINYINT(1) NOT NULL DEFAULT 0',
+            $this->table,
+            $column
+        ));
+    }
+
+    private function revertToInteger(string $column): void
+    {
+        if (!$this->columnExists($column)) {
+            return;
+        }
+
+        DB::statement(sprintf(
+            'ALTER TABLE `%s` MODIFY `%s` INT NOT NULL',
+            $this->table,
+            $column
+        ));
+    }
+
+    private function columnExists(string $column): bool
+    {
+        $result = DB::select(
+            'SELECT COUNT(*) AS aggregate FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?',
+            [$this->table, $column]
+        );
+
+        return isset($result[0]) && (int) $result[0]->aggregate > 0;
     }
 };
