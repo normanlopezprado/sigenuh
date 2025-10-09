@@ -134,8 +134,7 @@ class CollectController extends Controller
             'meal' => ['required','in:Desayuno,Almuerzo,Cena'],
             'rows' => ['array'],
             'rows.*.diet_type' => ['nullable','in:Libre,Blanda,Hiposódica,Diabético 1,200,Diabético 1,500,Renal,Licuada,Especial'],
-            'rows.*.trays' => ['nullable','integer','min:0'],
-            'rows.*.disposables' => ['nullable','integer','min:0'],
+            'rows.*.has_disposable' => ['nullable','in:0,1'],
             'rows.*.notes' => ['nullable','string'],
         ]);
 
@@ -157,7 +156,7 @@ class CollectController extends Controller
                     [
                         'diet_type'         => $row['diet_type'] ?? null,
                         'trays_count'       => isset($row['trays']) ? (int)$row['trays'] : 0,
-                        'disposables_count' => isset($row['disposables']) ? (int)$row['disposables'] : 0,
+                        'has_disposable' => isset($row['has_disposable']) ? (int)$row['has_disposable'] : 0,
                         'user_id'           => $user->id,
                         'notes'             => $row['notes'] ?? null,
                     ]

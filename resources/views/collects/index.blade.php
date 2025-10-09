@@ -107,8 +107,7 @@
                                     @foreach($diets as $d)
                                         <th class="text-center">{{ $d }}</th>
                                     @endforeach
-                                    <th class="text-center" style="min-width:120px;">Bandejas</th>
-                                    <th class="text-center" style="min-width:140px;">Desechables</th>
+                                    <th class="text-center" style="min-width:120px;">Desechable</th>
                                     <th>Notas</th>
                                 </tr>
                                 </thead>
@@ -117,8 +116,7 @@
                                     @php
                                         $col = $collectsByBed[$bed->id] ?? null;
                                         $diet = $col?->diet_type;
-                                        $trays = $col?->trays_count ?? 0;
-                                        $disp  = $col?->disposables_count ?? 0;
+                                        $disp  = (bool)($col?->has_disposable ?? false);
                                         $notes = $col?->notes ?? '';
                                     @endphp
                                     <tr>
@@ -172,16 +170,10 @@
                                         @endforeach
 
                                         <td class="text-center">
-                                            <input type="number" min="0" step="1"
-                                                   class="form-control form-control-sm text-center"
-                                                   name="rows[{{ $bed->id }}][trays]"
-                                                   value="{{ $trays }}">
-                                        </td>
-                                        <td class="text-center">
-                                            <input type="number" min="0" step="1"
-                                                   class="form-control form-control-sm text-center"
-                                                   name="rows[{{ $bed->id }}][disposables]"
-                                                   value="{{ $disp }}">
+                                            <input type="checkbox"
+                                                   name="rows[{{ $bed->id }}][has_disposable]"
+                                                   value="1"
+                                                @checked($disp)>
                                         </td>
                                         <td>
                                             <input type="text" class="form-control form-control-sm"
@@ -190,7 +182,11 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="{{ 2 + count($diets) + 3 }}" class="text-center text-muted">No hay camas para este servicio.</td></tr>
+                                    <tr>
+                                        <td colspan="{{ 2 + count($diets) + 2 }}" class="text-center text-muted">
+                                            No hay camas para este servicio.
+                                        </td>
+                                    </tr>
                                 @endforelse
                                 </tbody>
                             </table>
@@ -203,104 +199,7 @@
                     </form>
                 </div>
 
-                <script>
-                    async function toggleBedStatus(btn) {
-                        const bedId = btn.getAttribute('data-bed');
-                        if (!bedId) return;
-                        try {
-                            const res = await fetch(`{{ url('/collects/bed') }}/${bedId}/toggle`, {
-                                method: 'PATCH',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Accept': 'application/json'
-                                }
-                            });
-                            const json = await res.json();
-                            if (json && json.ok) {
-                                btn.textContent = json.status;
-                                btn.classList.toggle('btn-success', json.status === 'Disponible');
-                                btn.classList.toggle('btn-danger', json.status === 'Ocupada');
-                            }
-                        } catch (e) {
-                            console.error(e);
-                            alert('No se pudo cambiar el estado de la cama.');
-                        }
-                    }
-                    let companionModal, bootstrapModal;
 
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const modalEl = document.getElementById('companionModal');
-                        bootstrapModal = new bootstrap.Modal(modalEl, { keyboard: false });
-
-                        const hasCompanion = document.getElementById('comp-has-companion');
-                        const dietWrapper  = document.getElementById('companionDietWrapper');
-                        hasCompanion.addEventListener('change', () => {
-                            dietWrapper.style.display = hasCompanion.checked ? 'block' : 'none';
-                        });
-
-                        document.getElementById('comp-save-btn').addEventListener('click', saveCompanion);
-                    });
-
-                    function openCompanionModal(bedId, preset) {
-                        document.getElementById('comp-bed-id').value = bedId;
-
-                        const hasMinorEl = document.getElementById('comp-has-minor');
-                        const hasCompEl  = document.getElementById('comp-has-companion');
-                        const dietEl     = document.getElementById('comp-diet');
-
-                        hasMinorEl.checked = !!(preset?.has_minor);
-                        hasCompEl.checked  = !!(preset?.has_companion);
-                        dietEl.value       = preset?.companion_diet_type || '';
-
-                        document.getElementById('companionDietWrapper').style.display = hasCompEl.checked ? 'block' : 'none';
-
-                        bootstrapModal.show();
-                    }
-
-                    async function saveCompanion() {
-                        const bedId  = document.getElementById('comp-bed-id').value;
-                        const date   = document.getElementById('comp-date').value;
-                        const meal   = document.getElementById('comp-meal').value;
-
-                        const hasMinor = document.getElementById('comp-has-minor').checked ? 1 : 0;
-                        const hasComp  = document.getElementById('comp-has-companion').checked ? 1 : 0;
-                        const diet     = document.getElementById('comp-diet').value || null;
-                        const notes    = document.getElementById('comp-notes').value || null;
-
-                        try {
-                            const res = await fetch(`{{ url('/collects/bed') }}/${bedId}/companion`, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Content-Type':'application/json',
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Accept': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    date: date,
-                                    meal: meal,
-                                    has_minor: hasMinor,
-                                    has_companion: hasComp,
-                                    companion_diet_type: diet,
-                                    companion_notes: notes,
-                                }),
-                            });
-
-                            if (!res.ok) {
-                                const txt = await res.text();
-                                throw new Error(txt || ('HTTP '+res.status));
-                            }
-
-                        /
-                            bootstrapModal.hide();
-                            window.location.href = window.location.href;
-                        } catch (e) {
-                            console.error(e);
-                            alert('No se pudieron guardar los datos del acompañante.');
-                        }
-                    }
-                </script>
                 {{-- Modal Menor/Acompañante --}}
                 <div class="modal fade" id="companionModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-md modal-dialog-centered">
@@ -355,7 +254,104 @@
 
 
     </div>
+    <script>
+        async function toggleBedStatus(btn) {
+            const bedId = btn.getAttribute('data-bed');
+            if (!bedId) return;
+            try {
+                const res = await fetch(`{{ url('/collects/bed') }}/${bedId}/toggle`, {
+                    method: 'PATCH',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+                const json = await res.json();
+                if (json && json.ok) {
+                    btn.textContent = json.status;
+                    btn.classList.toggle('btn-success', json.status === 'Disponible');
+                    btn.classList.toggle('btn-danger', json.status === 'Ocupada');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('No se pudo cambiar el estado de la cama.');
+            }
+        }
+        let companionModal, bootstrapModal;
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalEl = document.getElementById('companionModal');
+            bootstrapModal = new bootstrap.Modal(modalEl, { keyboard: false });
+
+            const hasCompanion = document.getElementById('comp-has-companion');
+            const dietWrapper  = document.getElementById('companionDietWrapper');
+            hasCompanion.addEventListener('change', () => {
+                dietWrapper.style.display = hasCompanion.checked ? 'block' : 'none';
+            });
+
+            document.getElementById('comp-save-btn').addEventListener('click', saveCompanion);
+        });
+
+        function openCompanionModal(bedId, preset) {
+            document.getElementById('comp-bed-id').value = bedId;
+
+            const hasMinorEl = document.getElementById('comp-has-minor');
+            const hasCompEl  = document.getElementById('comp-has-companion');
+            const dietEl     = document.getElementById('comp-diet');
+
+            hasMinorEl.checked = !!(preset?.has_minor);
+            hasCompEl.checked  = !!(preset?.has_companion);
+            dietEl.value       = preset?.companion_diet_type || '';
+
+            document.getElementById('companionDietWrapper').style.display = hasCompEl.checked ? 'block' : 'none';
+
+            bootstrapModal.show();
+        }
+
+        async function saveCompanion() {
+            const bedId  = document.getElementById('comp-bed-id').value;
+            const date   = document.getElementById('comp-date').value;
+            const meal   = document.getElementById('comp-meal').value;
+
+            const hasMinor = document.getElementById('comp-has-minor').checked ? 1 : 0;
+            const hasComp  = document.getElementById('comp-has-companion').checked ? 1 : 0;
+            const diet     = document.getElementById('comp-diet').value || null;
+            const notes    = document.getElementById('comp-notes').value || null;
+
+            try {
+                const res = await fetch(`{{ url('/collects/bed') }}/${bedId}/companion`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type':'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        date: date,
+                        meal: meal,
+                        has_minor: hasMinor,
+                        has_companion: hasComp,
+                        companion_diet_type: diet,
+                        companion_notes: notes,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const txt = await res.text();
+                    throw new Error(txt || ('HTTP '+res.status));
+                }
+
+            /
+                bootstrapModal.hide();
+                window.location.href = window.location.href;
+            } catch (e) {
+                console.error(e);
+                alert('No se pudieron guardar los datos del acompañante.');
+            }
+        }
+    </script>
     @include('partials.social-share-modal')
 
 @endsection
