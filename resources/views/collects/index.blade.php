@@ -255,7 +255,7 @@
 
     </div>
     <script>
-        async function toggleBedStatus(btn) {
+        window.toggleBedStatus = async function toggleBedStatus(btn) {
             const bedId = btn.getAttribute('data-bed');
             if (!bedId) return;
             try {
@@ -278,7 +278,7 @@
                 alert('No se pudo cambiar el estado de la cama.');
             }
         }
-        let companionModal, bootstrapModal;
+        let bootstrapModal;
 
         document.addEventListener('DOMContentLoaded', () => {
             const modalEl = document.getElementById('companionModal');
@@ -293,7 +293,7 @@
             document.getElementById('comp-save-btn').addEventListener('click', saveCompanion);
         });
 
-        function openCompanionModal(bedId, preset) {
+        window.openCompanionModal = function openCompanionModal(bedId, preset) {
             document.getElementById('comp-bed-id').value = bedId;
 
             const hasMinorEl = document.getElementById('comp-has-minor');
@@ -343,7 +343,7 @@
                     throw new Error(txt || ('HTTP '+res.status));
                 }
 
-            /
+
                 bootstrapModal.hide();
                 window.location.href = window.location.href;
             } catch (e) {
