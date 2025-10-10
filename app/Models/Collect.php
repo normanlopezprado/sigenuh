@@ -13,13 +13,13 @@ class Collect extends Model
 
     protected $fillable = [
         'bed_id','date','meal',
-        'diet_type','has_disposable', 'user_id','notes','has_minor','has_companion','companion_diet_type',
+        'diet_type','has_disponsable', 'user_id','notes','has_minor','has_companion','companion_diet_type',
         'companion_notes','companion_has_disposable',
     ];
 
     protected $casts = [
         'date' => 'date',
-        'has_disposable' => 'boolean',
+        'has_disponsable' => 'boolean',
         'companion_has_disposable' => 'boolean',
         'has_minor' => 'boolean',
         'has_companion' => 'boolean',

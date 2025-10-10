@@ -116,7 +116,7 @@
                                     @php
                                         $col = $collectsByBed[$bed->id] ?? null;
                                         $diet = $col?->diet_type;
-                                        $disp  = (bool)($col?->has_disposable ?? false);
+                                        $disp  = (bool)($col?->has_disponsable ?? false);
                                         $notes = $col?->notes ?? '';
                                     @endphp
                                     <tr>
@@ -171,7 +171,7 @@
 
                                         <td class="text-center">
                                             <input type="checkbox"
-                                                   name="rows[{{ $bed->id }}][has_disposable]"
+                                                   name="rows[{{ $bed->id }}][has_disponsable]"
                                                    value="1"
                                                 @checked($disp)>
                                         </td>
