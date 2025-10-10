@@ -1,28 +1,50 @@
 <ul class="main-menu" id="all-menu-items" role="menu">
     <li class="menu-title" role="presentation" data-lang="hr-title-main">Reportes</li>
+
     <li class="slide">
+        {{-- === DASHBOARDS === --}}
         <a href="#!" class="side-menu__item" role="menuitem">
             <span class="side_menu_icon"><i class="ri-dashboard-line"></i></span>
             <span class="side-menu__label" data-lang="hr-dashboards">Dashboards</span>
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
+
         <ul class="slide-menu" role="menu">
-
-            <li class="slide">
-                <a href="index" class="side-menu__item" role="menuitem" data-lang="hr-dashboards-ecommerce">Calendario de dietas</a>
+        
+            <li 
+                class="slide">
+                <a href="index" 
+                class="side-menu__item" 
+                role="menuitem" 
+                data-lang="hr-dashboards-ecommerce">
+                Calendario
+                </a>
             </li>
 
             <li class="slide">
-                <a href="dashboard-project-management" data-lang="hr-dashboards-project-management" class="side-menu__item" role="menuitem">Carritos</a>
+                <a 
+                href="dashboard-project-management" 
+                data-lang="hr-dashboards-project-management" 
+                class="side-menu__item" 
+                role="menuitem">
+                Carritos
+                </a>
             </li>
 
-            <li class="slide">
-                <a href="dashboard-project-management" data-lang="hr-dashboards-project-management" class="side-menu__item" role="menuitem">Historia</a>
+            <li 
+                class="slide">
+                <a href="dashboard-project-management" 
+                data-lang="hr-dashboards-project-management" 
+                class="side-menu__item" 
+                role="menuitem">
+                Historia
+                </a>
             </li>
 
         </ul>
     </li>
 
+    {{-- === DEPARTAMENTO DE NUTRICIÓN === --}}
     <li class="menu-title" role="presentation" data-lang="hr-title-applications">Departamento de nutrición</li>
         <li class="slide">
             <a href="#!" class="side-menu__item" role="menuitem">
@@ -32,36 +54,34 @@
             </a>
 
             <ul class="slide-menu" role="menu">
-
-                <li class="slide">
-                    <a href="#!" class="side-menu__item" role="menuitem">
-                        <i class="ri-keyboard-box-line"></i>
-                        <span class="side-menu__label" data-lang="hr-apps-email">Recolección</span>
-                        <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                    </a>
-                    <ul class="slide-menu" role="menu">
-                        <li class="slide">
-                            <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">Iniciar</a>
-                        </li>
-                    </ul>
-                </li>
-
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
                         <i class="ri-team-line"></i>
-                        <span class="side-menu__label" data-lang="hr-apps-email">Beneficiarios</span>
+                        <span 
+                        class="side-menu__label" 
+                        data-lang="hr-apps-email">
+                        Beneficiarios
+                        </span>
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
+
                     <ul class="slide-menu" role="menu">
 
                         <li class="slide">
-                            <a href="{{ route('staff_meals.report') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                            <a href="{{ route('staff_meals.report') }}" 
+                            class="side-menu__item" 
+                            role="menuitem" 
+                            data-lang="hr-apps-email-inbox">
                                 <i class="ri-file-chart-line"></i>
                                 Reportes
                             </a>
                         </li>
+
                         <li class="slide">
-                            <a href="{{ route('staff-beneficiaries.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                            <a href="{{ route('staff-beneficiaries.index') }}" 
+                            class="side-menu__item" 
+                            role="menuitem" 
+                            data-lang="hr-apps-email-inbox">
                                 <i class="ri-user-settings-line"></i>
                                 Gestionar
                             </a>
@@ -70,23 +90,28 @@
                     </ul>
                 </li>
 
-
-
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
                         <i class="ri-shopping-cart-line"></i>
-                        <span class="side-menu__label" data-lang="hr-apps-email">Carritos</span>
+                        <span 
+                        class="side-menu__label" 
+                        data-lang="hr-apps-email">
+                        Carritos
+                        </span>
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
                     <ul class="slide-menu" role="menu">
                         <li class="slide">
-
-                            <a href="{{ route('carts.routes.update') }}" class="side-menu__item" role="menuitem" >
+                            <a href="{{ route('carts.routes.update') }}" 
+                            class="side-menu__item" 
+                            role="menuitem" >
                                 <i class="ri-guide-line"></i>
                                 Rutas
                             </a>
 
-                            <a href="{{ route('carts.index') }}" class="side-menu__item" role="menuitem">
+                            <a href="{{ route('carts.index') }}" 
+                            class="side-menu__item" 
+                            role="menuitem">
                                 <i class="ri-shopping-cart-2-line"></i>
                                 Gestionar
                             </a>
@@ -102,19 +127,24 @@
                     </a>
                     <ul class="slide-menu" role="menu">
 
-
                         @canany(['menus.index', 'menus.create', 'menus.edit', 'menus.delete'])
                         <li class="slide">
-                            <a href="{{ route('menus.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                            <a href="{{ route('menus.index') }}" 
+                            class="side-menu__item" 
+                            role="menuitem" 
+                            data-lang="hr-apps-email-inbox">
                                 <i class="ri-service-bell-line"></i>
-                                Gestionar Menús
+                                Menús
                             </a>
                         </li>
                         @endcan
 
                         @canany(['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.delete'])
                         <li class="slide">
-                            <a href="{{ route('ingredients.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
+                            <a href="{{ route('ingredients.index') }}" 
+                            class="side-menu__item" 
+                            role="menuitem" 
+                            data-lang="hr-apps-email-inbox">
                                 <i class="ri-fridge-line"></i>
                                 Ingredientes
                             </a>
@@ -122,8 +152,8 @@
                         @endcan
                     </ul>
                 </li>
-        </ul>
-    </li>
+            </ul>
+        </li>
     {{-- === RECOLECCIÓN === --}}
     <li class="menu-title" role="presentation" data-lang="hr-title-pages">Recolección</li>
     <li class="slide">
@@ -135,7 +165,10 @@
         <ul class="slide-menu" role="menu">
             <li class="slide">
                 {{-- Ajusta la ruta si ya tienes la pantalla de recolección --}}
-                <a href="{{ route('collects.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
+                <a href="{{ route('collects.index') }}" 
+                class="side-menu__item" 
+                role="menuitem" 
+                data-lang="hr-pages-start">
                     <i class="ri-keyboard-box-line"></i>
                     Recolectar
                 </a>
@@ -153,7 +186,10 @@
         </a>
         <ul class="slide-menu" role="menu">
             <li class="slide">
-                <a href="{{ route('staff_meals.delivery') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
+                <a href="{{ route('staff_meals.delivery') }}" 
+                class="side-menu__item" 
+                role="menuitem" 
+                data-lang="hr-pages-start">
                     <i class="ri-bowl-line"></i>
                     Entregas
                 </a>
@@ -163,7 +199,7 @@
 
     <li class="menu-title" role="presentation" data-lang="hr-title-tables">Administración</li>
 
-
+    {{-- === USUARIOS === --}}
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
             <span class="side_menu_icon"><i class="ri-shield-keyhole-line"></i></span>
@@ -171,29 +207,22 @@
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
 
-            <ul class="slide-menu" role="menu">
-                <li class="slide">
-                    <a href="#!" class="side-menu__item" role="menuitem">
-                        <span><i class="ri-group-line"></i></span>
-                        <span class="side-menu__label" data-lang="hr-level-2-2">Usuarios</span>
-                        <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                    </a>
-
-                    @canany(['users.index', 'users.create', 'users.edit', 'users.delete'])
-                    <ul class="slide-menu" role="menu">
-                        <li class="slide">
-                            <a href="{{ route('usuarios.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
-                                <i class="ri-shield-user-line"></i>
-                                Gestionar
-                            </a>
-                        </li>
-                    </ul>
-                    @endcan
-                </li>
-
-            </ul>
+        @canany(['users.index', 'users.create', 'users.edit', 'users.delete'])
+        <ul class="slide-menu" role="menu">
+            <li class="slide">
+                <a href="{{ route('usuarios.index') }}" 
+                class="side-menu__item" 
+                role="menuitem" 
+                data-lang="hr-layout-two-column">
+                    <i class="ri-shield-user-line"></i>
+                    Gestionar
+                </a>
+            </li>
+        </ul>
+        @endcan
     </li>
 
+    {{-- === HOSPITALES === --}}
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
             <span class="side_menu_icon"><i class="ri-hospital-line"></i></span>
@@ -213,7 +242,10 @@
                 <ul class="slide-menu" role="menu">
                     @canany(['beds.index', 'beds.create', 'beds.edit', 'beds.delete', 'servicios.show'])
                     <li class="slide">
-                        <a href="{{ route('beds.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
+                        <a href="{{ route('beds.index') }}" 
+                        class="side-menu__item" 
+                        role="menuitem" 
+                        data-lang="hr-layout-two-column">
                             <i class="ri-hotel-bed-line"></i>
                             Camas
                         </a>
@@ -222,7 +254,10 @@
 
                     @can('hospital-floor-services.edit')
                     <li class="slide">
-                        <a href="{{ route('hospital-floor-services.edit') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
+                        <a href="{{ route('hospital-floor-services.edit') }}" 
+                        class="side-menu__item" 
+                        role="menuitem" 
+                        data-lang="hr-layout-two-column">
                             <i class="ri-link-unlink-m"></i>
                             Vincular
                         </a>
@@ -231,7 +266,10 @@
 
                     @canany(['servicios.index', 'servicios.create', 'servicios.edit', 'servicios.delete', 'servicios.show'])
                     <li class="slide">
-                        <a href="{{ route('servicios.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
+                        <a href="{{ route('servicios.index') }}" 
+                        class="side-menu__item" 
+                        role="menuitem" 
+                        data-lang="hr-layout-two-column">
                             <i class="ri-heart-add-line"></i>
                             Servicios
                         </a>
@@ -250,7 +288,10 @@
                 <ul class="slide-menu" role="menu">
                     <li class="slide">
                         @can('hospitalfloors.edit')
-                        <a href="{{ route('hospital-floors.edit') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
+                        <a href="{{ route('hospital-floors.edit') }}" 
+                        class="side-menu__item" 
+                        role="menuitem" 
+                        data-lang="hr-vector-maps">
                             <i class="ri-link-unlink-m"></i>
                             Vincular
                         </a>
@@ -258,7 +299,10 @@
                     </li>
                     @canany(['niveles.index', 'niveles.create', 'niveles.edit', 'niveles.delete'])
                     <li class="slide">
-                        <a href="{{ route('niveles.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-layout-two-column">
+                        <a href="{{ route('niveles.index') }}" 
+                        class="side-menu__item" 
+                        role="menuitem" 
+                        data-lang="hr-layout-two-column">
                             <i class="ri-building-line"></i>
                             Plantas
                         </a>
@@ -271,7 +315,10 @@
         <ul class="slide-menu" role="menu">
             @canany(['hospitales.index', 'hospitales.create', 'hospitales.edit', 'hospitales.delete'])
             <li class="slide">
-                <a href="{{ route('hospitales.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-vector-maps">
+                <a href="{{ route('hospitales.index') }}" 
+                class="side-menu__item" 
+                role="menuitem" 
+                data-lang="hr-vector-maps">
                     <i class="ri-hospital-line"></i>
                     Gestionar
                 </a>
