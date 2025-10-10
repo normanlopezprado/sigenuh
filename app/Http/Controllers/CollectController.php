@@ -44,7 +44,44 @@ class CollectController extends Controller
         }
         $serviceId = $request->query('service');
 
-        $services = Service::orderBy('name')->get();
+        $services = Service::query()
+            ->with(['hospitalFloors' => function ($q) use ($hospitalId) {
+                $q->where('hospital_id', $hospitalId)
+                    ->with('nivel');
+            }])
+            ->whereHas('hospitalFloors', fn($q) => $q->where('hospital_id', $hospitalId))
+            ->get()
+            ->map(function ($svc) {
+                $levelNames = $svc->hospitalFloors
+                    ->map(fn($floor) => $floor->nivel?->name)
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $svc->setAttribute('display_levels', $levelNames->sort()->implode(', '));
+                $svc->setAttribute('sort_level_name', $levelNames->sortDesc()->first() ?? '');
+
+                return $svc;
+            })
+            ->sort(function ($a, $b) {
+                $levelComparison = strnatcasecmp(
+                    $b->getAttribute('sort_level_name'),
+                    $a->getAttribute('sort_level_name')
+                );
+
+                if ($levelComparison !== 0) {
+                    return $levelComparison;
+                }
+
+                $nameComparison = strnatcasecmp($a->name ?? '', $b->name ?? '');
+
+                if ($nameComparison !== 0) {
+                    return $nameComparison;
+                }
+
+                return strnatcasecmp($a->category ?? '', $b->category ?? '');
+            })
+            ->values();
 
 
         $bedsQuery = Bed::query()

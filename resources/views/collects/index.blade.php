@@ -42,7 +42,7 @@
                                 <select name="service" class="form-select" required>
                                     <option value="">— Selecciona un servicio —</option>
                                     @foreach($services as $svc)
-                                        <option value="{{ $svc->id }}" @selected($serviceId===$svc->id)>{{ $svc->name }} - {{ $svc->category }}</option>
+                                        <option value="{{ $svc->id }}" @selected($serviceId===$svc->id)>{{ $svc->display_levels ? $svc->display_levels . ' - ' : '' }}{{ $svc->name }} - {{ $svc->category }}</option>
                                     @endforeach
                                 </select>
                                 <button class="btn btn-primary">Cargar</button>
