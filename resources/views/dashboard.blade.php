@@ -1,14 +1,32 @@
-
 @extends('partials.layouts.master3')
 
 @section('title', 'Sistema de gestión nutricional Hospitalaria')
-@section('sub-title', 'Inicio' )
+@section('sub-title', 'Inicio')
 @section('buttonTitle', 'Share')
 @section('link', '#!')
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/libs/air-datepicker/air-datepicker.css') }}">
     <link href="{{ asset('assets/libs/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+    <style>
+        .dashboard-row {
+            align-items: flex-start;
+        }
+        .calendarContainer {
+            height: auto !important;
+            min-height: auto !important;
+        }
+        @media (min-width: 1200px) {
+            .dashboard-row > .col-calendar {
+                flex: 0 0 20%;
+                max-width: 20%;
+            }
+            .dashboard-row > .col-menu {
+                flex: 0 0 20%;
+                max-width: 20%;
+            }
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -20,123 +38,80 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <div class="row g-4">
+    @php
+        use Carbon\Carbon;
+        Carbon::setLocale('es');
 
-        <div class="col-md-6 col-xl-4">
+        
+        $fechas = [];
+        for ($i = 0; $i < 9; $i++) {
+            $fechas[] = Carbon::today()->addDays($i);
+        }
+
+        
+        $fechasFila1 = array_slice($fechas, 0, 4);
+        
+        $fechasFila2 = array_slice($fechas, 4);
+    @endphp
+
+    
+    <div class="row g-4 dashboard-row">
+        {{-- Calendario --}}
+        <div class="col-12 col-calendar">
             <div class="card">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="card-header">
                     <h6 class="card-title mb-0">Calendario de menús</h6>
-
                 </div>
-                <div class="card-body calendarContainer" style="height: 558px;">
+                <div class="card-body calendarContainer">
                     @include('calendars.show')
                 </div>
             </div>
-
         </div>
 
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Menú de hoy</h5>
-                </div>
-                <div class="card-body">
-                    @include('calendars.dia', ['fecha' => \Carbon\Carbon::today()->toDateString()])
-                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
-
-                    <div class="row g-4">
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Total Active Hours</span>
-                                <h6 class="mt-1 mb-0">35 hrs</h6>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Active Days</span>
-                                <h6 class="mt-1 mb-0">5 Days</h6>
-                            </div>
-                        </div>
+    
+        @foreach ($fechasFila1 as $f)
+            <div class="col-12 col-menu">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-1">
+                            {{ ucfirst($f->isoFormat('dddd D [de] MMMM YYYY')) }}
+                        </h6>
+                        <small class="text-muted">Menús del día</small>
                     </div>
-
+                    <div class="card-body">
+                        @include('calendars.dia', ['fecha' => $f->toDateString()])
+                    </div>
                 </div>
             </div>
-        </div>
+        @endforeach
+    </div>
 
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Menú de mañana</h5>
-                </div>
-                <div class="card-body">
-                    @include('calendars.dia',  ['fecha' => \Carbon\Carbon::tomorrow()->toDateString()])
-                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
-
-                    <div class="row g-4">
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Total Active Hours</span>
-                                <h6 class="mt-1 mb-0">35 hrs</h6>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Active Days</span>
-                                <h6 class="mt-1 mb-0">5 Days</h6>
-                            </div>
-                        </div>
+    
+    <div class="row g-4 mt-0 dashboard-row">
+        @foreach ($fechasFila2 as $f)
+            <div class="col-12 col-menu">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-1">
+                            {{ ucfirst($f->isoFormat('dddd D [de] MMMM YYYY')) }}
+                        </h6>
+                        <small class="text-muted">Menús del día</small>
                     </div>
-
+                    <div class="card-body">
+                        @include('calendars.dia', ['fecha' => $f->toDateString()])
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Menú de Pasado Mañana</h5>
-                </div>
-                <div class="card-body">
-                    @include('calendars.dia', ['fecha' => \Carbon\Carbon::today()->addDays(2)->toDateString()])
-                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
-                    <div class="row g-4">
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Total Active Hours</span>
-                                <h6 class="mt-1 mb-0">35 hrs</h6>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Active Days</span>
-                                <h6 class="mt-1 mb-0">5 Days</h6>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 @endsection
 
 @section('js')
-
-    <!-- Countup init -->
     <script type="module" src="{{ asset('assets/js/pages/countup.init.js') }}"></script>
-
-    <!-- Swiper init -->
     <script src="{{ asset('assets/libs/swiper/swiper-bundle.min.js') }}"></script>
-
-    <!-- Air Datepicker js -->
     <script src="{{ asset('assets/libs/air-datepicker/air-datepicker.js') }}"></script>
-
-    <!-- ApexChat js -->
     <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
-    <!-- Online Course Dashboard init -->
     <script src="{{ asset('assets/js/charts/apexcharts-config.init.js') }}"></script>
     <script src="{{ asset('assets/js/dashboards/dashboard-online-course.init.js') }}"></script>
-
-    <!-- App js -->
     <script type="module" src="{{ asset('assets/js/app.js') }}"></script>
 @endsection

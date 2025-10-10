@@ -129,7 +129,7 @@
 
                             <div class="mt-3 d-flex gap-2">
                                 <button class="btn btn-primary">Guardar cambios</button>
-                                <a href="{{ route('calendars.index') }}" class="btn btn-secondary">Volver</a>
+                                <a href="{{ route('dashboard') }}" class="btn btn-secondary">Volver</a>
                             </div>
                         </form>
 

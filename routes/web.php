@@ -262,12 +262,9 @@ Route::middleware(['auth'])->group(function () {
 // Collect
 Route::middleware(['auth'])->group(function () {
     Route::get('/collects', [CollectController::class, 'index'])->name('collects.index');
-
     Route::post('/collects/bulk', [CollectController::class, 'bulkUpsert'])->name('collects.bulk');
-
     Route::patch('/collects/bed/{bed}/toggle', [CollectController::class, 'toggleBedStatus'])
         ->name('collects.toggle-bed');
-
     Route::patch('/collects/bed/{bed}/companion', [CollectController::class, 'saveCompanion'])
         ->name('collects.save-companion');
 });

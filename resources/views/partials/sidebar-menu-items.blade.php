@@ -13,7 +13,7 @@
         
             <li 
                 class="slide">
-                <a href="index" 
+                <a href="dashboard" 
                 class="side-menu__item" 
                 role="menuitem" 
                 data-lang="hr-dashboards-ecommerce">
