@@ -7,7 +7,7 @@
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
         <ul class="slide-menu" role="menu">
-            
+
             <li class="slide">
                 <a href="index" class="side-menu__item" role="menuitem" data-lang="hr-dashboards-ecommerce">Calendario de dietas</a>
             </li>
@@ -58,7 +58,7 @@
                             <a href="{{ route('staff_meals.report') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
                                 <i class="ri-file-chart-line"></i>
                                 Reportes
-                            </a>    
+                            </a>
                         </li>
                         <li class="slide">
                             <a href="{{ route('staff-beneficiaries.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
@@ -70,7 +70,7 @@
                     </ul>
                 </li>
 
-                
+
 
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
@@ -101,8 +101,8 @@
                         <i class="ri-arrow-down-s-line side-menu__angle"></i>
                     </a>
                     <ul class="slide-menu" role="menu">
-                        
-                    
+
+
                         @canany(['menus.index', 'menus.create', 'menus.edit', 'menus.delete'])
                         <li class="slide">
                             <a href="{{ route('menus.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-apps-email-inbox">
@@ -135,7 +135,7 @@
         <ul class="slide-menu" role="menu">
             <li class="slide">
                 {{-- Ajusta la ruta si ya tienes la pantalla de recolección --}}
-                <a href="#" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
+                <a href="{{ route('collects.index') }}" class="side-menu__item" role="menuitem" data-lang="hr-pages-start">
                     <i class="ri-keyboard-box-line"></i>
                     Recolectar
                 </a>
