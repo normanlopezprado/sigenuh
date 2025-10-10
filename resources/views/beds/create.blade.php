@@ -3,7 +3,7 @@
 
 @section('title', 'SIGENUH')
 
-@section('sub-title', 'Hospitales -> Creación de camas ')
+@section('sub-title', 'Hospitales -> Servicios -> Camas -> Crear cama')
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 
@@ -78,7 +78,7 @@
 
                             <div class="mt-3">
                                 <button type="submit" class="btn btn-primary">Guardar</button>
-                                <a href="{{ route('beds.index') }}" class="btn btn-secondary">Cancelar</a>
+                                <a href="{{ route('beds.index') }}" class="btn btn-danger">Cancelar</a>
                             </div>
                         </form>
 

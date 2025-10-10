@@ -1,7 +1,7 @@
 @extends('partials.layouts.master2')
 
 @section('title', 'SIGENUH')
-@section('sub-title', 'Nuevo Usuario')
+@section('sub-title', 'Accesos -> Usuarios -> Crear usuario')
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 @section('modalTarget', 'shareModal')

@@ -18,33 +18,36 @@ class HospitalFloorServiceController extends Controller
         }
 
         $hospital = Hospital::with(['floors.nivel'])->findOrFail($hospitalId);
+
+        $floors = $hospital->floors
+            ->sortByDesc(fn ($f) => (int) preg_replace('/\D+/', '', $f->nivel?->name ?? '0'))
+            ->values();
+
         $floorId = $request->query('floor');
         $selectedFloor = $floorId
             ? HospitalFloor::where('hospital_id', $hospital->id)->where('id', $floorId)->first()
-            : $hospital->floors->first();
-        // Servicios ya asignados al piso actual (para mostrarlos y poder quitarlos)
+            : $floors->first();
+
         $selectedServiceIds = $selectedFloor
             ? $selectedFloor->services()->pluck('services.id')->toArray()
             : [];
 
-        // Servicios asignados en OTROS pisos del MISMO hospital (excluye el actual)
         $inUseElsewhere = Service::whereHas('hospitalFloors', function ($q) use ($hospitalId, $selectedFloor) {
-            $q->where('hospital_id', $hospitalId);
-            if ($selectedFloor) {
-                $q->where('hospital_floors.id', '!=', $selectedFloor->id);
-            }
-        })
+                $q->where('hospital_id', $hospitalId);
+                if ($selectedFloor) {
+                    $q->where('hospital_floors.id', '!=', $selectedFloor->id);
+                }
+            })
             ->pluck('services.id')
             ->toArray();
 
-        // Lista a mostrar = TODOS menos los usados en otros pisos + (los del piso actual)
         $services = Service::whereNotIn('id', $inUseElsewhere)
-            ->orderBy('name')
+            ->orderBy('name') 
             ->get();
 
         return view('hospital_floor_services.edit', [
             'hospital'           => $hospital,
-            'floors'             => $hospital->floors,
+            'floors'             => $floors,
             'selectedFloor'      => $selectedFloor,
             'services'           => $services,
             'selectedServiceIds' => $selectedServiceIds,
@@ -70,13 +73,13 @@ class HospitalFloorServiceController extends Controller
             ->firstOrFail();
 
         $inUseElsewhere = Service::whereHas('hospitalFloors', function ($q) use ($hospitalId, $floor) {
-            $q->where('hospital_id', $hospitalId)
-                ->where('hospital_floors.id', '!=', $floor->id);
-        })
+                $q->where('hospital_id', $hospitalId)
+                  ->where('hospital_floors.id', '!=', $floor->id);
+            })
             ->pluck('services.id')
             ->toArray();
-        $allowedIds = Service::whereNotIn('id', $inUseElsewhere)->pluck('id')->toArray();
 
+        $allowedIds = Service::whereNotIn('id', $inUseElsewhere)->pluck('id')->toArray();
         $ids = array_values(array_intersect($data['services'] ?? [], $allowedIds));
 
         $currentlySelected = $floor->services()->pluck('services.id')->toArray();

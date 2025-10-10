@@ -16,9 +16,9 @@ return new class extends Migration {
             $table->uuid('nivel_id');
             $table->timestamps();
 
-            $table->unique(['hospital_id', 'nivel_id']); // o unique, como prefieras
+            $table->unique(['hospital_id', 'nivel_id']); 
             $table->foreign('hospital_id')->references('id')->on('hospitals')->onDelete('cascade');
-            $table->foreign('nivel_id')->references('id')->on('nivels')->onDelete('cascade'); // o 'niveles'
+            $table->foreign('nivel_id')->references('id')->on('nivels')->onDelete('cascade'); 
         });
     }
 

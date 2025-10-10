@@ -7,7 +7,7 @@
     @extends('partials.layouts.master2')
 
     @section('title', 'sigenhuh')
-    @section('sub-title', 'Editar Hospital' )
+    @section('sub-title', 'Hospitales -> Servicios -> Camas -> Editar cama' )
     @section('pagetitle', 'Inicio')
     @section('buttonTitle', 'Share')
     @section('modalTarget', 'shareModal')
@@ -68,7 +68,7 @@
             </div>
             <div class="mt-3">
                 <button type="submit" class="btn btn-primary">Actualizar</button>
-                <a href="{{ route('beds.index') }}" class="btn btn-secondary">Cancelar</a>
+                <a href="{{ route('beds.index') }}" class="btn btn-danger">Cancelar</a>
             </div>
         </form>
     @endsection

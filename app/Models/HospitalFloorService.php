@@ -27,7 +27,6 @@ class HospitalFloorService extends Pivot
         });
     }
 
-    // Relaciones
     public function hospitalFloor()
     {
         return $this->belongsTo(HospitalFloor::class);
@@ -36,5 +35,12 @@ class HospitalFloorService extends Pivot
     public function service()
     {
         return $this->belongsTo(Service::class);
+    }
+    public function carts()
+    {
+        return $this->belongsToMany(\App\Models\Cart::class, 'cart_service', 'hospital_floor_service_id', 'cart_id')
+            ->using(\App\Models\CartService::class)
+            ->withPivot(['id','order','assigned_by','assigned_at'])
+            ->withTimestamps();
     }
 }

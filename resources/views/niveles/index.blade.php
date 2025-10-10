@@ -2,7 +2,7 @@
 
 @section('title', 'SIGENUH')
 
-@section('sub-title', 'Niveles')
+@section('sub-title', 'Hospitales -> Plantas')
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 
@@ -34,18 +34,25 @@
                                 {{ $n->status ? 'Activo' : 'Inactivo' }}
                             </td>
                             <td class="d-flex gap-2">
+                                @can('niveles.edit')
                                 <a class="btn btn-sm btn-warning" href="{{ route('niveles.edit', $n) }}">Editar</a>
+                                @endcan
+
+                                @can('niveles.delete')
                                 <form method="POST" action="{{ route('niveles.destroy', $n->id) }}" onsubmit="return confirm('¿Eliminar?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="5">
                                 Sin registros,
+                                @can('niveles.create')
                                 <a href="{{ route('niveles.create') }}" class="btn btn-primary">Nuevo</a>
+                                @endcan
                             </td>
                         </tr>
                     @endforelse

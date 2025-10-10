@@ -2,7 +2,7 @@
 
 @section('title', 'SIGENUH')
 
-@section('sub-title', 'Hospitales -> Selección de plantas ')
+@section('sub-title', 'Hospitales -> Asignar plantas a hospital ')
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 
@@ -16,7 +16,7 @@
         <div class="col-12 col-lg-6">
             <div class="card h-100 mb-0">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Selección de plantas</h5>
+                    <h5 class="card-title mb-0">Asignar plantas a hospital</h5>
                 </div>
                 <div class="card-body">
                     @if(session('success'))
@@ -72,10 +72,12 @@
                                     });
                                 </script>
                             @endpush
+                            @can('hospitalfloors.update')
                             <div class="mt-3">
                                 <button class="btn btn-primary">Guardar asignación</button>
                                 <a href="{{ route('dashboard') }}" class="btn btn-danger">Cancelar</a>
                             </div>
+                            @endcan
                         </form>
                     </div>
                 </div>

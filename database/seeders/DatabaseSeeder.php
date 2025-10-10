@@ -2,13 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Nivel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,21 +13,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::firstOrCreate(
-            ['email' => 'root@gmail.com'], // evitar duplicados
-            [
-                'name'     => 'Norman Daniel López Prado',
-                'user'     => 'nodalopr',
-                'email'    => 'root@gmail.com',
-                'password' => Hash::make('admin'),
-            ]
-        );
         $this->call([
+            RolePermissionSeeder::class,
             ServiceSeeder::class,
             HospitalSeeder::class,
-            NivelesSeeder::class
+            NivelesSeeder::class,
+            IngredientSeeder::class,
+            StaffBeneficiarySeeder::class,
+            CartSeeder::class,
+
         ]);
+
+        // 2) Usuario root (idempotente)
+        $user = User::firstOrCreate(
+            ['email' => 'nlopezp1@miumg.edu.gt'],
+            [
+                'name'              => 'Norman Daniel López Prado',
+                'user'              => 'nodalopr',
+                'password'          => Hash::make('admin'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $user->syncRoles(['Administrador']);
     }
 }

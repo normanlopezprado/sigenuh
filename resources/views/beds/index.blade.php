@@ -2,7 +2,7 @@
 
 @section('title', 'SIGENUH')
 
-@section('sub-title', 'Listado de Camas')
+@section('sub-title', 'Hospitales -> Servicios -> Camas')
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 
@@ -40,14 +40,18 @@
                                 {{ $bed->hospitalFloorService?->service->name  }}
                             </td>
                             <td>
+                                @can('beds.edit')
                                 <a href="{{ route('beds.edit', $bed) }}" class="btn btn-sm btn-warning">Editar</a>
+                                @endcan
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="5">
                                 Sin registros,
+                                @can('beds.create')
                                 <a href="{{ route('beds.create') }}" class="btn btn-primary">Nuevo</a>
+                                @endcan
                             </td>
                         </tr>
                     @endforelse

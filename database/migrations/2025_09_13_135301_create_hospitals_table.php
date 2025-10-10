@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('phone', 20)->nullable();
             $table->text('description')->nullable();
-            $table->string('logo_path')->nullable(); // ruta del logo en storage
-            $table->string('icon_path')->nullable(); // ruta del logo en storage
+            $table->string('logo_path')->nullable(); 
+            $table->string('icon_path')->nullable(); 
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->timestamps();

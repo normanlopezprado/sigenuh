@@ -1,7 +1,7 @@
 @extends('partials.layouts.master2')
 
 @section('title', 'sigenhuh')
-@section('sub-title', 'Crear planta' )
+@section('sub-title', 'Hospitales -> Plantas -> Crear planta' )
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 @section('modalTarget', 'shareModal')

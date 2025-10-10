@@ -1,7 +1,7 @@
 @extends('partials.layouts.master')
 
 @section('title', 'SIGENUH')
-@section('sub-title', 'Servicios')
+@section('sub-title', 'Hospitales -> Servicios')
 @section('pagetitle', 'Inicio')
 @section('buttonTitle', 'Share')
 
@@ -31,18 +31,25 @@
                             <td>{{ $s->abbreviation }}</td>
                             <td>{{ $s->category }}</td>
                             <td class="d-flex gap-2">
+                                @can('servicios.edit')
                                 <a class="btn btn-sm btn-warning" href="{{ route('servicios.edit', $s) }}">Editar</a>
+                                @endcan
+
+                                @can('servicios.delete')
                                 <form method="POST" action="{{ route('servicios.destroy', $s) }}">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar?')">Eliminar</button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="6">
                                 Sin registros,
+                                @can('servicios.create')
                                 <a href="{{ route('servicios.create') }}" class="btn btn-primary">Nuevo</a>
+                                @endcan
                             </td>
                         </tr>
                     @endforelse
