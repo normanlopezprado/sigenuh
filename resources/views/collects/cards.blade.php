@@ -282,7 +282,7 @@
 
 @section('js')
   <script>
-    // Activado visual de chips
+  
     document.addEventListener('change', (e) => {
       if (e.target.matches('.diet-chips input[type="radio"]')) {
         const group = e.target.closest('.diet-chips');
@@ -296,7 +296,7 @@
       }
     });
 
-    // Mostrar/ocultar secciones dependientes
+  
     document.addEventListener('change', (e) => {
       if (e.target.matches('.minor-switch')) {
         const t = document.querySelector(e.target.dataset.target);
@@ -308,7 +308,7 @@
       }
     });
 
-    // Cambiar estado cama (switch visual) con PATCH y feedback en pill
+  
     document.addEventListener('change', async (e) => {
       if (e.target.matches('.availability-input')) {
         const input  = e.target;
@@ -316,7 +316,7 @@
         const isAvailable = input.checked;
         const pill = document.getElementById(`pill-${bedId}`);
 
-        // Optimista
+        
         if (pill) {
           pill.textContent = isAvailable ? 'Disponible' : 'Ocupada';
           pill.classList.toggle('free',  isAvailable);
@@ -346,7 +346,7 @@
             }
           }
         } catch (err) {
-          // Revertir
+          
           input.checked = !isAvailable;
           if (pill) {
             pill.textContent = input.checked ? 'Disponible' : 'Ocupada';
