@@ -262,14 +262,14 @@
             {{-- Acciones escritorio --}}
             <div class="d-none d-md-flex gap-2 mt-3">
               <button class="btn btn-primary" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
-              <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-secondary">Cancelar</a>
+              <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-danger">Cancelar</a>
             </div>
 
             {{-- Acciones móviles fijas --}}
             <div class="floating-actions d-md-none">
               <div class="d-flex gap-2">
                 <button class="btn btn-primary w-100" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
-                <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-outline-secondary">Cancelar</a>
+                <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-outline-danger">Cancelar</a>
               </div>
             </div>
           </form>
