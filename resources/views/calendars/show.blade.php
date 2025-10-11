@@ -246,7 +246,7 @@
                         var div = createElement('div', 'event empty');
                         var link = document.createElement('a');
                         link.href = "{{ route('calendars.create') }}" + "?date=" + day.format('YYYY-MM-DD');
-                        link.textContent = '➕ Crear menú';
+                        link.textContent = 'Crear menú';
                         link.className = 'btn btn-sm btn-dark';
                         div.appendChild(link);
                         wrapper.appendChild(div);
@@ -260,7 +260,7 @@
                     var div = createElement('div', 'event empty');
                     var link = document.createElement('a');
                     link.href = "{{ route('calendars.create') }}" + "?date=" + day.format('YYYY-MM-DD');
-                    link.textContent = '➕ Crear menú';
+                    link.textContent = 'Crear menú';
                     link.className = 'btn btn-sm btn-dark';
                     div.appendChild(link);
 

@@ -153,35 +153,7 @@
             </label>
           </div>
           <div class="col-12 col-sm-4">
-            
 
-      <!-- FONT  -->
-      <h6 class="mb-2 fs-5">Tipo de letra</h6>
-      <p class="text-muted">Cambie el tipo de letra.</p>
-      <div class="row g-4 mb-5">
-        <div class="col-12 col-sm-6">
-          <!-- FONT_BODY -->
-          <label class="form-label text-muted fw-semibold fs-12 d-block" for="body-font-choice">Estilo de cuerpo</label>
-          <select class="form-select" id="body-font-choice" data-attribute="data-font-body">
-            <option value="Inter">Inter</option>
-            <option value="Poppins">Poppins</option>
-            <option value="Roboto">Roboto</option>
-            <option value="Open Sans">Open Sans</option>
-            <option value="Lato">Lato</option>
-          </select>
-        </div>
-        <div class="col-12 col-sm-6">
-          <!-- FONT_HEADING -->
-          <label class="form-label text-muted fw-semibold fs-12 d-block" for="heading-font-choice">Estilo de cabecera</label>
-          <select class="form-select" id="heading-font-choice" data-attribute="data-font-heading">
-            <option value="Inter">Inter</option>
-            <option value="Poppins">Poppins</option>
-            <option value="Roboto">Roboto</option>
-            <option value="Open Sans">Open Sans</option>
-            <option value="Lato">Lato</option>
-          </select>
-        </div>
-      </div>
 
       <!-- FONT_SIZE -->
       <h6 class="mb-2 fs-5">Tamaño de texto</h6>
@@ -217,39 +189,6 @@
         </label>
       </div>
 
-      <!-- LAYOUT_ROUNDED -->
-      <h6 class="mb-2 fs-5">Bordes redondos</h6>
-      <p class="text-muted">Asigne el nivel de bordes de las cajas de texto.</p>
-
-      <div class="list-group flex-row flex-wrap flex-sm-nowrap gap-3 mb-3 template-customizer mb-5">
-        <!-- MD -->
-        <label class="list-group-item form-check rounded mb-0">
-          <span class="d-flex flex-fill my-1">
-            <span class="form-check-label d-flex">
-              <span class="fw-semibold">Level 1</span>
-            </span>
-            <input type="radio" data-attribute="data-layout-rounded" class="form-check-input cursor-pointer ms-auto" name="rounded-options" value="md">
-          </span>
-        </label>
-        <!-- LG -->
-        <label class="list-group-item form-check rounded mb-0">
-          <span class="d-flex flex-fill my-1">
-            <span class="form-check-label d-flex">
-              <span class="fw-semibold">Level 2</span>
-            </span>
-            <input type="radio" data-attribute="data-layout-rounded" class="form-check-input cursor-pointer ms-auto" name="rounded-options" value="lg">
-          </span>
-        </label>
-        <!-- XL -->
-        <label class="list-group-item form-check rounded mb-0">
-          <span class="d-flex flex-fill my-1">
-            <span class="form-check-label d-flex">
-              <span class="fw-semibold">Level 3</span>
-            </span>
-            <input type="radio" data-attribute="data-layout-rounded" class="form-check-input cursor-pointer ms-auto" name="rounded-options" value="xl">
-          </span>
-        </label>
-      </div>
     <div class="offcanvas-header border-top hstack gap-3 justify-content-center">
       <button type="button" id="resetSettings" class="btn btn-dark">Restablecer configuración</button>
 
