@@ -1,14 +1,38 @@
-
 @extends('partials.layouts.master3')
 
 @section('title', 'Sistema de gestión nutricional Hospitalaria')
-@section('sub-title', 'Inicio' )
+@section('sub-title', 'Inicio')
 @section('buttonTitle', 'Share')
 @section('link', '#!')
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/libs/air-datepicker/air-datepicker.css') }}">
     <link href="{{ asset('assets/libs/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+    <style>
+        .dashboard-row {
+            align-items: flex-start;
+        }
+        .calendarContainer {
+            height: auto !important;
+            min-height: auto !important;
+        }
+
+        @media (min-width: 1200px) {
+            /* Layout dependiente del permiso de calendario */
+            @php
+                $canSeeCalendar = auth()->check() && auth()->user()->can('calendars.index');
+            @endphp
+
+            @if ($canSeeCalendar)
+                /* Con calendario: 20% calendario + 20% cada card de menú */
+                .dashboard-row > .col-calendar { flex: 0 0 20%; max-width: 20%; }
+                .dashboard-row > .col-menu     { flex: 0 0 20%; max-width: 20%; }
+            @else
+                /* Sin calendario: 4 cards por fila (25% cada una) */
+                .dashboard-row > .col-menu     { flex: 0 0 25%; max-width: 25%; }
+            @endif
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -19,572 +43,84 @@
     @if (session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
-    <div class="row">
-        <div class="col-lg-4">
-            <div class="card card-hover overflow-hidden">
-                <div class="card-body hstack gap-2">
-                    <div class="avatar avatar-item rounded-2">
-                        <i class="ri-group-line"></i>
+
+    @php
+        use Carbon\Carbon;
+        Carbon::setLocale('es');
+
+        // Permiso para ver calendario
+        $canSeeCalendar = auth()->check() && auth()->user()->can('calendars.index');
+
+        // Próximos 9 días (hoy + 8)
+        $fechas = [];
+        for ($i = 0; $i < 9; $i++) {
+            $fechas[] = Carbon::today()->addDays($i);
+        }
+
+        // 1a fila: 4 días, 2a fila: 5 días
+        $fechasFila1 = array_slice($fechas, 0, 4);
+        $fechasFila2 = array_slice($fechas, 4);
+    @endphp
+
+    <div class="row g-4 dashboard-row">
+        {{-- Calendario (solo con permiso) --}}
+        @if ($canSeeCalendar)
+            <div class="col-12 col-calendar">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Calendario de menús</h6>
                     </div>
-                    <div>
-                        <span class="mb-2 fs-12 text-muted">Number of Students</span>
-                        <h5 class="fw-medium mb-1">1,200</h5>
-                    </div>
-                </div>
-                <div class="card-body bg-light py-2 bg-opacity-40 hstack justify-content-between gap-3">
-                    <div class="hstack gap-3">
-                        <h6 class="mb-0 fw-semibold">Active Students:</h6>
-                        <p class="fs-12 text-muted mb-0">1,000</p>
-                    </div>
-                    <div class="vr h-30px align-self-center bg-light"></div>
-                    <div class="hstack gap-3">
-                        <h6 class="mb-0 fw-semibold">New Students:</h6>
-                        <p class="fs-12 text-muted mb-0">200</p>
+                    <div class="card-body calendarContainer">
+                        @include('calendars.show')
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
 
-        <!-- Total Courses Card -->
-        <div class="col-lg-4">
-            <div class="card card-hover overflow-hidden">
-                <div class="card-body hstack gap-2">
-                    <div class="avatar avatar-item rounded-2">
-                        <i class="ri-book-line"></i>
+        {{-- Menús próximos - fila 1 --}}
+        @foreach ($fechasFila1 as $f)
+            <div class="col-12 col-menu">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-1">
+                            {{ ucfirst($f->isoFormat('dddd D [de] MMMM YYYY')) }}
+                        </h6>
+                        <small class="text-muted">Menús del día</small>
                     </div>
-                    <div>
-                        <span class="mb-2 fs-12 text-muted">Menús</span>
-                        <h5 class="fw-medium mb-1">30</h5>
-                    </div>
-                </div>
-                <div class="card-body bg-light py-2 bg-opacity-40 hstack justify-content-between gap-3">
-                    <div class="hstack gap-3">
-                        <h6 class="mb-0 fw-semibold">Active Courses:</h6>
-                        <p class="fs-12 text-muted mb-0">25</p>
-                    </div>
-                    <div class="vr h-30px align-self-center bg-light"></div>
-                    <div class="hstack gap-3">
-                        <h6 class="mb-0 fw-semibold">Archived:</h6>
-                        <p class="fs-12 text-muted mb-0">5</p>
+                    <div class="card-body">
+                        @include('calendars.dia', ['fecha' => $f->toDateString()])
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Instructor Performance Card -->
-        <div class="col-lg-4">
-            <div class="card card-hover overflow-hidden">
-                <div class="card-body hstack gap-2">
-                    <div class="avatar avatar-item rounded-2">
-                        <i class="ri-user-star-line"></i>
-                    </div>
-                    <div>
-                        <span class="mb-2 fs-12 text-muted">Instructor Performance</span>
-                        <h5 class="fw-medium mb-1">John Doe - 4.8/5</h5>
-                    </div>
-                </div>
-                <div class="card-body bg-light py-2 bg-opacity-40 hstack justify-content-between gap-3">
-                    <div class="hstack gap-3">
-                        <h6 class="mb-0 fw-semibold">Completion Rate:</h6>
-                        <p class="fs-12 text-muted mb-0">85%</p>
-                    </div>
-                    <div class="vr h-30px align-self-center bg-light"></div>
-                    <div class="hstack gap-3">
-                        <h6 class="mb-0 fw-semibold">New Reviews:</h6>
-                        <p class="fs-12 text-muted mb-0">15</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        @endforeach
     </div>
 
-    <div class="row g-4">
-
-        <div class="col-md-6 col-xl-4">
-            <div class="card">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h6 class="card-title mb-0">Calendario de menús</h6>
-
-                </div>
-                <div class="card-body calendarContainer" style="height: 558px;">
-                    @include('calendars.show')
-                </div>
-            </div>
-
-        </div>
-
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Menú de hoy</h5>
-                </div>
-                <div class="card-body">
-                    @include('calendars.dia', ['fecha' => \Carbon\Carbon::today()->toDateString()])
-                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
-
-                    <div class="row g-4">
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Total Active Hours</span>
-                                <h6 class="mt-1 mb-0">35 hrs</h6>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Active Days</span>
-                                <h6 class="mt-1 mb-0">5 Days</h6>
-                            </div>
-                        </div>
+    {{-- Menús próximos - fila 2 --}}
+    <div class="row g-4 mt-0 dashboard-row">
+        @foreach ($fechasFila2 as $f)
+            <div class="col-12 col-menu">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-1">
+                            {{ ucfirst($f->isoFormat('dddd D [de] MMMM YYYY')) }}
+                        </h6>
+                        <small class="text-muted">Menús del día</small>
                     </div>
-
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Menú de mañana</h5>
-                </div>
-                <div class="card-body">
-                    @include('calendars.dia',  ['fecha' => \Carbon\Carbon::tomorrow()->toDateString()])
-                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
-
-                    <div class="row g-4">
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Total Active Hours</span>
-                                <h6 class="mt-1 mb-0">35 hrs</h6>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Active Days</span>
-                                <h6 class="mt-1 mb-0">5 Days</h6>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Menú de Pasado Mañana</h5>
-                </div>
-                <div class="card-body">
-                    @include('calendars.dia', ['fecha' => \Carbon\Carbon::today()->addDays(2)->toDateString()])
-                    <p class="text-muted fs-13 mt-3">Activity tracking for the entire week, with hours logged each day.</p>
-                    <div class="row g-4">
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Total Active Hours</span>
-                                <h6 class="mt-1 mb-0">35 hrs</h6>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-4 rounded bg-light bg-opacity-40">
-                                <span class="text-muted fs-12">Active Days</span>
-                                <h6 class="mt-1 mb-0">5 Days</h6>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Top Mentors</h5>
-                    <a href="apps-course-teacher-list" class="btn btn-light btn-sm flex-shrink-0">View All</a>
-                </div>
-                <div class="card-body h-500px" data-simplebar>
-                    <table class="table align-middle table-borderless table-centered table-nowrap mb-0">
-                        <thead class="text-muted bg-light bg-opacity-40">
-                            <tr>
-                                <th scope="col">Mentor Name</th>
-                                <th scope="col">Expertise</th>
-                                <th scope="col">Course</th>
-                                <th scope="col">Experience</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-2.jpg') }}" alt="Full Stack Development Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Caleb Riv</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Web Designer</td>
-                                <td>110</td>
-                                <td>12 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-1.jpg') }}" alt="Web Design Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Maria Stone</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Full Stack Developer</td>
-                                <td>98</td>
-                                <td>8 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-3.jpg') }}" alt="UI/UX Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Samuel Lee</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>UI/UX Designer</td>
-                                <td>120</td>
-                                <td>9 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-4.jpg') }}" alt="Data Science Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Nina Patel</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Data Scientist</td>
-                                <td>75</td>
-                                <td>10 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-5.jpg') }}" alt="Marketing Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">John Carter</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Digital Marketer</td>
-                                <td>105</td>
-                                <td>6 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-7.jpg') }}" alt="Photography Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Olivia Green</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Mobile App Developer</td>
-                                <td>90</td>
-                                <td>7 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-6.jpg') }}" alt="Mobile App Development Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Lucas Gray</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Photographer</td>
-                                <td>60</td>
-                                <td>15 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-8.jpg') }}" alt="AI & Machine Learning Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Ethan Black</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>AI Engineer</td>
-                                <td>85</td>
-                                <td>11 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-9.jpg') }}" alt="SQL & Database Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Sophia King</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Database Administrator</td>
-                                <td>130</td>
-                                <td>14 Years</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <img src="{{ asset('assets/images/avatar/avatar-10.jpg') }}" alt="Blockchain Development Course" class="avatar rounded-2">
-                                        <a href="#!" class="text-body">
-                                            <p class="mb-0 fw-medium text-truncate">Daniel Scott</p>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>Blockchain Developer</td>
-                                <td>50</td>
-                                <td>5 Years</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card h-100 mb-0">
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <h5 class="card-title mb-0">Top Courses</h5>
-                    <div class="flex-shrink-0">
-                        <a href="apps-course-overview" class="link-primary">View All <i class="ri-arrow-right-line"></i></a>
+                    <div class="card-body">
+                        @include('calendars.dia', ['fecha' => $f->toDateString()])
                     </div>
                 </div>
-                <div class="card-body h-500px" data-simplebar>
-                    <ul class="vstack gap-4 list-unstyled mb-0">
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-3.jpg') }}" alt="Health Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">UX Design</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By Richardino Gueva</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate"> Mastering CSS Pseudo-classes: From Basics to Advanced Techniques.</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>2,189 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-half-fill text-warning"></i>
-                                        (4.2)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-4.jpg') }}" alt="Web Development Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">Web Development</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By Jane Smith</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate">Responsive Web Design: Creating Seamless Experiences Across Devices</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>1,875 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-half-fill text-warning"></i>
-                                        <i class="ri-star-line text-muted"></i>
-                                        (3.8)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-5.jpg') }}" alt="Photography Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">Photography</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By Emily Williams</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate">Mastering Light: Advanced Photography Techniques for Stunning Images</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>3,542 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-half-fill text-warning"></i>
-                                        (4.5)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-6.jpg') }}" alt="Digital Marketing Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">Digital Marketing</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By Michael Jordan</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate">SEO Strategies: Boosting Your Website's Traffic and Visibility</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>5,420 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-half-fill text-warning"></i>
-                                        <i class="ri-star-line text-muted"></i>
-                                        (4.3)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-7.jpg') }}" alt="AI Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">Artificial Intelligence</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By Sarah Brown</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate">Introduction to AI: Understanding the Basics and Future Prospects</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>2,345 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-half-fill text-warning"></i>
-                                        <i class="ri-star-line text-muted"></i>
-                                        (4.1)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-8.jpg') }}" alt="Blockchain Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">Blockchain</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By David Harris</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate">Understanding Blockchain Technology: From Basics to Applications</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>4,123 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-half-fill text-warning"></i>
-                                        <i class="ri-star-line text-muted"></i>
-                                        (4.4)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-9.jpg') }}" alt="Cybersecurity Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">Cybersecurity</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By Olivia Johnson</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate">Best Practices for Securing Your Online Presence and Protecting Data</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>6,321 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-line text-muted"></i>
-                                        (4.6)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="hstack gap-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('assets/images/small/img-10.jpg') }}" alt="Game Development Article" class="img-fluid rounded avatar-lg">
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <p class="mb-0 text-primary fw-semibold fs-12">Game Development</p>
-                                    <span class="w-4px h-4px align-middle rounded-circle bg-secondary-subtle"></span>
-                                    <p class="mb-0 text-muted fw-medium fs-12">By Lucas Morrow</p>
-                                </div>
-                                <a href="#!" class="d-block mb-1 fw-semibold text-body text-truncate">Building Interactive Worlds: A Beginner's Guide to Game Development</a>
-                                <div class="d-flex flex-wrap align-items-center gap-2 fs-12">
-                                    <p class="mb-0 text-muted fw-medium"><i class="ri-eye-line me-1"></i>1,800 Views</p>
-                                    <p class="mb-0 text-muted fw-medium">
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-fill text-warning"></i>
-                                        <i class="ri-star-half-fill text-warning"></i>
-                                        <i class="ri-star-line text-muted"></i>
-                                        (4.0)
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-
-                    </ul>
-                </div>
             </div>
-        </div>
-
-
+        @endforeach
     </div>
 @endsection
 
 @section('js')
-
-    <!-- Countup init -->
     <script type="module" src="{{ asset('assets/js/pages/countup.init.js') }}"></script>
-
-    <!-- Swiper init -->
     <script src="{{ asset('assets/libs/swiper/swiper-bundle.min.js') }}"></script>
-
-    <!-- Air Datepicker js -->
     <script src="{{ asset('assets/libs/air-datepicker/air-datepicker.js') }}"></script>
-
-    <!-- ApexChat js -->
     <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
-    <!-- Online Course Dashboard init -->
     <script src="{{ asset('assets/js/charts/apexcharts-config.init.js') }}"></script>
     <script src="{{ asset('assets/js/dashboards/dashboard-online-course.init.js') }}"></script>
-
-    <!-- App js -->
     <script type="module" src="{{ asset('assets/js/app.js') }}"></script>
 @endsection
