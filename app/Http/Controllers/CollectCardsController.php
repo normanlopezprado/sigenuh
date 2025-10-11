@@ -16,12 +16,10 @@ use Illuminate\Support\Str;
 
 class CollectCardsController extends Controller
 {
-    /**
-     * GET /collects/cards
-     */
+    
     public function index(Request $request)
     {
-        // === Hospital activo ===
+        
         $hospitalId = $request->query('hospital_id')
             ?? session('hospital_id')
             ?? Hospital::query()->value('id');
@@ -30,11 +28,11 @@ class CollectCardsController extends Controller
             return back()->with('warning', 'No hay hospital activo configurado.');
         }
 
-        // === Fecha y comida (el meal se refleja en el título y se reenvía como hidden) ===
+        
         $date = $request->query('date', Carbon::now()->toDateString());
-        $meal = $request->query('meal', 'Desayuno'); // Desayuno | Almuerzo | Cena
+        $meal = $request->query('meal', 'Desayuno'); 
 
-        // === Servicios del hospital: construir display_levels/abbr/name/cat y ordenar por piso (5to, 4to, ...) ===
+        
         $rawServices = Service::query()
             ->with(['hospitalFloors' => function ($q) use ($hospitalId) {
                 $q->where('hospital_id', $hospitalId)->with('nivel');
@@ -58,18 +56,18 @@ class CollectCardsController extends Controller
             ];
         })
         ->sortByDesc(function ($svc) {
-            // Extrae el número del nivel (e.g., "5to", "4to", "2do")
+            
             if (preg_match('/(\d+)/', $svc->display_levels ?? '', $m)) {
                 return (int) $m[1];
             }
-            return 0; // sin número => al final
+            return 0; 
         })
         ->values();
 
-        // === Servicio seleccionado ===
+        
         $serviceId = $request->query('service');
 
-        // === Camas del servicio (del hospital activo) ===
+        
         $beds = collect();
         if ($serviceId) {
             $hfsIds = HospitalFloorService::query()
@@ -79,14 +77,14 @@ class CollectCardsController extends Controller
 
             if ($hfsIds->isNotEmpty()) {
                 $beds = Bed::query()
-                    ->with(['hospitalFloorService.service']) // la vista arma títulos con esto
+                    ->with(['hospitalFloorService.service']) 
                     ->whereIn('hospital_floor_service_id', $hfsIds)
                     ->orderBy('code')
                     ->get();
             }
         }
 
-        // === Prefill de datos anteriores para la fecha + meal seleccionados ===
+    
         $collectsByBed = [];
         if ($beds->isNotEmpty()) {
             $bedIds = $beds->pluck('id')->all();
@@ -117,8 +115,8 @@ class CollectCardsController extends Controller
             }
         }
 
-        // === Variables que usa la vista ===
-        $isOpen        = true; // si tienes lógica real de ventana activa, sustitúyela
+    
+        $isOpen        = true; 
         $diets         = ['Libre','Blanda','Hiposódica','1,200','Diabético','Renal','Licuada','Especial'];
         $prefillSource = null;
 
@@ -128,13 +126,10 @@ class CollectCardsController extends Controller
         ));
     }
 
-    /**
-     * PATCH /collects/bed/{bed}/toggle
-     * Trabaja con ENUM('Disponible','Ocupada') en beds.status
-     */
+    
     public function toggleAvailability(Request $request, Bed $bed)
     {
-        // Front envía to_busy=1 si quiere marcar Ocupada; 0 => Disponible
+        
         $toBusy = $request->input('to_busy', null);
         if ($toBusy !== null) {
             $bed->status = $toBusy ? 'Ocupada' : 'Disponible';
@@ -146,20 +141,16 @@ class CollectCardsController extends Controller
 
         return response()->json([
             'ok'     => true,
-            'status' => $bed->status, // texto exacto del enum
+            'status' => $bed->status, 
         ]);
     }
 
-    /**
-     * POST /collects/bulk
-     * Guarda en `collects` por (bed_id, date, meal) vía upsert manual.
-     */
+
     public function bulkStore(Request $request)
     {
         $date = $request->input('date', Carbon::now()->toDateString());
-        $meal = $request->input('meal'); // viene del título "Recolección de: XXX"
+        $meal = $request->input('meal'); 
 
-        // Validación cabecera
         Validator::make(
             ['date' => $date, 'meal' => $meal],
             [
@@ -182,26 +173,26 @@ class CollectCardsController extends Controller
         try {
             foreach ($rows as $bedId => $data) {
 
-                // UUID válido en key
+                
                 if (!Str::isUuid((string) $bedId)) {
                     continue;
                 }
 
-                // marker para garantizar fila presente
+                
                 if (!array_key_exists('__present', (array)$data)) {
                     continue;
                 }
 
-                // Normalizar checkboxes (presente => 1, ausente => 0)
+                
                 $hasMinor        = !empty($data['has_minor']) ? 1 : 0;
-                $hasDisponsable  = !empty($data['has_disponsable']) ? 1 : 0; // nombre exacto de la columna en BD
+                $hasDisponsable  = !empty($data['has_disponsable']) ? 1 : 0; 
                 $hasCompanion    = !empty($data['has_companion']) ? 1 : 0;
 
-                // Counts NOT NULL: default 0
+                
                 $traysCount       = isset($data['trays_count']) ? (int) $data['trays_count'] : 0;
                 $disposablesCount = isset($data['disposables_count']) ? (int) $data['disposables_count'] : 0;
 
-                // Si la fila no tiene nada que guardar, saltamos
+                
                 $hasAny =
                     $hasMinor === 1 ||
                     $hasDisponsable === 1 ||
@@ -215,7 +206,6 @@ class CollectCardsController extends Controller
                     continue;
                 }
 
-                // Validación por fila
                 Validator::make(
                     [
                         'bed_id'              => $bedId,
@@ -251,7 +241,7 @@ class CollectCardsController extends Controller
                     ]
                 )->validate();
 
-                // Upsert por (bed_id, date, meal)
+    
                 $existing = DB::table('collects')
                     ->where('bed_id', $bedId)
                     ->whereDate('date', $date)
@@ -263,15 +253,15 @@ class CollectCardsController extends Controller
                     'date'                 => $date,
                     'meal'                 => $meal,
                     'diet_type'            => $data['diet_type']           ?? null,
-                    'trays_count'          => $traysCount,         // 0 por defecto
-                    'disposables_count'    => $disposablesCount,   // 0 por defecto
+                    'trays_count'          => $traysCount,         
+                    'disposables_count'    => $disposablesCount,   
                     'user_id'              => $userId,
                     'notes'                => $data['notes']               ?? null,
                     'has_minor'            => $hasMinor,
                     'has_companion'        => $hasCompanion,
                     'companion_diet_type'  => $data['companion_diet_type'] ?? null,
                     'companion_notes'      => $data['companion_notes']     ?? null,
-                    'has_disponsable'      => $hasDisponsable,     // respeta nombre de columna
+                    'has_disponsable'      => $hasDisponsable,     
                     'updated_at'           => now(),
                 ];
 
