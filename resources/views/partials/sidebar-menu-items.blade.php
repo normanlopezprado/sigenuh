@@ -45,7 +45,29 @@
     </li>
 
     {{-- === DEPARTAMENTO DE NUTRICIÓN === --}}
+    
     <li class="menu-title" role="presentation" data-lang="hr-title-applications">Departamento de nutrición</li>
+    @canany(['
+            staff-beneficiaries.index',
+            'staff-beneficiaries.create',
+            'staff-beneficiaries.edit',
+            'staff-beneficiaries.delete',
+
+            
+
+            'carts.index',
+            'carts.routes.update',
+
+            'menus.index', 
+            'menus.create', 
+            'menus.edit', 
+            'menus.delete',
+
+            'ingredients.index', 
+            'ingredients.create', 
+            'ingredients.edit', 
+            'ingredients.delete'
+            ])
         <li class="slide">
             <a href="#!" class="side-menu__item" role="menuitem">
                 <span class="side_menu_icon"><i class="ri-empathize-line"></i></span>
@@ -127,7 +149,6 @@
                     </a>
                     <ul class="slide-menu" role="menu">
 
-                        @canany(['menus.index', 'menus.create', 'menus.edit', 'menus.delete'])
                         <li class="slide">
                             <a href="{{ route('menus.index') }}" 
                             class="side-menu__item" 
@@ -137,9 +158,7 @@
                                 Menús
                             </a>
                         </li>
-                        @endcan
 
-                        @canany(['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.delete'])
                         <li class="slide">
                             <a href="{{ route('ingredients.index') }}" 
                             class="side-menu__item" 
@@ -149,12 +168,22 @@
                                 Ingredientes
                             </a>
                         </li>
-                        @endcan
                     </ul>
                 </li>
+
             </ul>
+            
         </li>
+        @endcanany
+        
+
     {{-- === RECOLECCIÓN === --}}
+    @canany([
+        'collects.index',
+        'collects.bulk',
+        'collects.toggle-bed',
+        'collects.save-companion',
+        ])
     <li class="menu-title" role="presentation" data-lang="hr-title-pages">Recolección</li>
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
@@ -175,8 +204,12 @@
             </li>
         </ul>
     </li>
+    @endcanany
 
     {{-- === ENTREGAS === --}}
+    @canany([
+        'staff-meals.view'
+        ])
     <li class="menu-title" role="presentation" data-lang="hr-title-pages">Entregas</li>
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
@@ -185,6 +218,7 @@
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
         <ul class="slide-menu" role="menu">
+            
             <li class="slide">
                 <a href="{{ route('staff_meals.delivery') }}" 
                 class="side-menu__item" 
@@ -194,12 +228,19 @@
                     Entregas
                 </a>
             </li>
+
         </ul>
     </li>
+    @endcanany
 
     <li class="menu-title" role="presentation" data-lang="hr-title-tables">Administración</li>
-
     {{-- === USUARIOS === --}}
+    @canany(['
+    users.index', 
+    'users.create', 
+    'users.edit', 
+    'users.delete'
+    ])
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
             <span class="side_menu_icon"><i class="ri-shield-keyhole-line"></i></span>
@@ -207,7 +248,6 @@
             <i class="ri-arrow-down-s-line side-menu__angle"></i>
         </a>
 
-        @canany(['users.index', 'users.create', 'users.edit', 'users.delete'])
         <ul class="slide-menu" role="menu">
             <li class="slide">
                 <a href="{{ route('usuarios.index') }}" 
@@ -219,10 +259,39 @@
                 </a>
             </li>
         </ul>
-        @endcan
+        
     </li>
+    @endcanany
 
     {{-- === HOSPITALES === --}}
+    @canany(['
+            beds.index', 
+            'beds.create', 
+            'beds.edit', 
+            'beds.delete',
+
+            'servicios.show',
+
+            'hospital-floor-services.edit',
+
+            'servicios.index', 
+            'servicios.create', 
+            'servicios.edit', 
+            'servicios.delete', 
+            'servicios.show',
+
+            'hospitalfloors.edit', 
+
+            'niveles.index', 
+            'niveles.create', 
+            'niveles.edit', 
+            'niveles.delete',
+
+            'hospitales.index', 
+            'hospitales.create', 
+            'hospitales.edit', 
+            'hospitales.delete'
+            ])
     <li class="slide">
         <a href="#!" class="side-menu__item" role="menuitem">
             <span class="side_menu_icon"><i class="ri-hospital-line"></i></span>
@@ -233,6 +302,7 @@
         <ul class="slide-menu" role="menu">
         </ul>
         <ul class="slide-menu" role="menu">
+            
             <li class="slide">
                 <a href="#!" class="side-menu__item" role="menuitem">
                     <span><i class="ri-service-line"></i></span>
@@ -240,7 +310,7 @@
                     <i class="ri-arrow-down-s-line side-menu__angle"></i>
                 </a>
                 <ul class="slide-menu" role="menu">
-                    @canany(['beds.index', 'beds.create', 'beds.edit', 'beds.delete', 'servicios.show'])
+                    
                     <li class="slide">
                         <a href="{{ route('beds.index') }}" 
                         class="side-menu__item" 
@@ -250,9 +320,7 @@
                             Camas
                         </a>
                     </li>
-                    @endcan
-
-                    @can('hospital-floor-services.edit')
+                    
                     <li class="slide">
                         <a href="{{ route('hospital-floor-services.edit') }}" 
                         class="side-menu__item" 
@@ -262,9 +330,7 @@
                             Vincular
                         </a>
                     </li>
-                    @endcan
 
-                    @canany(['servicios.index', 'servicios.create', 'servicios.edit', 'servicios.delete', 'servicios.show'])
                     <li class="slide">
                         <a href="{{ route('servicios.index') }}" 
                         class="side-menu__item" 
@@ -274,7 +340,6 @@
                             Servicios
                         </a>
                     </li>
-                    @endcan
 
                 </ul>
             </li>
@@ -287,7 +352,6 @@
                 </a>
                 <ul class="slide-menu" role="menu">
                     <li class="slide">
-                        @can('hospitalfloors.edit')
                         <a href="{{ route('hospital-floors.edit') }}" 
                         class="side-menu__item" 
                         role="menuitem" 
@@ -295,9 +359,8 @@
                             <i class="ri-link-unlink-m"></i>
                             Vincular
                         </a>
-                        @endcan
                     </li>
-                    @canany(['niveles.index', 'niveles.create', 'niveles.edit', 'niveles.delete'])
+
                     <li class="slide">
                         <a href="{{ route('niveles.index') }}" 
                         class="side-menu__item" 
@@ -307,13 +370,11 @@
                             Plantas
                         </a>
                     </li>
-                    @endcan
+                    
                 </ul>
             </li>
         </ul>
-
         <ul class="slide-menu" role="menu">
-            @canany(['hospitales.index', 'hospitales.create', 'hospitales.edit', 'hospitales.delete'])
             <li class="slide">
                 <a href="{{ route('hospitales.index') }}" 
                 class="side-menu__item" 
@@ -323,8 +384,8 @@
                     Gestionar
                 </a>
             </li>
-            @endcan
+            
         </ul>
-
     </li>
+    @endcanany
 </ul>

@@ -185,8 +185,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('menus/{menu}',    [MenuController::class,'update'])->name('menus.update')->middleware('permission:menus.edit');
     Route::delete('menus/{menu}', [MenuController::class,'destroy'])->name('menus.destroy')->middleware('permission:menus.delete');
 });
-//Calendar
 
+//Calendar
 Route::resource('calendars', CalendarController::class)
     ->middleware('auth');
 Route::middleware('auth')->group(function () {
@@ -217,54 +217,128 @@ Route::middleware(['auth','verified'])->group(function () {
 
 
 //entregas
+// === ENTREGAS (Staff Meals) ===
 Route::middleware(['auth'])->group(function () {
     Route::get('staff_meals/delivery', [StaffMealController::class, 'delivery'])
-        ->name('staff_meals.delivery');
+        ->name('staff_meals.delivery')
+        ->middleware('permission:staff-meals.view');
+
+    // Opciones de combos/autocomplete (puedes exigir solo view)
     Route::get('staff_meals/options/diet-types', [StaffMealController::class, 'dietTypes'])
-        ->name('staff_meals.diet-types');
+        ->name('staff_meals.diet-types')
+        ->middleware('permission:staff-meals.view');
+
     Route::get('staff_meals/options/menus-today', [StaffMealController::class, 'menusToday'])
-        ->name('staff_meals.menus-today');
+        ->name('staff_meals.menus-today')
+        ->middleware('permission:staff-meals.view');
+
     Route::get('staff_meals/search-beneficiaries', [StaffMealController::class, 'searchBeneficiaries'])
-        ->name('staff_meals.search-beneficiaries');
+        ->name('staff_meals.search-beneficiaries')
+        ->middleware('permission:staff-meals.view');
+
+    // Acción de entrega
     Route::post('staff_meals/deliver', [StaffMealController::class, 'deliver'])
-        ->name('staff_meals.deliver');
+        ->name('staff_meals.deliver')
+        ->middleware('permission:staff-meals.deliver');
+
     Route::get('staff_meals/list-deliveries', [StaffMealController::class, 'listDeliveries'])
-        ->name('staff_meals.list-deliveries');
+        ->name('staff_meals.list-deliveries')
+        ->middleware('permission:staff-meals.view');
 });
 
-
-Route::middleware(['auth'])->group(function () {
+// === REPORTES DE ENTREGAS ===
+Route::middleware(['auth', 'permission:staff-meals.report'])->group(function () {
     Route::get('staff_meals/report', [StaffMealReportController::class, 'deliveriesReport'])
         ->name('staff_meals.report');
+});
 
+// === BENEFICIARIOS ===
+Route::middleware(['auth'])->group(function () {
+    Route::get('/staff-beneficiaries', [StaffBeneficiaryController::class, 'index'])
+        ->name('staff-beneficiaries.index')
+        ->middleware('permission:staff-beneficiaries.index');
+
+    Route::get('/staff-beneficiaries/create', [StaffBeneficiaryController::class, 'create'])
+        ->name('staff-beneficiaries.create')
+        ->middleware('permission:staff-beneficiaries.create');
+
+    Route::post('/staff-beneficiaries', [StaffBeneficiaryController::class, 'store'])
+        ->name('staff-beneficiaries.store')
+        ->middleware('permission:staff-beneficiaries.create');
+
+    Route::get('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'show'])
+        ->name('staff-beneficiaries.show')
+        ->middleware('permission:staff-beneficiaries.index');
+
+    Route::get('/staff-beneficiaries/{staff_beneficiary}/edit', [StaffBeneficiaryController::class, 'edit'])
+        ->name('staff-beneficiaries.edit')
+        ->middleware('permission:staff-beneficiaries.edit');
+
+    Route::put('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'update'])
+        ->name('staff-beneficiaries.update')
+        ->middleware('permission:staff-beneficiaries.edit');
+
+    Route::delete('/staff-beneficiaries/{staff_beneficiary}', [StaffBeneficiaryController::class, 'destroy'])
+        ->name('staff-beneficiaries.destroy')
+        ->middleware('permission:staff-beneficiaries.delete');
+
+    Route::patch('/staff-beneficiaries/{staff_beneficiary}/toggle-status', [StaffBeneficiaryController::class, 'toggleStatus'])
+        ->name('staff-beneficiaries.toggle-status')
+        ->middleware('permission:staff-beneficiaries.edit');
 });
 
 // Carritos
 Route::middleware(['auth','verified'])->prefix('carts')->name('carts.')->group(function () {
-    Route::get('/', [CartController::class, 'index'])->name('index');
-    Route::get('/create', [CartController::class, 'create'])->name('create');
-    Route::post('/', [CartController::class, 'store'])->name('store');
-    Route::get('/{cart}/edit', [CartController::class, 'edit'])->name('edit');
-    Route::put('/{cart}', [CartController::class, 'update'])->name('update');
-    Route::delete('/{cart}', [CartController::class, 'destroy'])->name('destroy');
-    Route::get('/{cart}/route', [CartController::class, 'editRoute'])->name('route.edit');
-    Route::put('/{cart}/route', [CartController::class, 'updateRoute'])->name('route.update');
-    Route::get('/{cart}/services/available', [CartController::class, 'availableServices'])->name('services.available');
-    Route::get('/{cart}/services/selected', [CartController::class, 'selectedServices'])->name('services.selected');
+    Route::get('/', [CartController::class, 'index'])
+        ->name('index')->middleware('permission:carts.index');
+
+    Route::get('/create', [CartController::class, 'create'])
+        ->name('create')->middleware('permission:carts.create');
+
+    Route::post('/', [CartController::class, 'store'])
+        ->name('store')->middleware('permission:carts.create');
+
+    Route::get('/{cart}/edit', [CartController::class, 'edit'])
+        ->name('edit')->middleware('permission:carts.edit');
+
+    Route::put('/{cart}', [CartController::class, 'update'])
+        ->name('update')->middleware('permission:carts.edit');
+
+    Route::delete('/{cart}', [CartController::class, 'destroy'])
+        ->name('destroy')->middleware('permission:carts.delete');
+
+    Route::get('/{cart}/route', [CartController::class, 'editRoute'])
+        ->name('route.edit')->middleware('permission:carts.routes.edit');
+
+    Route::put('/{cart}/route', [CartController::class, 'updateRoute'])
+        ->name('route.update')->middleware('permission:carts.routes.update');
+
+    Route::get('/{cart}/services/available', [CartController::class, 'availableServices'])
+        ->name('services.available')->middleware('permission:carts.services.view');
+
+    Route::get('/{cart}/services/selected', [CartController::class, 'selectedServices'])
+        ->name('services.selected')->middleware('permission:carts.services.view');
 });
 
-// rutas
+// Rutas (pantalla global de rutas)
 Route::middleware(['auth'])->group(function () {
-    Route::get('carts/routes',  [CartRouteController::class, 'edit'])->name('carts.routes.index');
-    Route::post('carts/routes', [CartRouteController::class, 'update'])->name('carts.routes.update');
+    Route::get('carts/routes',  [CartRouteController::class, 'edit'])
+        ->name('carts.routes.index')->middleware('permission:carts.routes.edit');
+    Route::post('carts/routes', [CartRouteController::class, 'update'])
+        ->name('carts.routes.update')->middleware('permission:carts.routes.update');
 });
 
 // Collect
 Route::middleware(['auth'])->group(function () {
-    Route::get('/collects', [CollectController::class, 'index'])->name('collects.index');
-    Route::post('/collects/bulk', [CollectController::class, 'bulkUpsert'])->name('collects.bulk');
+    Route::get('/collects', [CollectController::class, 'index'])
+        ->name('collects.index')->middleware('permission:collects.index');
+
+    Route::post('/collects/bulk', [CollectController::class, 'bulkUpsert'])
+        ->name('collects.bulk')->middleware('permission:collects.bulk');
+
     Route::patch('/collects/bed/{bed}/toggle', [CollectController::class, 'toggleBedStatus'])
-        ->name('collects.toggle-bed');
+        ->name('collects.toggle-bed')->middleware('permission:collects.toggle-bed');
+
     Route::patch('/collects/bed/{bed}/companion', [CollectController::class, 'saveCompanion'])
-        ->name('collects.save-companion');
+        ->name('collects.save-companion')->middleware('permission:collects.save-companion');
 });

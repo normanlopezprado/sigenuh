@@ -53,6 +53,29 @@ class RolePermissionSeeder extends Seeder
             'menus.create',
             'menus.edit',
             'menus.delete',
+            //beneficiarios
+            'staff-beneficiaries.index',
+            'staff-beneficiaries.create',
+            'staff-beneficiaries.edit',
+            'staff-beneficiaries.delete',
+            'staff-meals.view',      
+            'staff-meals.deliver',   
+            'staff-meals.report',   
+            // Recolección (collects)
+            'collects.index',         
+            'collects.bulk',          
+            'collects.toggle-bed',    
+            'collects.save-companion',
+
+            //carritos
+            'carts.index',
+            'carts.create',
+            'carts.edit',
+            'carts.delete',
+            'carts.routes.edit',
+            'carts.routes.update',
+            'carts.services.view',
+
 
             //dashboards
             'dashboard.view',
@@ -77,25 +100,65 @@ class RolePermissionSeeder extends Seeder
         $nutricion->syncPermissions([
             //dashboard
             'dashboard.view',
+
             //ingredientes
             'ingredients.index',
             'ingredients.create',
             'ingredients.edit',
+
             //menu
             'menus.index',
             'menus.create',
             'menus.edit',
+
+             // beneficiarios
+            'staff-beneficiaries.index',
+            'staff-beneficiaries.create',
+            'staff-beneficiaries.edit',
+            'staff-meals.view',
+            'staff-meals.deliver',
+            'staff-meals.report',
+
+            //collects
+            'collects.index',
+            'collects.bulk',
+            'collects.toggle-bed',
+            'collects.save-companion',
+
+            //carritos
+            'carts.index',
+            'carts.create',
+            'carts.edit',
+            'carts.delete',
+            'carts.routes.edit',
+            'carts.routes.update',
+            'carts.services.view',
+
         ]);
 
         $recolector->syncPermissions([
             'dashboard.view',
 
+             //beneficiarios
+            'staff-meals.view',
+            'staff-meals.deliver',
+            'staff-meals.report',
+
+            //collects
+            'collects.index',
+            'collects.bulk',
+            'collects.toggle-bed',
+            'collects.save-companion',
 
         ]);
 
         $visualizador->syncPermissions([
             'dashboard.view',
 
+            //beneficiarios
+            'staff-meals.view',
+            'staff-meals.deliver',
+            'staff-meals.report',
 
         ]);
     }
