@@ -3,7 +3,7 @@
 
 @section('title', 'SIGENUH')
 @section('sub-title', 'Hospitales -> Servicios -> Camas')
-@section('pagetitle', 'Recolección por camas (tarjetas)')
+@section('pagetitle', 'Recolección')
 @section('buttonTitle', 'Share')
 
 @section('css')
