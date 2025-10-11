@@ -93,7 +93,7 @@
 
                             <div class="mt-3 d-flex gap-2">
                                 <button class="btn btn-success">Guardar</button>
-                                <a href="{{ route('calendars.index') }}" class="btn btn-secondary">Cancelar</a>
+                                <a href="{{ route('dashboard') }}" class="btn btn-secondary">Cancelar</a>
                             </div>
                         </form>
                     </div>

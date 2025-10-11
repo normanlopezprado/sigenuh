@@ -61,8 +61,8 @@ class CalendarController extends Controller
         $calendar = Calendar::create($data);
 
         return redirect()
-            ->route('calendars.index', $calendar)
-            ->with('success', 'Calendario creado. Ahora puedes agregar los ingredientes opcionales.');
+            ->route('dashboard')
+            ->with('success', 'Menú asignado correctamente.');
     }
 
     public function edit(Calendar $calendar, Request $request)
@@ -117,7 +117,7 @@ class CalendarController extends Controller
         $calendar->optionalMenuIngredients()->sync($payload);
 
         return redirect()
-            ->route('calendars.edit', $calendar)
+            ->route('dashboard')
             ->with('success', 'Calendario actualizado. Opcionales guardados correctamente.');
     }
 

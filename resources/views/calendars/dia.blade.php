@@ -30,10 +30,6 @@
 @endphp
 
 <div class="card">
-    <div class="card-header d-flex align-items-center justify-content-between">
-        <h6 class="mb-0">Menús del día — {{ \Carbon\Carbon::parse($fechaISO)->locale('es')->isoFormat('dddd D [de] MMMM YYYY') }}</h6>
-    </div>
-
     <div class="card-body">
         @if($calendars->isEmpty())
             <div class="alert alert-info mb-0">
@@ -66,48 +62,59 @@
                     @endphp
 
                     <div class="list-group-item">
-                        <div class="d-flex align-items-start justify-content-between">
-                            <div>
-                                <h6 class="mb-1">
-                                    {{ $menu?->name ?? 'Menú sin nombre' }}
-                                    @if($menu?->category)
-                                        <small class="text-muted"> · {{ ucfirst($menu->category) }}</small>
-                                    @endif
-                                    @if($menu?->diet_type)
-                                        <small class="text-muted"> · {{ $menu->diet_type }}</small>
-                                    @endif
-                                </h6>
-                                @if(!empty($cal->notes))
-                                    <p class="mb-2 text-muted"><em>{{ $cal->notes }}</em></p>
-                                @endif
-                            </div>
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="w-100">
+                            @php
+                                $cat  = $menu?->category ? ucfirst($menu->category) : null;
+                                $diet = $menu?->diet_type ?: null;
+                                $tituloLinea1 = collect([$cat, $diet])->filter()->implode(' - ');
+                            @endphp
+
+                            {{-- Línea 1: Categoría - Dieta (centrado y en negrita) --}}
+                            @if($tituloLinea1)
+                                <p class="mb-1 text-center fw-bold text-uppercase">
+                                    {{ $tituloLinea1 }}
+                                </p>
+                            @endif
+
+                            {{-- Línea 2: Nombre del menú (negrita alineada a la izquierda) --}}
+                            <p class="mb-1 fw-bold text-start">{{ $menu?->name ?? 'Menú sin nombre' }}</p>
+
+                            {{-- Notas (si hay) --}}
+                            @if(!empty($cal->notes))
+                                <p class="mb-2 text-muted"><em>{{ $cal->notes }}</em></p>
+                            @endif
                         </div>
-                        @if($ingredientesDelDia->isEmpty())
-                            <div class="text-muted small">Sin ingredientes configurados para este menú.</div>
-                        @else
-                            <ul class="mt-2 mb-0" style="margin-left: 15px;">
-                                @foreach($ingredientesDelDia as $mi)
-                                    @php
-                                        $esOpcionalSel = (bool) ($mi->is_optional ?? false);
-                                        $qty = $fmtQty($mi->qty ?? null);
-                                        $unit = $mi->unit ?? null;
-                                    @endphp
-                                    <li>
-                                        <strong>{{ $mi->ingredient?->name ?? 'Ingrediente' }}</strong>
-                                        @if($qty)
-                                            — {{ $qty }}@if($unit) {{ ' ' . $unit }}@endif
-                                        @endif
-                                        @if($esOpcionalSel)
-                                            <span class="badge bg-warning text-dark ms-2">Opcional seleccionado</span>
-                                        @endif
-                                        @if(!empty($mi->notes))
-                                            <br><small class="text-muted">{{ $mi->notes }}</small>
-                                        @endif
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
                     </div>
+
+                    @if($ingredientesDelDia->isEmpty())
+                        <div class="text-muted small">Sin ingredientes configurados para este menú.</div>
+                    @else
+                        <ul class="mt-2 mb-0" style="margin-left: 15px;">
+                            @foreach($ingredientesDelDia as $mi)
+                                @php
+                                    $esOpcionalSel = (bool) ($mi->is_optional ?? false);
+                                    $qty = $fmtQty($mi->qty ?? null);
+                                    $unit = $mi->unit ?? null;
+                                @endphp
+                                <li>
+                                    {{ $mi->ingredient?->name ?? 'Ingrediente' }}
+                                    @if($qty)
+                                        — {{ $qty }}@if($unit) {{ ' ' . $unit }}@endif
+                                    @endif
+                                    @if($esOpcionalSel)
+                                        <span class="badge bg-warning text-dark ms-2">Opcional seleccionado</span>
+                                    @endif
+                                    @if(!empty($mi->notes))
+                                        <br><small class="text-muted">{{ $mi->notes }}</small>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+
+
                 @endforeach
             </div>
         @endif
