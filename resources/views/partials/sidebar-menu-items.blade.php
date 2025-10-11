@@ -13,7 +13,7 @@
         
             <li 
                 class="slide">
-                <a href="dashboard" 
+                <a href=" {{ route('dashboard') }} " 
                 class="side-menu__item" 
                 role="menuitem" 
                 data-lang="hr-dashboards-ecommerce">
@@ -23,7 +23,7 @@
 
             <li class="slide">
                 <a 
-                href="dashboard-project-management" 
+                href="{{ route('dashboard.cars.index') }}" 
                 data-lang="hr-dashboards-project-management" 
                 class="side-menu__item" 
                 role="menuitem">

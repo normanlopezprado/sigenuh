@@ -24,6 +24,7 @@ use App\Http\Controllers\StaffMealReportController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRouteController;
 use App\Http\Controllers\CollectController;
+use App\Http\Controllers\DashboardCartsController;
 
 use App\Http\Controllers\CollectCardsController;
 
@@ -280,3 +281,14 @@ Route::post('/collects/bulk', [CollectCardsController::class, 'bulk'])
 // Toggle de cama (PATCH) – tu Blade llama a /collects/bed/{id}/toggle
 Route::patch('/collects/bed/{bed}/toggle', [CollectCardsController::class, 'toggleBed'])
     ->name('collects.bed.toggle');
+
+
+
+    // ---------------------------
+// Dashboard - Tarjetas de carritos
+// ---------------------------
+Route::get('/dashboard/cars', [DashboardCartsController::class, 'index'])
+    ->name('dashboard.cars.index');
+
+Route::get('/dashboard/cars/partial', [DashboardCartsController::class, 'partial'])
+    ->name('dashboard.cars.partial');
