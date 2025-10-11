@@ -268,25 +268,15 @@ Route::middleware(['auth'])->group(function () {
 // ---------------------------
 // Recolección (Collects)
 // ---------------------------
-Route::middleware(['auth'])->group(function () {
-    Route::get('/collects',                        [CollectController::class, 'index'])->name('collects.index')->middleware('permission:collects.index');
-    Route::post('/collects/bulk',                  [CollectController::class, 'bulkUpsert'])->name('collects.bulk')->middleware('permission:collects.bulk');
-    Route::patch('/collects/bed/{bed}/toggle',     [CollectController::class, 'toggleBedStatus'])->name('collects.toggle-bed')->middleware('permission:collects.toggle-bed');
-    Route::patch('/collects/bed/{bed}/companion',  [CollectController::class, 'saveCompanion'])->name('collects.save-companion')->middleware('permission:collects.save-companion');
-});
 
+// Vista de tarjetas (GET)
+Route::get('/collects/cards', [CollectCardsController::class, 'cards'])
+    ->name('collects.cards'); // tu Blade usa route('collects.cards')
 
+// Guardado en bloque (POST) – tu Blade usa route('collects.bulk')
+Route::post('/collects/bulk', [CollectCardsController::class, 'bulk'])
+    ->name('collects.bulk');
 
-Route::middleware(['auth'])->group(function () {
-    
-    Route::get('/collects/cards', [CollectCardsController::class, 'index'])
-        ->name('collects.cards');
-
-    
-    Route::patch('/collects/bed/{bed}/toggle', [CollectCardsController::class, 'toggleAvailability'])
-        ->name('collects.bed.toggle');
-
-    
-    Route::post('/collects/bulk', [CollectCardsController::class, 'bulkStore'])
-        ->name('collects.bulk');
-});
+// Toggle de cama (PATCH) – tu Blade llama a /collects/bed/{id}/toggle
+Route::patch('/collects/bed/{bed}/toggle', [CollectCardsController::class, 'toggleBed'])
+    ->name('collects.bed.toggle');
