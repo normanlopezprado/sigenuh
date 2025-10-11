@@ -31,4 +31,17 @@ class Bed extends Model
     {
         return $this->belongsTo(HospitalFloorService::class);
     }
+    
+    public function getServicePathAttribute(): string
+    {
+        $hospital = $this->hospitalFloorService?->hospitalFloor?->hospital?->name;
+        $nivel    = $this->hospitalFloorService?->hospitalFloor?->nivel?->name;
+        $servicio = $this->hospitalFloorService?->service?->name;
+        $categoria = $this->hospitalFloorService?->service?->category;
+
+        return collect([$hospital, $nivel, $servicio, $categoria])
+            ->filter(fn($v) => filled($v))
+            ->implode(' → ');
+    }
+
 }
