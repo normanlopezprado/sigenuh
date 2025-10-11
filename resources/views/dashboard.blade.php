@@ -16,15 +16,21 @@
             height: auto !important;
             min-height: auto !important;
         }
+
         @media (min-width: 1200px) {
-            .dashboard-row > .col-calendar {
-                flex: 0 0 20%;
-                max-width: 20%;
-            }
-            .dashboard-row > .col-menu {
-                flex: 0 0 20%;
-                max-width: 20%;
-            }
+            /* Layout dependiente del permiso de calendario */
+            @php
+                $canSeeCalendar = auth()->check() && auth()->user()->can('calendars.index');
+            @endphp
+
+            @if ($canSeeCalendar)
+                /* Con calendario: 20% calendario + 20% cada card de menú */
+                .dashboard-row > .col-calendar { flex: 0 0 20%; max-width: 20%; }
+                .dashboard-row > .col-menu     { flex: 0 0 20%; max-width: 20%; }
+            @else
+                /* Sin calendario: 4 cards por fila (25% cada una) */
+                .dashboard-row > .col-menu     { flex: 0 0 25%; max-width: 25%; }
+            @endif
         }
     </style>
 @endsection
@@ -42,33 +48,36 @@
         use Carbon\Carbon;
         Carbon::setLocale('es');
 
-        
+        // Permiso para ver calendario
+        $canSeeCalendar = auth()->check() && auth()->user()->can('calendars.index');
+
+        // Próximos 9 días (hoy + 8)
         $fechas = [];
         for ($i = 0; $i < 9; $i++) {
             $fechas[] = Carbon::today()->addDays($i);
         }
 
-        
+        // 1a fila: 4 días, 2a fila: 5 días
         $fechasFila1 = array_slice($fechas, 0, 4);
-        
         $fechasFila2 = array_slice($fechas, 4);
     @endphp
 
-    
     <div class="row g-4 dashboard-row">
-        {{-- Calendario --}}
-        <div class="col-12 col-calendar">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0">Calendario de menús</h6>
-                </div>
-                <div class="card-body calendarContainer">
-                    @include('calendars.show')
+        {{-- Calendario (solo con permiso) --}}
+        @if ($canSeeCalendar)
+            <div class="col-12 col-calendar">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Calendario de menús</h6>
+                    </div>
+                    <div class="card-body calendarContainer">
+                        @include('calendars.show')
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
 
-    
+        {{-- Menús próximos - fila 1 --}}
         @foreach ($fechasFila1 as $f)
             <div class="col-12 col-menu">
                 <div class="card">
@@ -86,7 +95,7 @@
         @endforeach
     </div>
 
-    
+    {{-- Menús próximos - fila 2 --}}
     <div class="row g-4 mt-0 dashboard-row">
         @foreach ($fechasFila2 as $f)
             <div class="col-12 col-menu">

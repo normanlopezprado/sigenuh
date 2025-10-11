@@ -76,6 +76,12 @@ class RolePermissionSeeder extends Seeder
             'carts.routes.update',
             'carts.services.view',
 
+            //calendarios
+            'calendars.index',
+            'calendars.create',
+            'calendars.edit',
+            'calendars.delete',
+
 
             //dashboards
             'dashboard.view',
@@ -133,6 +139,12 @@ class RolePermissionSeeder extends Seeder
             'carts.routes.edit',
             'carts.routes.update',
             'carts.services.view',
+
+            //calendarios
+            'calendars.index',
+            'calendars.create',
+            'calendars.edit',
+            'calendars.delete',
 
         ]);
 
