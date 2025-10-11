@@ -25,6 +25,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRouteController;
 use App\Http\Controllers\CollectController;
 
+use App\Http\Controllers\CollectCardsController;
+
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
@@ -271,4 +273,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/collects/bulk',                  [CollectController::class, 'bulkUpsert'])->name('collects.bulk')->middleware('permission:collects.bulk');
     Route::patch('/collects/bed/{bed}/toggle',     [CollectController::class, 'toggleBedStatus'])->name('collects.toggle-bed')->middleware('permission:collects.toggle-bed');
     Route::patch('/collects/bed/{bed}/companion',  [CollectController::class, 'saveCompanion'])->name('collects.save-companion')->middleware('permission:collects.save-companion');
+});
+
+
+
+Route::middleware(['auth'])->group(function () {
+    
+    Route::get('/collects/cards', [CollectCardsController::class, 'index'])
+        ->name('collects.cards');
+
+    
+    Route::patch('/collects/bed/{bed}/toggle', [CollectCardsController::class, 'toggleAvailability'])
+        ->name('collects.bed.toggle');
+
+    
+    Route::post('/collects/bulk', [CollectCardsController::class, 'bulkStore'])
+        ->name('collects.bulk');
 });

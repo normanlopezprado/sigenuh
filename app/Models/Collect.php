@@ -12,10 +12,18 @@ class Collect extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'bed_id','date','meal',
-        'diet_type','has_disponsable', 'user_id','notes','has_minor','has_companion','companion_diet_type',
-        'companion_notes','companion_has_disposable',
-    ];
+    'bed_id',
+    'date',
+    'meal',
+    'diet_type',
+    'has_disponsable',
+    'has_minor',
+    'minor_age',
+    'has_companion',
+    'companion_diet_type',
+    'user_id',
+];
+
 
     protected $casts = [
         'date' => 'date',

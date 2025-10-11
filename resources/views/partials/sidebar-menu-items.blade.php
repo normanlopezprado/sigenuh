@@ -194,7 +194,7 @@
         <ul class="slide-menu" role="menu">
             <li class="slide">
                 {{-- Ajusta la ruta si ya tienes la pantalla de recolección --}}
-                <a href="{{ route('collects.index') }}" 
+                <a href="{{ route('collects.cards') }}" 
                 class="side-menu__item" 
                 role="menuitem" 
                 data-lang="hr-pages-start">
