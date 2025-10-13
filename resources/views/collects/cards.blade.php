@@ -52,14 +52,15 @@
       width: 3.1em; height: 1.6em; background-size: 1.2em 1.2em; cursor: pointer;
       transition: background-color .15s, border-color .15s, box-shadow .15s;
     }
-    /* base: ocupada (unchecked) naranja */
-    .availability .form-check-input { background-color: #f59e0b; border-color: #f59e0b; }
-    /* checked: disponible verde */
-    .availability .form-check-input:checked { background-color: #22c55e; border-color: #22c55e; }
+   /* base: ocupada (unchecked) verde */
+    .availability .form-check-input { background-color: #22c55e; border-color: #22c55e; }
+    /* checked: disponible naranja */
+    .availability .form-check-input:checked { background-color: #f59e0b; border-color: #f59e0b; }
 
     .state-pill { display: inline-block; padding: .15rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
-    .state-pill.free  { color: #065f46; background: #d1fae5; }
-    .state-pill.busy  { color: #7c2d12; background: #ffedd5; }
+    /* Intercambio de colores en los textos */
+    .state-pill.free  { color: #7c2d12; background: #ffedd5; } /* naranja para Disponible */
+    .state-pill.busy  { color: #065f46; background: #d1fae5; } /* verde para Ocupada */
 
     /* ====== SECTION TITLES ====== */
     .section-title { font-weight: 700; font-size: .9rem; margin-bottom: .35rem; color: #111827; }
@@ -67,25 +68,78 @@
     /* ====== FLOATING ACTIONS (MOBILE) ====== */
     .floating-actions { position: sticky; bottom: 0; z-index: 20; background: rgba(255,255,255,.9); backdrop-filter: blur(6px); border-top: 1px solid var(--bs-border-color, #e5e7eb); padding: .75rem; display: none; }
     @media (max-width: 767.98px) { .floating-actions { display: block; } }
+
+    
   </style>
 @endsection
 
 @section('content')
-  @php
+@php
     use Carbon\Carbon; use Illuminate\Support\Facades\App;
     App::setLocale('es'); Carbon::setLocale('es');
     $fechaFormateada = ucfirst(Carbon::parse($date ?? now())->translatedFormat('l d \\d\\e F'));
-  @endphp
+
+    // --- Normalizaciones seguras para esta vista ---
+    // 1) serviceId (para @selected y los links Cancelar)
+    $serviceId = $serviceId
+        ?? ($selectedService ?? (request('service') ?? old('service')));
+    if (is_array($serviceId)) {
+        $serviceId = $serviceId['id'] ?? ($serviceId[0]['id'] ?? ($serviceId[0] ?? null));
+    }
+    $serviceId = filled($serviceId) ? (string)$serviceId : null;
+
+    // 2) collectsByBed: el controlador manda 'prefill' (array keyBy bed_id)
+    $collectsByBed = (isset($collectsByBed) && is_array($collectsByBed))
+        ? $collectsByBed
+        : ((isset($prefill) && is_array($prefill)) ? $prefill : []);
+
+    // 3) diets (si no viene de la vista/controlador, define un fallback)
+    if (!isset($diets) || !is_array($diets) || empty($diets)) {
+        $diets = ['Libre', 'Blanda', 'Híposódica', 'Diabética', 'Líquidos', 'Licuada'];
+    }
+
+    // 4) isOpen (habilita/inhabilita botones Guardar)
+    if (!isset($isOpen)) {
+        $isOpen = true; // fallback en la vista
+    }
+@endphp
+
+
 
   <div class="row g-4">
     <div class="col-12">
       <div class="card mb-0 h-100">
         <div class="container py-4">
+          <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-1">
+            <div>
+              <h1 class="mb-0">
+                Recolección de: <span class="text-primary">{{ $meal }}</span>
+              </h1>
+                <h3> {{ $fechaFormateada }}
+                </h3>
+              @php $wc = $windowConfig ?? []; @endphp
+              <small class="text-muted d-block mt-1">
+                @if(!empty($wc['Desayuno']))
+                  <div><strong>Desayuno:</strong> {{ $wc['Desayuno'] }}</div>
+                @endif
+                @if(!empty($wc['Almuerzo']))
+                  <div><strong>Almuerzo:</strong> {{ $wc['Almuerzo'] }}</div>
+                @endif
+                @if(!empty($wc['Cena']))
+                  <div><strong>Cena:</strong> {{ $wc['Cena'] }}</div>
+                @endif
+              </small>
+            </div>
+          </div>
 
-          <h1 class="mb-1">
-            Recolección de: <span class="text-primary">{{ $meal }}</span>
-          </h1>
-          <small class="text-muted d-block mb-3">{{ $fechaFormateada }}</small>
+
+          <small class="text-muted d-block mb-2">{{ $windowMessage ?? '' }}</small>
+          
+
+
+
+
+          
 
           {{-- Selector de servicio --}}
           <form id="filterForm" method="GET" action="{{ route('collects.cards') }}" class="row g-2 mb-2">
@@ -94,11 +148,27 @@
               <select name="service" id="serviceSelect" class="form-select" required onchange="this.form.submit()">
                 <option value="">— Selecciona un servicio —</option>
                 @foreach($services as $svc)
-                  <option value="{{ $svc->id }}" @selected($serviceId===$svc->id)>
-                    {{ !empty($svc->display_levels) ? ($svc->display_levels.' — ') : '' }}
-                    {{ !empty($svc->abbreviation) ? ($svc->abbreviation.' — ') : '' }}
-                    {{ trim(($svc->name ?? '').' '.($svc->category ?? '')) }}
-                  </option>
+                  @php
+                    // Acepta Eloquent (objeto) o arreglo simple.
+                    $id    = is_array($svc) ? ($svc['id'] ?? null)                 : ($svc->id ?? null);
+                    $label = is_array($svc) ? ($svc['label'] ?? null)              : null;
+
+                    // Si no viene 'label', construirlo con los campos disponibles
+                    $displayLevels = is_array($svc) ? ($svc['display_levels'] ?? null) : ($svc->display_levels ?? null);
+                    $abbreviation  = is_array($svc) ? ($svc['abbreviation']  ?? null) : ($svc->abbreviation  ?? null);
+                    $name          = is_array($svc) ? ($svc['name']          ?? null) : ($svc->name          ?? null);
+                    $category      = is_array($svc) ? ($svc['category']      ?? null) : ($svc->category      ?? null);
+
+                    if (empty($label)) {
+                      $parts = [];
+                      if (!empty($displayLevels)) { $parts[] = $displayLevels; }
+                      if (!empty($abbreviation))  { $parts[] = $abbreviation; }
+                      $tail = trim(($name ?? '').' '.($category ?? ''));
+                      if (!empty($tail)) { $parts[] = $tail; }
+                      $label = implode(' — ', array_filter($parts));
+                    }
+                  @endphp
+                  <option value="{{ $id }}" @selected((string)$serviceId === (string)$id)>{{ $label }}</option>
                 @endforeach
               </select>
               <small class="text-muted d-block mt-1">Selecciona un servicio para ver sus camas y capturar datos.</small>
@@ -119,6 +189,8 @@
             @csrf
             <input type="hidden" name="date" value="{{ $date ?? now()->toDateString() }}">
             <input type="hidden" name="meal" value="{{ $meal }}">
+            <input type="hidden" name="service" value="{{ $serviceId }}">
+
 
             <div class="cards-grid mt-3">
               @forelse($beds as $bed)
