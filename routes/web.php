@@ -271,20 +271,15 @@ Route::middleware(['auth'])->group(function () {
 // ---------------------------
 
 // Vista de tarjetas (GET)
-Route::prefix('collects')->group(function () {
-    // Nuevo front (cards)
-    Route::get('/cards', [CollectCardsController::class, 'index'])
-        ->name('collects.cards');
-
-    // Toggle de estado de cama (tu JS ya llama a /collects/bed/{id}/toggle)
-    Route::patch('/bed/{bed}/toggle', [CollectCardsController::class, 'toggleBed'])
-        ->name('collects.bed.toggle');
-
-    // Upsert de captura por cama (AJAX)
-    Route::post('/bed/{bed}', [CollectCardsController::class, 'upsert'])
-        ->name('collects.cards.upsert');
-    
-        Route::post('/bulk', [CollectCardsController::class, 'bulk'])->name('collects.bulk');
+Route::prefix('collects')->name('collects.')->group(function () {
+    Route::get('cards', [CollectCardsController::class, 'index'])
+        ->name('cards');
+    Route::patch('bed/{bed}/toggle', [CollectCardsController::class, 'toggleBed'])
+        ->name('bed.toggle');
+    Route::post('bed/{bed}', [CollectCardsController::class, 'upsert'])
+        ->name('cards.upsert');
+    Route::post('bulk', [CollectCardsController::class, 'bulkUpsert'])
+        ->name('bulk');
 });
 
 

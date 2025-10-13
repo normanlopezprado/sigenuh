@@ -209,7 +209,7 @@
                 @endphp
 
                 <div class="card-col">
-                  <div class="card bed-card h-100">
+                  <div class="card bed-card h-100" data-bed="{{ $bed->id }}">
                     <div class="card-header d-flex justify-content-between align-items-start">
                       <div>
                         <div class="svc-title">{{ $svcTitle }}</div>
@@ -233,10 +233,12 @@
                         </label>
                       </div>
                     </div>
-
+                    
                     <div class="card-body">
                       {{-- marker para garantizar envío de fila --}}
                       <input type="hidden" name="rows[{{ $bed->id }}][__present]" value="1">
+                      <input type="hidden" name="rows[{{ $bed->id }}][__touched]" value="0" class="touched-flag">
+
 
                       {{-- Dieta (chips con preselección) --}}
                       <div class="mb-3">
@@ -246,10 +248,10 @@
                             @php $checked = $diet === $d; @endphp
                             <label class="diet-chip {{ $checked ? 'active':'' }}">
                               <input type="radio"
-                                     name="rows[{{ $bed->id }}][diet_type]"
-                                     value="{{ $d }}"
-                                     @checked($checked)
-                                     aria-label="Cama {{ $bed->code }}, dieta {{ $d }}">
+                                name="rows[{{ $bed->id }}][diet_type]"
+                                value="{{ $d }}"
+                                @checked($checked)
+                                aria-label="Cama {{ $bed->code }}, dieta {{ $d }}">
                               <span>{{ $d }}</span>
                             </label>
                           @endforeach
@@ -259,11 +261,11 @@
                       {{-- Desechable --}}
                       <div class="mb-3 form-check form-switch">
                         <input class="form-check-input"
-                               type="checkbox"
-                               id="disp-{{ $bed->id }}"
-                               name="rows[{{ $bed->id }}][has_disponsable]"
-                               value="1"
-                               @checked($hasDisp)>
+                          type="checkbox"
+                          id="disp-{{ $bed->id }}"
+                          name="rows[{{ $bed->id }}][has_disponsable]"
+                          value="1"
+                          @checked($hasDisp)>
                         <label class="form-check-label" for="disp-{{ $bed->id }}">Desechable</label>
                       </div>
 
@@ -271,35 +273,35 @@
                       <div class="mb-2">
                         <div class="form-check form-switch">
                           <input class="form-check-input minor-switch"
-                                 type="checkbox"
-                                 id="minor-{{ $bed->id }}"
-                                 name="rows[{{ $bed->id }}][has_minor]"
-                                 value="1"
-                                 data-target="#minor-age-{{ $bed->id }}"
-                                 @checked($hasMinor)>
+                            type="checkbox"
+                            id="minor-{{ $bed->id }}"
+                            name="rows[{{ $bed->id }}][has_minor]"
+                            value="1"
+                            data-target="#minor-age-{{ $bed->id }}"
+                            @checked($hasMinor)>
                           <label class="form-check-label" for="minor-{{ $bed->id }}">Menor</label>
                         </div>
                       </div>
                       <div class="mb-3" id="minor-age-{{ $bed->id }}" style="{{ $hasMinor ? '' : 'display:none;' }}">
                         <label class="form-label">Edad</label>
                         <input type="number"
-                               min="0" max="120" step="1"
-                               class="form-control form-floating"
-                               name="rows[{{ $bed->id }}][minor_age]"
-                               value="{{ $minorAge ?? '' }}"
-                               placeholder="Edad del menor">
+                          min="0" max="120" step="1"
+                          class="form-control form-floating"
+                          name="rows[{{ $bed->id }}][minor_age]"
+                          value="{{ $minorAge ?? '' }}"
+                          placeholder="Edad del menor">
                       </div>
 
                       {{-- Acompañante + dieta acompañante --}}
                       <div class="mb-2">
                         <div class="form-check form-switch">
                           <input class="form-check-input companion-switch"
-                                 type="checkbox"
-                                 id="companion-{{ $bed->id }}"
-                                 name="rows[{{ $bed->id }}][has_companion]"
-                                 value="1"
-                                 data-target="#companion-wrapper-{{ $bed->id }}"
-                                 @checked($hasComp)>
+                            type="checkbox"
+                            id="companion-{{ $bed->id }}"
+                            name="rows[{{ $bed->id }}][has_companion]"
+                            value="1"
+                            data-target="#companion-wrapper-{{ $bed->id }}"
+                            @checked($hasComp)>
                           <label class="form-check-label" for="companion-{{ $bed->id }}">Acompañante</label>
                         </div>
                       </div>
@@ -311,10 +313,10 @@
                             @php $cChecked = $compDiet === $d; @endphp
                             <label class="companion-chip {{ $cChecked ? 'active':'' }}">
                               <input type="radio"
-                                     name="rows[{{ $bed->id }}][companion_diet_type]"
-                                     value="{{ $d }}"
-                                     @checked($cChecked)
-                                     aria-label="Cama {{ $bed->code }}, dieta acompañante {{ $d }}">
+                                name="rows[{{ $bed->id }}][companion_diet_type]"
+                                value="{{ $d }}"
+                                @checked($cChecked)
+                                aria-label="Cama {{ $bed->code }}, dieta acompañante {{ $d }}">
                               <span>{{ $d }}</span>
                             </label>
                           @endforeach
@@ -333,14 +335,15 @@
 
             {{-- Acciones escritorio --}}
             <div class="d-none d-md-flex gap-2 mt-3">
-              <button class="btn btn-primary" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
+              <button type="submit" class="btn btn-primary" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
               <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-danger">Cancelar</a>
             </div>
 
             {{-- Acciones móviles fijas --}}
             <div class="floating-actions d-md-none">
               <div class="d-flex gap-2">
-                <button class="btn btn-primary w-100" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
+                <button type="submit" class="btn btn-primary w-100" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
+
                 <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-outline-danger">Cancelar</a>
               </div>
             </div>
@@ -430,6 +433,17 @@
         }
       }
     });
+
+    function markTouched(e) {
+    const card = e.target.closest('.card[data-bed]');
+    if (!card) return;
+    const bedId = card.getAttribute('data-bed');
+    const flag  = card.querySelector(`input[name="rows[${bedId}][__touched]"]`);
+    if (flag) flag.value = '1';
+  }
+  document.addEventListener('input',  markTouched);
+  document.addEventListener('change', markTouched);
+
   </script>
 
   {{-- (Opcional) librerías adicionales de tu layout --}}

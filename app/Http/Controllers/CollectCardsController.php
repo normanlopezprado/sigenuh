@@ -354,106 +354,135 @@ $windowConfig = [
             'companion_diet_type'   => $collect->companion_diet_type,
         ]);
     }
-    public function bulk(Request $request)
-{
-    // 1) Normaliza fecha y comida
-    $dateStr = $request->input('date');
-    try {
-        $date = $dateStr ? \Illuminate\Support\Carbon::parse($dateStr)->toDateString() : now()->toDateString();
-    } catch (\Throwable $e) {
-        $date = now()->toDateString();
-    }
-    $meal = $request->input('meal') ?: 'Desayuno';
-
-
-    // 2) Filas enviadas: rows[bed_id][...]
-    $rows = $request->input('rows', []);
-    if (!is_array($rows) || empty($rows)) {
-        return back()->with('warning', 'No se recibieron datos para guardar.');
-    }
-
-    $userId = optional(auth()->user())->id;
-    $okCount = 0; $failBeds = [];
-
-    \DB::beginTransaction();
-    try {
-        foreach ($rows as $bedId => $payload) {
-            // Solo procesa filas presentes (el hidden __present de la vista)
-            if (empty($payload['__present'])) {
-                continue;
-            }
-
-            // Verifica que exista la cama
-            $bed = \App\Models\Bed::find($bedId);
-            if (!$bed) {
-                $failBeds[] = $bedId;
-                continue;
-            }
-
-            // 3) Normaliza/valida campo por campo (tolerante)
-            $dietType           = $payload['diet_type']            ?? null;
-            $traysCount         = isset($payload['trays_count'])         ? (int)$payload['trays_count']         : 0;
-            $disposablesCount   = isset($payload['disposables_count'])   ? (int)$payload['disposables_count']   : 0;
-            $notes              = $payload['notes']                ?? null;
-
-            $hasDisponsable     = !empty($payload['has_disponsable']) ? 1 : 0; 
-            $hasMinor           = !empty($payload['has_minor'])       ? 1 : 0;
-            $minorAge           = isset($payload['minor_age'])        ? (int)$payload['minor_age'] : null;
-
-            $hasCompanion       = !empty($payload['has_companion'])   ? 1 : 0;
-            $companionDietType  = $payload['companion_diet_type']     ?? null;
-            $companionNotes     = $payload['companion_notes']         ?? null;
-
-            // 4) Upsert por (bed_id, date, meal)
-            \App\Models\Collect::updateOrCreate(
-                [
-                    'bed_id' => $bed->id,
-                    'date'   => $date,
-                    'meal'   => $meal,
-                ],
-                [
-                    'diet_type'            => $dietType,
-                    'trays_count'          => $traysCount,
-                    'disposables_count'    => $disposablesCount,
-                    'notes'                => $notes,
-                    'has_disponsable'      => $hasDisponsable,      
-                    'has_minor'            => $hasMinor,
-                    'minor_age'            => $minorAge,
-                    'has_companion'        => $hasCompanion,
-                    'companion_diet_type'  => $companionDietType,
-                    'companion_notes'      => $companionNotes,
-                    'user_id'              => $userId,
-                ]
-            );
-
-            $okCount++;
+    // En CollectController.php
+    public function bulkUpsert(Request $request)
+    {
+        $user = $request->user();
+        $hospitalId = $user->hospital_selected;
+        if (!$hospitalId) {
+            return back()->with('warning','Selecciona un hospital.');
         }
 
-        \DB::commit();
-    } catch (\Throwable $e) {
-        \DB::rollBack();
-        return back()->with('error', 'No se pudieron guardar los datos: '.$e->getMessage());
+        // Valida lo que REALMENTE manda tu Blade
+        $data = $request->validate([
+            'date'  => ['required','date'],
+            'meal'  => ['required','in:Desayuno,Almuerzo,Cena'],
+            'rows'  => ['array'],
+
+            'rows.*.__touched'           => ['nullable','in:0,1'],
+            'rows.*.diet_type'           => ['nullable','string','max:100'],
+            'rows.*.has_disponsable'     => ['nullable','in:0,1'],
+            'rows.*.has_minor'           => ['nullable','in:0,1'],
+            'rows.*.minor_age'           => ['nullable','integer','min:0','max:120'],
+            'rows.*.has_companion'       => ['nullable','in:0,1'],
+            'rows.*.companion_diet_type' => ['nullable','string','max:100'],
+            // si luego agregas notes / trays_count / disposables_count, añádelos aquí
+        ]);
+
+        $date = $data['date'];
+        $meal = $data['meal'];
+        $rows = $request->input('rows', []);
+        if (!is_array($rows) || empty($rows)) {
+            return back()->with('warning','No se recibieron datos para guardar.');
+        }
+
+        $changed = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $bedId => $row) {
+                // 1) Sólo procesa si fue "tocado" (según tu hidden __touched)
+                $touched = (string)($row['__touched'] ?? '0') === '1';
+
+                // 2) Normaliza entradas
+                $diet     = isset($row['diet_type']) ? trim((string)$row['diet_type']) : '';
+                $hasDisp  = (int)($row['has_disponsable'] ?? 0);
+                $hasMinor = (int)($row['has_minor'] ?? 0);
+                $minorAge = $row['minor_age'] ?? null;
+                $minorAge = ($minorAge === '' || $minorAge === null) ? null : (int)$minorAge;
+
+                $hasComp  = (int)($row['has_companion'] ?? 0);
+                $compDiet = isset($row['companion_diet_type']) ? trim((string)$row['companion_diet_type']) : '';
+
+                // 3) Garantiza pertenencia de cama al hospital activo
+                $belongs = Bed::query()
+                    ->where('id', $bedId)
+                    ->whereHas('hospitalFloorService.hospitalFloor', fn($q) => $q->where('hospital_id', $hospitalId))
+                    ->exists();
+                if (!$belongs) continue;
+
+                // 4) Lee existente (si hay)
+                $existing = Collect::where('bed_id', $bedId)
+                    ->whereDate('date', $date)
+                    ->where('meal', $meal)
+                    ->first();
+
+                // 5) “Fila vacía” (según tu UI actual): nada marcado ni dietas
+                $isEmptyPayload =
+                    ($diet === '') &&
+                    ($hasDisp === 0) &&
+                    ($hasMinor === 0) &&
+                    ($hasComp === 0);
+
+                // 6) Si no fue tocado y además está vacío y no existe → no crear
+                if (!$touched && $isEmptyPayload && !$existing) {
+                    continue;
+                }
+
+                // 7) Si existe, compara cambios reales
+                if ($existing) {
+                    $same =
+                        ((string)($existing->diet_type ?? '') === $diet) &&
+                        ((int)($existing->has_disponsable ?? 0) === $hasDisp) &&
+                        ((int)($existing->has_minor ?? 0) === $hasMinor) &&
+                        ((int)($existing->minor_age ?? 0) === (int)($minorAge ?? 0)) &&
+                        ((int)($existing->has_companion ?? 0) === $hasComp) &&
+                        ((string)($existing->companion_diet_type ?? '') === $compDiet);
+
+                    if ($same) {
+                        // no escribir si no hubo cambios
+                        continue;
+                    }
+                } else {
+                    // Si no existe y está completamente vacío, no lo crees
+                    if ($isEmptyPayload) continue;
+                }
+
+                // 8) Upsert solo cuando hay contenido/cambios
+                Collect::updateOrCreate(
+                    [
+                        'bed_id' => $bedId,
+                        'date'   => $date,
+                        'meal'   => $meal,
+                    ],
+                    [
+                        'diet_type'            => ($diet !== '') ? $diet : null,
+                        'has_disponsable'      => $hasDisp,
+                        'has_minor'            => $hasMinor,
+                        'minor_age'            => $hasMinor ? $minorAge : null,
+                        'has_companion'        => $hasComp,
+                        'companion_diet_type'  => ($hasComp && $compDiet !== '') ? $compDiet : null,
+                        // si luego agregas: 'trays_count', 'disposables_count', 'notes', añádelos aquí
+                        'user_id'              => $user->id,
+                    ]
+                );
+
+                $changed++;
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->with('error','No se pudieron guardar los datos: '.$e->getMessage());
+        }
+
+        if ($changed === 0) {
+            return back()->with('warning','No hubo cambios para guardar.');
+        }
+
+        return back()->with('success',"Se guardaron {$changed} cambio(s).");
     }
 
-    // Mensaje final
-    if ($okCount === 0) {
-        return back()->with('warning', 'No se guardó ninguna fila.')->withInput();
-    }
 
-    $msg = "Guardado correcto: {$okCount} fila(s)";
-    if (!empty($failBeds)) {
-        $msg .= '. Algunas camas no se encontraron.';
-    }
-
-    // Mantén el servicio seleccionado si vino en el request
-    $params = [];
-    if ($request->filled('service')) {
-        $params['service'] = $request->input('service');
-    }
-
-    return redirect()
-        ->route('collects.cards', $params)
-        ->with('success', $msg);
-}
 
 }
