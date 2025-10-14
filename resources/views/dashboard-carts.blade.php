@@ -74,6 +74,41 @@
 
     .alert-mini { display:none; margin-bottom:1rem; }
     .summary-window { margin-top: .25rem; }
+
+    .text-center { text-align: center; }
+
+    /* === +15% tamaño en cards === */
+    :root { --card-scale: 1.15; }
+
+    .carts-grid {
+    gap: calc(1rem * var(--card-scale));
+    }
+
+    .cart-title-text {
+    font-size: calc(1rem * var(--card-scale));
+    }
+    .cart-submeta {
+    font-size: calc(.8rem * var(--card-scale));
+    }
+
+    .cart-header {
+    padding: calc(.75rem * var(--card-scale)) calc(1rem * var(--card-scale));
+    }
+    .cart-body {
+    padding: calc(1rem * var(--card-scale));
+    }
+
+    .cart-dot {
+    width: calc(12px * var(--card-scale));
+    height: calc(12px * var(--card-scale));
+    }
+
+    /* Tabla un poco más grande y con celdas cómodas */
+    .cart-table th,
+    .cart-table td {
+    padding: calc(.5rem * var(--card-scale));
+    }
+
 </style>
 @endsection
 
@@ -264,32 +299,30 @@
             const paths = Array.isArray(c.service_paths) ? c.service_paths : [];
             const count = Number(c.services_count ?? paths.length ?? 0);
 
-            // Tabla de captura
-            const rows = dietTypes.map(dt => {
-                const idBase = `${c.id}-${dt}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+            // dentro de renderCards, al armar rowsHtml
+            const rowsHtml = (Array.isArray(dietTypes) && dietTypes.length)
+            ? dietTypes.map(dt => {
+                const cnt = (c.counts && c.counts[dt])
+                    ? c.counts[dt]
+                    : { bandeja: 0, desechable: 0 };
                 return `
                     <tr>
-                        <td>${escapeHtml(dt)}</td>
-                        <td class="text-end">
-                            <input type="number" min="0" step="1" value="0"
-                                   class="form-control form-control-sm qty-input qty-bandeja"
-                                   data-cart="${escapeHtml(c.id)}" data-diet="${escapeHtml(dt)}" id="b-${idBase}">
-                        </td>
-                        <td class="text-end">
-                            <input type="number" min="0" step="1" value="0"
-                                   class="form-control form-control-sm qty-input qty-desechable"
-                                   data-cart="${escapeHtml(c.id)}" data-diet="${escapeHtml(dt)}" id="d-${idBase}">
-                        </td>
+                    <td>${escapeHtml(dt)}</td>
+                    <td class="text-center qty-bandeja" data-val="${cnt.bandeja}">${cnt.bandeja}</td>
+                    <td class="text-center qty-desechable" data-val="${cnt.desechable}">${cnt.desechable}</td>
                     </tr>
                 `;
-            }).join('');
+                }).join('')
+            : `<tr><td colspan="3" class="text-center muted">Sin tipos de dieta configurados.</td></tr>`;
 
+
+
+            // 👉 Mostrar TODOS los servicios (sin truncar)
             const servicesHtml = count > 0
                 ? `
                     <div class="cart-services">
                         <small class="muted">Servicios asignados (${count}):</small>
-                        ${paths.slice(0, 6).map(p => `<small class="svc">• ${escapeHtml(p)}</small>`).join('')}
-                        ${count > 6 ? `<small class="muted">+${count - 6} más…</small>` : ''}
+                        ${paths.map(p => `<small class="svc">${escapeHtml(p)}</small>`).join('')}
                     </div>
                 `
                 : `
@@ -298,18 +331,26 @@
                     </div>
                 `;
 
+            // Encabezado: Título = carts.name (fallback a "Carrito #N"), Subtítulo = code_name
+            const titleMain = escapeHtml(
+            (c.name && String(c.name).trim() !== '')
+                ? c.name
+                : `Carrito #${Number(c.order ?? 0)}`
+            );
+            const subMeta   = escapeHtml(c.code_name ?? '—');
+
             return `
-                <div class="cart-card">
-                    <div class="cart-header">
-                        <div class="cart-title">
-                            <span class="cart-dot" style="background:${color}"></span>
-                            <div class="cart-title-text">
-                                ${escapeHtml(c.name ?? 'Carrito')} — ${escapeHtml(c.code_name ?? '—')}
-                                <div class="cart-submeta">Orden #${Number(c.order ?? 0)}</div>
-                            </div>
-                        </div>
-                        <div>${statusBadge}</div>
+            <div class="cart-card">
+                <div class="cart-header">
+                <div class="cart-title">
+                    <span class="cart-dot" style="background:${color}"></span>
+                    <div class="cart-title-text">
+                    ${titleMain}
+                    <div class="cart-submeta">${subMeta}</div>
                     </div>
+                </div>
+                <div>${statusBadge}</div>
+                </div>
 
                     <div class="cart-body">
                         ${notes}
@@ -317,26 +358,25 @@
                             <thead>
                                 <tr>
                                     <th>Dietas</th>
-                                    <th class="text-end">Bandeja</th>
-                                    <th class="text-end">Desechable</th>
+                                    <th class="text-center">Bandeja</th>
+                                    <th class="text-center">Desechable</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${rows}
+                                ${rowsHtml}
                             </tbody>
                             <tfoot>
                                 <tr class="subtotal-row">
                                     <th>Subtotal</th>
-                                    <th class="text-end subtotal-bandeja">0</th>
-                                    <th class="text-end subtotal-desechable">0</th>
+                                    <th class="text-center subtotal-bandeja">0</th>
+                                    <th class="text-center subtotal-desechable">0</th>
                                 </tr>
                                 <tr class="total-row">
                                     <th>Total</th>
-                                    <th class="text-end" colspan="2"><span class="total-general">0</span></th>
+                                    <th class="text-center" colspan="2"><span class="total-general">0</span></th>
                                 </tr>
                             </tfoot>
                         </table>
-
                         ${servicesHtml}
                     </div>
                 </div>
@@ -345,30 +385,34 @@
 
         cartsContainer.innerHTML = `<div class="carts-grid">${grid}</div>`;
 
-        // Vincular lógica de totales
+        // Calcula totales leyendo las celdas (no inputs)
         bindTotalsLogic();
     }
 
     function bindTotalsLogic() {
-        const tables = cartsContainer.querySelectorAll('.cart-table');
-        tables.forEach(tbl => {
-            const recalc = () => {
-                let sumB = 0, sumD = 0;
-                tbl.querySelectorAll('.qty-bandeja').forEach(inp => { sumB += parseInt(inp.value || '0', 10) || 0; });
-                tbl.querySelectorAll('.qty-desechable').forEach(inp => { sumD += parseInt(inp.value || '0', 10) || 0; });
-                const sb = tbl.querySelector('.subtotal-bandeja');
-                const sd = tbl.querySelector('.subtotal-desechable');
-                const tg = tbl.querySelector('.total-general');
-                if (sb) sb.textContent = sumB.toLocaleString();
-                if (sd) sd.textContent = sumD.toLocaleString();
-                if (tg) tg.textContent = (sumB + sumD).toLocaleString();
-            };
-            tbl.addEventListener('input', (e) => {
-                if (e.target && e.target.classList.contains('qty-input')) recalc();
+    const tables = cartsContainer.querySelectorAll('.cart-table');
+    tables.forEach(tbl => {
+        const recalc = () => {
+            let sumB = 0, sumD = 0;
+            tbl.querySelectorAll('td.qty-bandeja').forEach(td => {
+                const v = parseInt(td.getAttribute('data-val') || td.textContent || '0', 10) || 0;
+                sumB += v;
             });
-            recalc(); // inicial
-        });
-    }
+            tbl.querySelectorAll('td.qty-desechable').forEach(td => {
+                const v = parseInt(td.getAttribute('data-val') || td.textContent || '0', 10) || 0;
+                sumD += v;
+            });
+            const sb = tbl.querySelector('.subtotal-bandeja');
+            const sd = tbl.querySelector('.subtotal-desechable');
+            const tg = tbl.querySelector('.total-general');
+            if (sb) sb.textContent = sumB.toLocaleString();
+            if (sd) sd.textContent = sumD.toLocaleString();
+            if (tg) tg.textContent = (sumB + sumD).toLocaleString();
+        };
+        recalc(); // inicial
+    });
+}
+
 
     async function fetchCarts() {
         if (!currentHospitalId) return;
