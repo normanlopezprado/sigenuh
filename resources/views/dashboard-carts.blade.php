@@ -2,7 +2,7 @@
 @extends('partials.layouts.master3')
 
 @section('title', 'SIGENUH')
-@section('sub-title', 'Panel de Carritos')
+@section('sub-title', 'Resumen y Destino Carritos')
 @section('pagetitle', 'Dashboard • Carritos')
 @section('buttonTitle', 'Actualizar')
 
@@ -219,27 +219,13 @@
     const FALLBACK_URL = (region?.dataset.fallbackUrl || '/dashboard/carts/live').trim();
     if (!liveUrl) liveUrl = FALLBACK_URL;
 
-    // Diet types: intenta data-attr -> endpoint -> fallback
-    async function getDietTypes() {
-        try {
-            const fromAttr = region?.dataset.dietTypes;
-            if (fromAttr) {
-                const parsed = JSON.parse(fromAttr);
-                if (Array.isArray(parsed) && parsed.length) return parsed;
-            }
-        } catch (_) {}
-        try {
-            const res = await fetch('/api/diet-types', { headers: { 'Accept': 'application/json' }});
-            if (res.ok) {
-                const arr = await res.json();
-                if (Array.isArray(arr) && arr.length) return arr;
-            }
-        } catch (_) {}
-        // Fallback (ajústalo cuando tengas el enum real)
-        return ['Normal', 'Blanda', 'Diabética', 'Hiposódica', 'Líquida'];
-    }
+    // Control de ventana
+    let lastWindowKey = null;
+    let resetTimer = null;
+    let serverTimeOffsetMs = 0; // para ajustar reset_at con hora del servidor
+
+    // Diet types cache (en el orden que vienen del ENUM)
     let cachedDietTypes = null;
-    let lastActiveWindow = null; // si la API no manda ventana, mantenemos la anterior (regla de negocio)
 
     function showAlert(msg) {
         if (!alertMini) return;
@@ -278,6 +264,26 @@
         return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
+    // Diet types: data-attr -> endpoint -> fallback
+    async function getDietTypes() {
+        try {
+            const fromAttr = region?.dataset.dietTypes;
+            if (fromAttr) {
+                const parsed = JSON.parse(fromAttr);
+                if (Array.isArray(parsed) && parsed.length) return parsed; // mantiene el orden original
+            }
+        } catch (_) {}
+        try {
+            const res = await fetch('/api/diet-types', { headers: { 'Accept': 'application/json' }});
+            if (res.ok) {
+                const arr = await res.json();
+                if (Array.isArray(arr) && arr.length) return arr; // tal cual vengan
+            }
+        } catch (_) {}
+        // Fallback por seguridad (no ordenar)
+        return ['Libre','Blanda','Hiposódica','Diabético 1,200','Diabético 1,500','Renal','Licuada','Especial'];
+    }
+
     function renderCards(carts = [], dietTypes = []) {
         if (!Array.isArray(carts) || carts.length === 0) {
             renderEmpty();
@@ -299,30 +305,23 @@
             const paths = Array.isArray(c.service_paths) ? c.service_paths : [];
             const count = Number(c.services_count ?? paths.length ?? 0);
 
-            // dentro de renderCards, al armar rowsHtml
+            // Filas de dietas (solo lectura)
             const rowsHtml = (Array.isArray(dietTypes) && dietTypes.length)
-            ? dietTypes.map(dt => {
-                const cnt = (c.counts && c.counts[dt])
-                    ? c.counts[dt]
-                    : { bandeja: 0, desechable: 0 };
-                return `
+                ? dietTypes.map(dt => `
                     <tr>
-                    <td>${escapeHtml(dt)}</td>
-                    <td class="text-center qty-bandeja" data-val="${cnt.bandeja}">${cnt.bandeja}</td>
-                    <td class="text-center qty-desechable" data-val="${cnt.desechable}">${cnt.desechable}</td>
+                        <td>${escapeHtml(dt)}</td>
+                        <td class="text-center qty-bandeja" data-val="0">0</td>
+                        <td class="text-center qty-desechable" data-val="0">0</td>
                     </tr>
-                `;
-                }).join('')
-            : `<tr><td colspan="3" class="text-center muted">Sin tipos de dieta configurados.</td></tr>`;
+                `).join('')
+                : `<tr><td colspan="3" class="text-center muted">Sin tipos de dieta configurados.</td></tr>`;
 
-
-
-            // 👉 Mostrar TODOS los servicios (sin truncar)
+            // Servicios asignados (todos, sin truncar)
             const servicesHtml = count > 0
                 ? `
                     <div class="cart-services">
-                        <small class="muted">Servicios asignados (${count}):</small>
-                        ${paths.map(p => `<small class="svc">${escapeHtml(p)}</small>`).join('')}
+                        <small style="opacity:1">Servicios asignados (${count}):</small>
+                        ${paths.map(p => `<small class="svc muted">${escapeHtml(p)}</small>`).join('')}
                     </div>
                 `
                 : `
@@ -331,26 +330,26 @@
                     </div>
                 `;
 
-            // Encabezado: Título = carts.name (fallback a "Carrito #N"), Subtítulo = code_name
+            // Título: carts.name (o fallback Carrito #order) y subtítulo: code_name
             const titleMain = escapeHtml(
-            (c.name && String(c.name).trim() !== '')
-                ? c.name
-                : `Carrito #${Number(c.order ?? 0)}`
+                (c.name && String(c.name).trim() !== '')
+                    ? c.name
+                    : `Carrito #${Number(c.order ?? 0)}`
             );
             const subMeta   = escapeHtml(c.code_name ?? '—');
 
             return `
-            <div class="cart-card">
-                <div class="cart-header">
-                <div class="cart-title">
-                    <span class="cart-dot" style="background:${color}"></span>
-                    <div class="cart-title-text">
-                    ${titleMain}
-                    <div class="cart-submeta">${subMeta}</div>
+                <div class="cart-card">
+                    <div class="cart-header">
+                        <div class="cart-title">
+                            <span class="cart-dot" style="background:${color}"></span>
+                            <div class="cart-title-text">
+                                ${titleMain}
+                                <div class="cart-submeta">${subMeta}</div>
+                            </div>
+                        </div>
+                        <div>${statusBadge}</div>
                     </div>
-                </div>
-                <div>${statusBadge}</div>
-                </div>
 
                     <div class="cart-body">
                         ${notes}
@@ -384,35 +383,85 @@
         }).join('');
 
         cartsContainer.innerHTML = `<div class="carts-grid">${grid}</div>`;
-
-        // Calcula totales leyendo las celdas (no inputs)
+        // Totales iniciales en 0
         bindTotalsLogic();
     }
 
     function bindTotalsLogic() {
-    const tables = cartsContainer.querySelectorAll('.cart-table');
-    tables.forEach(tbl => {
-        const recalc = () => {
-            let sumB = 0, sumD = 0;
-            tbl.querySelectorAll('td.qty-bandeja').forEach(td => {
-                const v = parseInt(td.getAttribute('data-val') || td.textContent || '0', 10) || 0;
-                sumB += v;
-            });
-            tbl.querySelectorAll('td.qty-desechable').forEach(td => {
-                const v = parseInt(td.getAttribute('data-val') || td.textContent || '0', 10) || 0;
-                sumD += v;
-            });
-            const sb = tbl.querySelector('.subtotal-bandeja');
-            const sd = tbl.querySelector('.subtotal-desechable');
-            const tg = tbl.querySelector('.total-general');
-            if (sb) sb.textContent = sumB.toLocaleString();
-            if (sd) sd.textContent = sumD.toLocaleString();
-            if (tg) tg.textContent = (sumB + sumD).toLocaleString();
-        };
-        recalc(); // inicial
-    });
-}
+        const tables = cartsContainer.querySelectorAll('.cart-table');
+        tables.forEach(tbl => {
+            const recalc = () => {
+                let sumB = 0, sumD = 0;
+                tbl.querySelectorAll('td.qty-bandeja').forEach(td => {
+                    const v = parseInt(td.getAttribute('data-val') || td.textContent || '0', 10) || 0;
+                    sumB += v;
+                });
+                tbl.querySelectorAll('td.qty-desechable').forEach(td => {
+                    const v = parseInt(td.getAttribute('data-val') || td.textContent || '0', 10) || 0;
+                    sumD += v;
+                });
+                const sb = tbl.querySelector('.subtotal-bandeja');
+                const sd = tbl.querySelector('.subtotal-desechable');
+                const tg = tbl.querySelector('.total-general');
+                if (sb) sb.textContent = sumB.toLocaleString();
+                if (sd) sd.textContent = sumD.toLocaleString();
+                if (tg) tg.textContent = (sumB + sumD).toLocaleString();
+            };
+            // Guarda función para reutilizar si hace falta:
+            tbl._recalcTotals = recalc;
+            recalc();
+        });
+    }
 
+    // Aplica counts del backend a cada tabla (respetando el orden de dietTypes)
+    function applyCountsToTables(carts = [], dietTypes = []) {
+        const byId = new Map(carts.map(c => [String(c.id), c]));
+        cartsContainer.querySelectorAll('.cart-table').forEach(tbl => {
+            const cartId = tbl.getAttribute('data-cart-id');
+            const cart = byId.get(String(cartId));
+            if (!cart) return;
+            const counts = cart.counts || {}; // { 'Libre': {bandeja,desechable,total}, ... }
+
+            // Recorre dietTypes en el orden que vienen
+            dietTypes.forEach(dt => {
+                // encuentra la fila por la primera celda (texto exacto)
+                const row = Array.from(tbl.tBodies[0]?.rows || []).find(r => {
+                    const cell = r.cells?.[0];
+                    return cell && cell.textContent.trim() === dt;
+                });
+                if (!row) return;
+                const bandTd = row.querySelector('td.qty-bandeja');
+                const desTd  = row.querySelector('td.qty-desechable');
+                const val = counts[dt] || { bandeja: 0, desechable: 0, total: 0 };
+
+                if (bandTd) {
+                    bandTd.setAttribute('data-val', String(val.bandeja || 0));
+                    bandTd.textContent = (val.bandeja || 0).toLocaleString();
+                }
+                if (desTd) {
+                    desTd.setAttribute('data-val', String(val.desechable || 0));
+                    desTd.textContent = (val.desechable || 0).toLocaleString();
+                }
+            });
+
+            // Recalcula subtotales/total
+            if (typeof tbl._recalcTotals === 'function') tbl._recalcTotals();
+        });
+    }
+
+    function scheduleReset(isoWhen) {
+        if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+        if (!isoWhen) return;
+        const due = new Date(isoWhen).getTime() - (Date.now() + serverTimeOffsetMs);
+        if (due > 0) {
+            resetTimer = setTimeout(() => {
+                // Limpiar UI y forzar refresco al comienzo de la nueva ventana
+                cartsContainer.innerHTML = '';
+                lastWindowKey = null; // obligará a re-render limpio
+                fetchCarts();
+            }, due);
+        }
+    }
 
     async function fetchCarts() {
         if (!currentHospitalId) return;
@@ -453,11 +502,23 @@
                 return;
             }
 
-            // Ventana activa / resumen (regla: si no viene, mantenemos la anterior)
-            const win = data?.active_window;
-            if (win) lastActiveWindow = String(win);
-            const effectiveWindow = lastActiveWindow || null;
+            // Ajuste de reloj con el servidor para scheduleReset
+            if (data?.server_time) {
+                const serverNow = new Date(data.server_time).getTime();
+                serverTimeOffsetMs = serverNow - Date.now();
+            }
 
+            // Gestión de ventana
+            const wkey = data?.window_key || null;
+            if (wkey && wkey !== lastWindowKey) {
+                // Cambio de ventana → limpiar UI antes de re-render
+                cartsContainer.innerHTML = '';
+                lastWindowKey = wkey;
+            }
+            scheduleReset(data?.window?.reset_at || null);
+
+            // Etiqueta de ventana activa
+            const effectiveWindow = data?.active_window || null;
             if (effectiveWindow) {
                 activeWindowBadge.textContent = effectiveWindow;
                 activeWindowBadge.style.display = 'inline-block';
@@ -468,8 +529,15 @@
                 summaryWindow.style.display = 'none';
             }
 
+            // Render de cards
             const carts = Array.isArray(data?.carts) ? data.carts : (Array.isArray(data) ? data : []);
-            renderCards(carts, cachedDietTypes);
+            if (!carts.length) {
+                renderEmpty();
+            } else {
+                renderCards(carts, cachedDietTypes);
+                // Aplicar conteos a las filas
+                applyCountsToTables(carts, cachedDietTypes);
+            }
 
             lastUpdatedAtEl.textContent = fmtDateTime(new Date());
         } catch (e) {
@@ -481,7 +549,10 @@
         }
     }
 
-    function startAutoRefresh() { stopAutoRefresh(); if (autoRefreshSw && autoRefreshSw.checked) timer = setInterval(fetchCarts, 5000); }
+    function startAutoRefresh() {
+        stopAutoRefresh();
+        if (autoRefreshSw && autoRefreshSw.checked) timer = setInterval(fetchCarts, 5000);
+    }
     function stopAutoRefresh() { if (timer) clearInterval(timer); timer = null; }
 
     // Eventos
@@ -498,6 +569,9 @@
         }
         emptyState.style.display = 'none';
         cartsContainer.style.display = 'block';
+        // reset de ventana al cambiar hospital
+        lastWindowKey = null;
+        if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
         fetchCarts();
         startAutoRefresh();
     });
@@ -525,4 +599,5 @@
     }
 })();
 </script>
+
 @endpush
