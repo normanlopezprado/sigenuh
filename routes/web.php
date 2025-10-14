@@ -287,8 +287,7 @@ Route::prefix('collects')->name('collects.')->group(function () {
     // ---------------------------
 // Dashboard - Tarjetas de carritos
 // ---------------------------
-Route::get('/dashboard/cars', [DashboardCartsController::class, 'index'])
-    ->name('dashboard.cars.index');
-
-Route::get('/dashboard/cars/partial', [DashboardCartsController::class, 'partial'])
-    ->name('dashboard.cars.partial');
+Route::prefix('dashboard')->group(function () {
+    Route::get('/carts', [DashboardCartsController::class, 'index'])->name('dashboard.carts.index');
+    Route::get('/carts/live', [DashboardCartsController::class, 'live'])->name('dashboard.carts.live');
+});
