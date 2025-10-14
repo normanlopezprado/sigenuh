@@ -25,6 +25,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRouteController;
 use App\Http\Controllers\CollectController;
 use App\Http\Controllers\DashboardCartsController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use App\Http\Controllers\CollectCardsController;
 
@@ -272,14 +274,17 @@ Route::middleware(['auth'])->group(function () {
 
 // Vista de tarjetas (GET)
 Route::prefix('collects')->name('collects.')->group(function () {
-    Route::get('cards', [CollectCardsController::class, 'index'])
-        ->name('cards');
-    Route::patch('bed/{bed}/toggle', [CollectCardsController::class, 'toggleBed'])
+    Route::get('/cards', [CollectCardsController::class, 'index'])->name('cards');
+
+    Route::patch('/bed/{bed}/toggle', [CollectCardsController::class, 'toggleBed'])
         ->name('bed.toggle');
-    Route::post('bed/{bed}', [CollectCardsController::class, 'upsert'])
+
+    Route::post('/bed/{bed}', [CollectCardsController::class, 'upsert'])
         ->name('cards.upsert');
-    Route::post('bulk', [CollectCardsController::class, 'bulkUpsert'])
-        ->name('bulk');
+
+    // ESTA es la que falta:
+    Route::post('/cards/bulk', [CollectCardsController::class, 'bulkUpsert'])
+        ->name('cards.bulk');
 });
 
 
@@ -287,8 +292,42 @@ Route::prefix('collects')->name('collects.')->group(function () {
     // ---------------------------
 // Dashboard - Tarjetas de carritos
 // ---------------------------
-Route::get('/dashboard/cars', [DashboardCartsController::class, 'index'])
-    ->name('dashboard.cars.index');
+Route::prefix('dashboard')->group(function () {
+    Route::get('/carts', [DashboardCartsController::class, 'index'])->name('dashboard.carts.index');
+    Route::get('/carts/live', [DashboardCartsController::class, 'live'])->name('dashboard.carts.live');
+    Route::get('/carts/summary', [DashboardCartsController::class, 'collectsSummary'])->name('dashboard.carts.summary'); // opcional
+});
 
-Route::get('/dashboard/cars/partial', [DashboardCartsController::class, 'partial'])
-    ->name('dashboard.cars.partial');
+Route::get('/api/diet-types', function () {
+    // Lee la definición del ENUM tal cual está creada en la BD
+    $row = DB::selectOne("
+        SELECT COLUMN_TYPE
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = ?
+          AND COLUMN_NAME = ?
+        LIMIT 1
+    ", ['collects', 'diet_type']);
+
+    if (!$row || !isset($row->COLUMN_TYPE)) {
+        return response()->json([], 404);
+    }
+
+    $columnType = $row->COLUMN_TYPE; // ej: enum('Libre','Blanda','Hiposódica','Diabético 1,200',...)
+    if (!preg_match("/^enum\\((.*)\\)$/i", $columnType, $m)) {
+        // No es un ENUM
+        return response()->json([], 422);
+    }
+
+    $inside = $m[1]; // "'Libre','Blanda',..."
+    // Extrae cada valor respetando comillas y escapes
+    preg_match_all("/'((?:\\\\'|[^'])*)'/", $inside, $mm);
+    $values = collect($mm[1] ?? [])->map(function ($v) {
+        // Desescapa comilla simple y backslash
+        $v = str_replace("\\'", "'", $v);
+        $v = str_replace('\\\\', '\\', $v);
+        return $v;
+    })->values(); // mantiene el orden del ENUM
+
+    return response()->json($values);
+})->name('api.diet-types');

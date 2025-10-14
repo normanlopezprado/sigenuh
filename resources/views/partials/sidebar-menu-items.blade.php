@@ -23,7 +23,7 @@
 
             <li class="slide">
                 <a 
-                href="{{ route('dashboard.cars.index') }}" 
+                href="{{ route('dashboard.carts.index') }}" 
                 data-lang="hr-dashboards-project-management" 
                 class="side-menu__item" 
                 role="menuitem">
