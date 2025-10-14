@@ -50,12 +50,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(\App\Models\Hospital::class, 'hospital_selected');
     }
 
-   public function getAvatarUrlAttribute(): string
-{
-    return $this->avatar
-        ? asset('storage/'.$this->avatar)   
-        : asset('storage/avatars/default.jpg'); 
-}
+    public function getAvatarUrlAttribute(): string
+    {
+        return $this->avatar
+            ? asset('storage/'.$this->avatar)   
+            : asset('storage/avatars/default.jpg'); 
+    }
 
 
     public static function baseUsernameFromName(string $fullName): string
@@ -91,21 +91,39 @@ class User extends Authenticatable implements MustVerifyEmail
         return $base;
     }
 
-    public static function generateUniqueUsername(string $fullName): string
+    public static function generateUniqueUsernameFromBase(string $base): string
     {
-        $base = self::baseUsernameFromName($fullName);
+        // normaliza: ascii, minúsculas, solo [a-z0-9]
+        $base = trim(mb_strtolower(\Illuminate\Support\Str::ascii($base)));
+        $base = preg_replace('/[^a-z0-9]/', '', $base) ?? '';
+
         if ($base === '') {
             $base = 'user';
         }
 
+        // tronco base razonable
+        $base = substr($base, 0, 32);
+
+        // garantiza unicidad respetando el límite de 50 chars del campo
         $username = $base;
         $i = 1;
-
-        while (self::where('user', $username)->exists()) {
-            $username = $base . $i;
+        while (static::where('user', $username)->exists()) {
+            $suffix = (string)$i;
+            $maxBaseLen = 50 - strlen($suffix);
+            $username = substr($base, 0, $maxBaseLen) . $suffix;
             $i++;
         }
 
         return $username;
     }
+
+    /**
+     * (opcional) Mantén este por compatibilidad cuando te pasen nombre completo.
+     */
+    public static function generateUniqueUsername(string $fullName): string
+    {
+        $base = self::baseUsernameFromName($fullName);
+        return self::generateUniqueUsernameFromBase($base);
+    }
+
 }

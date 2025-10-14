@@ -166,7 +166,11 @@
             </span>
             <span>
               <span class="h6 d-none d-xl-inline-block text-start fw-semibold mb-0">{{ Auth::user()?->name ?? '' }}</span>
-              <span class="d-none d-xl-block fs-12 text-start text-muted">CEO</span>
+              @php($roleName = Auth::user()?->getRoleNames()->first())
+              <span class="d-none d-xl-block fs-12 text-start text-muted">
+                {{ $roleName ?? 'Sin rol' }}
+              </span>
+
             </span>
           </button>
           <div class="dropdown-menu dropdown-menu-end header-language-scrollable" aria-labelledby="accountNavbarDropdown">

@@ -48,8 +48,11 @@ class UserController extends Controller
             ],
         ]);
 
-        $base = $request->input('user') ?: \App\Models\User::baseUsernameFromName($data['name']);
-        $data['user'] = \App\Models\User::generateUniqueUsername($base);
+        // ⬇⬇⬇ Cambia esta parte
+        $typed = (string) $request->input('user', '');
+        $base  = $typed !== '' ? $typed : \App\Models\User::baseUsernameFromName($data['name']);
+        $data['user'] = \App\Models\User::generateUniqueUsernameFromBase($base);
+        // ⬆⬆⬆
 
         $data['password'] = $data['password'] ?? Str::random(12);
 
@@ -64,7 +67,6 @@ class UserController extends Controller
         }
 
         $user = User::create($data);
-
         $user->syncRoles([$data['role']]);
 
         return redirect()->route('usuarios.index')->with('success','Usuario creado y rol asignado.');
@@ -153,5 +155,35 @@ class UserController extends Controller
         $usuario->delete();
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado.');
+    }
+
+    public static function generateUniqueUsernameFromBase(string $base): string
+    {
+        // normaliza: ascii, minúsculas, solo [a-z0-9]
+        $base = trim(mb_strtolower(\Illuminate\Support\Str::ascii($base)));
+        $base = preg_replace('/[^a-z0-9]/', '', $base) ?? '';
+        if ($base === '') {
+            $base = 'user';
+        }
+
+        // límite razonable para el “tronco”
+        $base = substr($base, 0, 32);
+
+        $username = $base;
+        $i = 1;
+        while (static::where('user', $username)->exists()) {
+            $username = $base.$i;
+            $i++;
+        }
+        return $username;
+    }
+
+    /**
+     * Mantén este método por compatibilidad cuando sí nos pasen el nombre completo.
+     */
+    public static function generateUniqueUsername(string $fullName): string
+    {
+        $base = self::baseUsernameFromName($fullName);
+        return self::generateUniqueUsernameFromBase($base);
     }
 }

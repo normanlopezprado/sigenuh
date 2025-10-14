@@ -15,7 +15,16 @@ return new class extends Migration
             $table->boolean('has_minor')->default(false)->after('notes');
             $table->boolean('has_companion')->default(false)->after('has_minor');
             $table->enum('companion_diet_type', [
-                'Libre','Blanda','Hiposódica','Diabético 1,200','Diabético 1,500','Renal','Licuada','Especial',
+                'Libre',
+                'Blanda',
+                'Hiposódica',
+                'Diabético 1,200',
+                'Diabético 1,500',
+                'Renal',
+                'Licuada',
+                'Blanda 8m',
+                'Papilla',
+                'Especial',
             ])->nullable()->after('has_companion');
             $table->text('companion_notes')->nullable()->after('companion_diet_type');
         });

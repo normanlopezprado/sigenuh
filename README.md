@@ -25,6 +25,9 @@ yarn install
 php artisan migrate
 php artisan db:seed
 
+php artisan migrate:fresh
+php artisan db:seed
+
 ## 💾 Rutas - Guardar imagenes/icon en la DB
 
 php artisan storage:link

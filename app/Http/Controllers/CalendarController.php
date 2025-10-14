@@ -32,6 +32,8 @@ class CalendarController extends Controller
             'Diabético 1,500',
             'Renal',
             'Licuada',
+            'Blanda 8m',
+            'Papilla',
             'Especial',
         ];
         $cat  = $request->query('category');

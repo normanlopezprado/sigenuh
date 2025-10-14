@@ -107,7 +107,11 @@
           <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-1">
             <div>
               <h1 class="mb-0">
-                Recolección de: <span class="text-primary">{{ $meal }}</span>
+                @if($isOpen)
+                  Recolección de: <span class="text-primary">{{ $meal }}</span>
+                @else
+                  <span class="text-danger">Fuera de horario de recolección</span>
+                @endif
               </h1>
                 <h3> {{ $fechaFormateada }}
                 </h3>
@@ -123,6 +127,7 @@
                   <div><strong>Cena:</strong> {{ $wc['Cena'] }}</div>
                 @endif
               </small>
+
             </div>
           </div>
 
