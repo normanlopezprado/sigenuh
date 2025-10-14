@@ -17,7 +17,7 @@
                             <p class="text-muted mb-0">Sistema de gestión nutricional hospitalaria.</p>
                         </div>
                         <form class="form-custom mt-10" method="POST" action="{{ route('login') }}" >
-                             @csrf
+                            @csrf
                             <div class="mb-5">
                                 <label class="form-label" for="login-email">Usuario<span class="text-danger ms-1">*</span>
                                 </label>
@@ -29,9 +29,9 @@
                                         class="text-danger ms-1">*</span></label>
                                 <div class="input-group">
                                     <input type="password" id="LoginPassword" class="form-control" name="password"
-                                           required placeholder="Ingresa tu contraseña" data-visible="false">
+                                        required placeholder="Ingresa tu contraseña" data-visible="false">
                                     <a class="input-group-text bg-transparent toggle-password" href="javascript:;"
-                                       data-target="password">
+                                    data-target="password">
                                         <i class="ri-eye-off-line text-muted toggle-icon"></i>
                                     </a>
                                 </div>
@@ -40,7 +40,7 @@
                                 <div class="col-sm-6">
                                     <div class="form-check form-check-sm d-flex align-items-center gap-2 mb-0">
                                         <input class="form-check-input" type="checkbox" value="remember-me"
-                                               id="remember-me">
+                                            id="remember-me">
                                         <label class="form-check-label" for="remember-me">
                                             Recordarme
                                         </label>
@@ -52,7 +52,7 @@
                                     </span>
                                 </a>
                             </div>
-                              <button type="submit" class="btn btn-primary rounded-2 w-100 btn-loader">
+                            <button type="submit" class="btn btn-primary rounded-2 w-100 btn-loader">
                                     <span class="indicator-label">
                                         Iniciar sesión
                                     </span>

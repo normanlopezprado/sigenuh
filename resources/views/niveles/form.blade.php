@@ -9,7 +9,7 @@
                             <div class="col-md-6 form-floating form-label">
                                 <input type="text" class="form-control" id="name" name="name" placeholder="1er Piso - 2do Piso - 3er Piso - 4to Piso" value="{{ old('name', $nivel->name) }}" required>
                                 <label for="name" class="form-label">1er Piso - 2do Piso - 3er Piso - 4to Piso</label>
-                                 @error('name')<div class="text-danger">{{ $message }}</div>@enderror
+                                @error('name')<div class="text-danger">{{ $message }}</div>@enderror
                             </div>
                         </div>
                         <div class="mt-3">

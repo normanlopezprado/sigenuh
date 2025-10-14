@@ -53,7 +53,7 @@
 
                                         <span>
                                             <strong>{{ $n->name }}</strong>
-                                               @if(!empty($n->description))
+                                            @if(!empty($n->description))
                                                 <br><small class="">{{ $n->description }}</small>
                                             @endif
                                         </span>

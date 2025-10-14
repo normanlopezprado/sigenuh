@@ -10,7 +10,6 @@ class Cart extends Model
 {
     use SoftDeletes, HasUuids;
 
-    // ids UUID
     public $incrementing = false;
     protected $keyType = 'string';
 

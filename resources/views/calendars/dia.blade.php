@@ -44,7 +44,7 @@
                         // Ingredientes obligatorios del menú (is_optional = false)
                         $obligatorios = collect();
                         if ($menu && $menu->relationLoaded('menuIngredients')) {
-                          $obligatorios = $menu->menuIngredients->where('is_optional', false);
+                            $obligatorios = $menu->menuIngredients->where('is_optional', false);
                         }
 
                         // Opcionales seleccionados en este calendario
@@ -55,9 +55,9 @@
 
                         // Helper para formatear cantidad (si existe) sin ceros a la derecha
                         $fmtQty = function ($qty) {
-                          if ($qty === null) return null;
-                          $s = rtrim(rtrim(number_format((float)$qty, 3, '.', ''), '0'), '.');
-                          return $s === '' ? '0' : $s;
+                            if ($qty === null) return null;
+                            $s = rtrim(rtrim(number_format((float)$qty, 3, '.', ''), '0'), '.');
+                            return $s === '' ? '0' : $s;
                         };
                     @endphp
 

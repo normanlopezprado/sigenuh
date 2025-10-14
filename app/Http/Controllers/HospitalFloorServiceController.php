@@ -73,8 +73,9 @@ class HospitalFloorServiceController extends Controller
             ->firstOrFail();
 
         $inUseElsewhere = Service::whereHas('hospitalFloors', function ($q) use ($hospitalId, $floor) {
-                $q->where('hospital_id', $hospitalId)
-                  ->where('hospital_floors.id', '!=', $floor->id);
+                $q
+                ->where('hospital_id', $hospitalId)
+                ->where('hospital_floors.id', '!=', $floor->id);
             })
             ->pluck('services.id')
             ->toArray();

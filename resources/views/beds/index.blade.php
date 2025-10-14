@@ -30,7 +30,7 @@
                             <tr>
                                 <td>{{ $bed->code }}</td>
 
-                                {{-- Estado con badge visual --}}
+                                {{-- Estado --}}
                                 <td>
                                     @php
                                         $status = $bed->status;

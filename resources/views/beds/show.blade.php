@@ -9,5 +9,5 @@
             <li class="list-group-item"><b>HospitalFloorService:</b> {{ $bed->hospitalFloorService?->id }}</li>
         </ul>
 
-        <a href="{{ route('beds.index') }}" class="btn btn-secondary mt-3">⬅️ Volver</a>
+        <a href="{{ route('beds.index') }}" class="btn btn-secondary mt-3">Volver</a>
     </div>

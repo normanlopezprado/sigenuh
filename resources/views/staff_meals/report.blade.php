@@ -86,7 +86,7 @@
 
         {{-- Export CSV conserva filtros --}}
         <a href="{{ route('staff_meals.report', array_merge($filters, ['export'=>'csv'])) }}"
-           class="btn btn-success ms-auto">
+          class="btn btn-success ms-auto">
           <i class="ri-file-excel-2-line"></i> Exportar CSV
         </a>
       </div>
