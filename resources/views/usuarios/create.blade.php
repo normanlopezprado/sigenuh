@@ -32,7 +32,7 @@
     const nameInput = document.getElementById('name');
     const userInput = document.getElementById('user');
         
-    // ✅ Nunca será "undefined" aunque no exista $usuario
+    
     const isEdit = @json(isset($usuario) && $usuario->exists);
 
     let userManuallyEdited = false;
