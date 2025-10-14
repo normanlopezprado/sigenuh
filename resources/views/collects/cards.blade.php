@@ -93,11 +93,6 @@
         ? $collectsByBed
         : ((isset($prefill) && is_array($prefill)) ? $prefill : []);
 
-    // 3) diets (si no viene de la vista/controlador, define un fallback)
-    if (!isset($diets) || !is_array($diets) || empty($diets)) {
-        $diets = ['Libre', 'Blanda', 'Híposódica', 'Diabética', 'Líquidos', 'Licuada'];
-    }
-
     // 4) isOpen (habilita/inhabilita botones Guardar)
     if (!isset($isOpen)) {
         $isOpen = true; // fallback en la vista
@@ -185,7 +180,7 @@
           @endif
 
           {{-- Form principal (bulk) --}}
-          <form method="POST" action="{{ route('collects.bulk') }}" id="cardsBulkForm">
+          <form method="POST" action="{{ route('collects.cards.bulk') }}" id="cardsBulkForm">
             @csrf
             <input type="hidden" name="date" value="{{ $date ?? now()->toDateString() }}">
             <input type="hidden" name="meal" value="{{ $meal }}">
