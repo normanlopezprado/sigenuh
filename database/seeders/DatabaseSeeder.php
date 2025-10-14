@@ -24,7 +24,6 @@ class DatabaseSeeder extends Seeder
 
         ]);
 
-        // 2) Usuario root (idempotente)
         $user = User::firstOrCreate(
             ['email' => 'nlopezp1@miumg.edu.gt'],
             [

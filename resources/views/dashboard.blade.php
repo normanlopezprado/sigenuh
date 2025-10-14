@@ -9,23 +9,21 @@
     <link rel="stylesheet" href="{{ asset('assets/libs/air-datepicker/air-datepicker.css') }}">
     <link href="{{ asset('assets/libs/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
     <style>
-        /* === GRID PRINCIPAL (una sola "fila" que se adapta) === */
+        
         .dashboard-grid {
             display: grid;
-            gap: 1rem; /* espacio entre tarjetas */
+            gap: 1rem; 
             align-items: start;
-            /* Base: 1 columna */
             grid-template-columns: 1fr;
         }
 
-        /* Cards del calendario y menús: normalizamos el contexto */
+        
         .dashboard-grid > .grid-item {
-            min-width: 0;          /* evita overflow por contenido largo */
-            position: relative;    /* contexto para z-index */
+            min-width: 0;          
+            position: relative;    
             z-index: 0;
         }
 
-        /* Calendario: z-index y overflow para que el datepicker no se corte */
         .calendarContainer {
             height: auto !important;
             min-height: auto !important;
@@ -33,32 +31,27 @@
             z-index: 1;
         }
         .grid-item-calendar {
-            z-index: 2; /* un poco por encima para priorizar popovers */
+            z-index: 2; 
         }
         .card {
-            overflow: visible !important; /* evita que el datepicker sea recortado */
+            overflow: visible !important; 
         }
         .air-datepicker-global-container {
-            z-index: 2000 !important;     /* asegura que el popup flote sobre todo */
+            z-index: 2000 !important;     
         }
 
-        /* === BREAKPOINTS SOLICITADOS === */
-
-        /* 2 columnas: 768–1199.98px */
         @media (min-width: 768px) and (max-width: 1199.98px) {
             .dashboard-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        /* 3 columnas: 1200–2559.98px (incluye 1920) */
         @media (min-width: 1200px) and (max-width: 2559.98px) {
             .dashboard-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        /* 5 columnas: >=2560px */
         @media (min-width: 2560px) {
             .dashboard-grid {
                 grid-template-columns: repeat(5, 1fr);
@@ -90,7 +83,7 @@
         }
     @endphp
 
-    {{-- ÚNICO GRID: calendario (si existe) + todas las tarjetas de menús --}}
+    {{-- ÚNICO GRID: calendario --}}
     <div class="dashboard-grid">
         @if ($canSeeCalendar)
             <div class="grid-item grid-item-calendar">

@@ -52,15 +52,14 @@
       width: 3.1em; height: 1.6em; background-size: 1.2em 1.2em; cursor: pointer;
       transition: background-color .15s, border-color .15s, box-shadow .15s;
     }
-   /* base: ocupada (unchecked) verde */
+   
     .availability .form-check-input { background-color: #22c55e; border-color: #22c55e; }
-    /* checked: disponible naranja */
     .availability .form-check-input:checked { background-color: #f59e0b; border-color: #f59e0b; }
 
     .state-pill { display: inline-block; padding: .15rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
-    /* Intercambio de colores en los textos */
-    .state-pill.free  { color: #7c2d12; background: #ffedd5; } /* naranja para Disponible */
-    .state-pill.busy  { color: #065f46; background: #d1fae5; } /* verde para Ocupada */
+    
+    .state-pill.free  { color: #7c2d12; background: #ffedd5; } 
+    .state-pill.busy  { color: #065f46; background: #d1fae5; } 
 
     /* ====== SECTION TITLES ====== */
     .section-title { font-weight: 700; font-size: .9rem; margin-bottom: .35rem; color: #111827; }
@@ -108,7 +107,11 @@
           <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-1">
             <div>
               <h1 class="mb-0">
-                Recolección de: <span class="text-primary">{{ $meal }}</span>
+                @if($isOpen)
+                  Recolección de: <span class="text-primary">{{ $meal }}</span>
+                @else
+                  <span class="text-danger">Fuera de horario de recolección</span>
+                @endif
               </h1>
                 <h3> {{ $fechaFormateada }}
                 </h3>
@@ -124,18 +127,12 @@
                   <div><strong>Cena:</strong> {{ $wc['Cena'] }}</div>
                 @endif
               </small>
+
             </div>
           </div>
 
-
           <small class="text-muted d-block mb-2">{{ $windowMessage ?? '' }}</small>
           
-
-
-
-
-          
-
           {{-- Selector de servicio --}}
           <form id="filterForm" method="GET" action="{{ route('collects.cards') }}" class="row g-2 mb-2">
             <div class="col-12 col-md-8 col-lg-6">
@@ -186,7 +183,6 @@
             <input type="hidden" name="meal" value="{{ $meal }}">
             <input type="hidden" name="service" value="{{ $serviceId }}">
 
-
             <div class="cards-grid mt-3">
               @forelse($beds as $bed)
                 @php
@@ -233,7 +229,6 @@
                       {{-- marker para garantizar envío de fila --}}
                       <input type="hidden" name="rows[{{ $bed->id }}][__present]" value="1">
                       <input type="hidden" name="rows[{{ $bed->id }}][__touched]" value="0" class="touched-flag">
-
 
                       {{-- Dieta (chips con preselección) --}}
                       <div class="mb-3">

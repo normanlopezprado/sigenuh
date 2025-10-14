@@ -24,6 +24,8 @@ return new class extends Migration
                 'Diabético 1,500',
                 'Renal',
                 'Licuada',
+                'Blanda 8m',
+                'Papilla',
                 'Especial',
             ])->nullable();
 

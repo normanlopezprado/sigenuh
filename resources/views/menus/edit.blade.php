@@ -69,8 +69,7 @@
                             <hr class="my-4">
 
                             <h4>Ingredientes del menú</h4>
-                            <p class="text-muted">Agrega ingredientes, cantidades y marca si son opcionales. Al guardar se sincroniza todo.</p>
-
+                            
                             <table class="table" id="ingredients-table">
                                 <thead>
                                 <tr>
@@ -102,13 +101,15 @@
                                             </td>
                                             <td>
                                                 <input type="number" step="0.001" min="0" name="qty[]" class="form-control"
-                                                       value="{{ $oldQty[$i] ?? 0 }}">
+                                                    value="{{ $oldQty[$i] ?? 0 }}">
                                             </td>
                                             <td class="text-center">
-                                                <input type="checkbox" name="is_optional[{{ $i }}]" value="1" {{ !empty($oldOpt[$i]) ? 'checked' : '' }}>
+                                                <input type="checkbox" name="is_optional[{{ $i }}]" 
+                                                value="1" {{ !empty($oldOpt[$i]) ? 'checked' : '' }}>
                                             </td>
                                             <td>
-                                                <input type="text" name="pivot_notes[]" class="form-control" value="{{ $oldNot[$i] ?? '' }}">
+                                                <input type="text" name="pivot_notes[]" class="form-control" 
+                                                value="{{ $oldNot[$i] ?? '' }}">
                                             </td>
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">✖</button>
@@ -138,27 +139,27 @@
                                         const index = tbody.querySelectorAll('tr').length;
                                         const row = document.createElement('tr');
                                         row.innerHTML = `
-      <td>
-        <select name="ingredient_id[]" class="form-control" required>
-          <option value="">— Seleccione —</option>
-          @foreach($ingredients as $ing)
-                                        <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->unit }})</option>
-          @endforeach
-                                        </select>
-                                      </td>
-                                      <td>
-                                        <input type="number" step="0.001" min="0" name="qty[]" class="form-control" value="0">
-                                      </td>
-                                      <td class="text-center">
-                                        <input type="checkbox" name="is_optional[${index}]" value="1">
-      </td>
-      <td>
-        <input type="text" name="pivot_notes[]" class="form-control" value="">
-      </td>
-      <td>
-        <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">✖</button>
-      </td>
-    `;
+                                        <td>
+                                            <select name="ingredient_id[]" class="form-control" required>
+                                            <option value="">— Seleccione —</option>
+                                            @foreach($ingredients as $ing)
+                                                                            <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->unit }})</option>
+                                            @endforeach
+                                                                            </select>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input type="number" step="0.001" min="0" name="qty[]" class="form-control" value="0">
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <input type="checkbox" name="is_optional[${index}]" value="1">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="pivot_notes[]" class="form-control" value="">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">✖</button>
+                                        </td>
+                                        `;
                                         tbody.appendChild(row);
                                     });
                                 });

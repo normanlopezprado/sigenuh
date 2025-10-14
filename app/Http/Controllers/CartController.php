@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class CartController extends Controller
 {
 
-   public function index(Request $request)
+    public function index(Request $request)
     {
         $hospitalId   = $request->user()->hospital_selected;
         $showInactive = (bool) $request->get('show_inactive', false);

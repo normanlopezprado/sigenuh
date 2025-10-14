@@ -24,8 +24,8 @@ class HospitalSeeder extends Seeder
                 'description' => 'Hospital público de referencia en la región occidental de Guatemala.',
                 'logo_path'   => null,
                 'icon_path'   => null,
-                'latitude'    => 14.8450000,
-                'longitude'   => -91.5200000,
+                'latitude'    => 14.859277,
+                'longitude'   => -91.539937,
             ],
         ];
 

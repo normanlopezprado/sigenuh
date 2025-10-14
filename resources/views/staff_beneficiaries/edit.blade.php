@@ -39,19 +39,19 @@
                         <div class="col-md-8">
                             <label class="form-label">Nombre completo</label>
                             <input type="text"
-                                   name="full_name"
-                                   class="form-control"
-                                   value="{{ old('full_name', $beneficiary->full_name) }}"
-                                   required>
+                                name="full_name"
+                                class="form-control"
+                                value="{{ old('full_name', $beneficiary->full_name) }}"
+                                required>
                         </div>
 
                         {{-- Puesto --}}
                         <div class="col-md-4">
                             <label class="form-label">Puesto</label>
                             <input type="text"
-                                   name="job_title"
-                                   class="form-control"
-                                   value="{{ old('job_title', $beneficiary->job_title) }}">
+                                name="job_title"
+                                class="form-control"
+                                value="{{ old('job_title', $beneficiary->job_title) }}">
                         </div>
 
                         {{-- Hospital --}}

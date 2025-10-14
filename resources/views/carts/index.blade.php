@@ -17,7 +17,7 @@
         <form method="get" class="mb-2 d-flex justify-content-end">
             <label class="form-check">
                 <input type="checkbox" name="show_inactive" class="form-check-input" value="1"
-                       {{ $showInactive ? 'checked' : '' }} onchange="this.form.submit()">
+                    {{ $showInactive ? 'checked' : '' }} onchange="this.form.submit()">
                 <span class="form-check-label">Mostrar inactivos</span>
             </label>
         </form>

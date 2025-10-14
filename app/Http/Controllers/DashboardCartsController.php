@@ -20,10 +20,7 @@ use Carbon\Carbon;
 
 class DashboardCartsController extends Controller
 {
-    /**
-     * Renderiza el dashboard de carritos.
-     * GET /dashboard/carts
-     */
+
     public function index(HttpRequest $request)
     {
         $user = Auth::user();
@@ -63,17 +60,17 @@ class DashboardCartsController extends Controller
         $date = $win['date'] ?? now()->toDateString();
         $meal = $win['meal'] ?? null;
 
-        // Tablas (por si cambian en modelos)
-        $cartsTable    = (new Cart)->getTable();                   // carts
+        
+        $cartsTable    = (new Cart)->getTable();                   
         $pivotTable    = 'cart_service';
-        $hfsTable      = (new HospitalFloorService)->getTable();   // hospital_floor_services
-        $hfTable       = (new HospitalFloor)->getTable();          // hospital_floors
-        $nivelsTable   = (new Nivel)->getTable();                  // nivels
-        $servicesTable = (new Service)->getTable();                // services
-        $bedsTable     = 'beds';                                   // según tu esquema
+        $hfsTable      = (new HospitalFloorService)->getTable();   
+        $hfTable       = (new HospitalFloor)->getTable();          
+        $nivelsTable   = (new Nivel)->getTable();                  
+        $servicesTable = (new Service)->getTable();                
+        $bedsTable     = 'beds';                                   
 
         try {
-            // 1) Carts del hospital
+            
             $carts = DB::table("$cartsTable as c")
                 ->join("$pivotTable as cs", 'cs.cart_id', '=', 'c.id')
                 ->join("$hfsTable as hfs", 'hfs.id', '=', 'cs.hospital_floor_service_id')
@@ -91,7 +88,7 @@ class DashboardCartsController extends Controller
                 ->get();
 
             if ($carts->isEmpty()) {
-                $payload = []; // Initialize $payload as an empty array
+                $payload = []; 
                 return response()->json([
                     'carts'         => $payload,
                     'active_window' => $win['label'] ?? null,
@@ -103,8 +100,6 @@ class DashboardCartsController extends Controller
 
             $cartIds = $carts->pluck('id');
 
-            // 2) Servicios por carrito — "Nivel — Servicio Categoria"
-            // Detecta columna categoría
             $serviceCategoryCol = Schema::hasColumn($servicesTable, 'categoria')
             ? 'categoria'
             : (Schema::hasColumn($servicesTable, 'category') ? 'category' : null);
@@ -120,42 +115,37 @@ class DashboardCartsController extends Controller
                 'cs.cart_id',
                 DB::raw('COALESCE(n.name, "") as nivel'),
                 DB::raw('COALESCE(s.name, "") as servicio'),
-                // Si tu MariaDB/MySQL tiene REGEXP_REPLACE: perfecto.
                 DB::raw("CAST(REGEXP_REPLACE(COALESCE(n.name, ''), '[^0-9]', '') AS UNSIGNED) as floor_order"),
-                // Asegura alias 'categoria' exista siempre
+                
                 $serviceCategoryCol
                     ? DB::raw("COALESCE(s.`{$serviceCategoryCol}`, '') as categoria")
                     : DB::raw("'' as categoria"),
             ])
-            ->orderBy('floor_order', 'desc')   // piso DESC
-            ->orderBy('servicio', 'asc')       // servicio ASC (usa el alias)
-            ->orderBy('categoria', 'asc')      // categoría ASC (alias siempre existente)
+            ->orderBy('floor_order', 'desc')   
+            ->orderBy('servicio', 'asc')       
+            ->orderBy('categoria', 'asc')      
             ->get();
 
         $pathsByCart = $pathsRows->groupBy('cart_id')->map(function ($rows) {
             return collect($rows)->map(function ($r) {
-                // NO leer directamente $r->nivel/$r->servicio/$r->categoria sin checar
+                
                 $nivel     = property_exists($r, 'nivel')     ? trim((string)$r->nivel)     : '';
                 $servicio  = property_exists($r, 'servicio')  ? trim((string)$r->servicio)  : '';
                 $categoria = property_exists($r, 'categoria') ? trim((string)$r->categoria) : '';
 
-                // "Traumatología Mujeres" (sin doble espacios si no hay categoría)
                 $servicioCat = trim($servicio . ' ' . $categoria);
 
-                // "4to — Traumatología Mujeres"
                 return collect([ $nivel !== '' ? $nivel : null, $servicioCat !== '' ? $servicioCat : null ])
                     ->filter()
                     ->implode(' — ');
             })->filter()->values()->all();
         });
 
-            // 3) Contadores (regla exclusiva: principal Bandeja/O Desechable; acompañante solo Bandeja)
-            // 3) Contadores (forzados por ventana)
             $date = $win['date'] ?? now()->toDateString();
             $meal = $win['meal'] ?? null;
 
 
-            // Principal: si has_disponsable=1 → Desechable, si no → Bandeja
+    
             $mainQ = DB::table('collects as col')
                 ->join("$bedsTable as b", 'b.id', '=', 'col.bed_id')
                 ->join("$hfsTable as hfs", 'hfs.id', '=', 'b.hospital_floor_service_id')
@@ -174,7 +164,7 @@ class DashboardCartsController extends Controller
                     SUM(CASE WHEN col.has_disponsable = 1 THEN 1 ELSE 0 END) as d_count
                 ");
 
-            // Acompañante: siempre Bandeja=1; Desechable=0
+    
             $compQ = DB::table('collects as col')
                 ->join("$bedsTable as b", 'b.id', '=', 'col.bed_id')
                 ->join("$hfsTable as hfs", 'hfs.id', '=', 'b.hospital_floor_service_id')
@@ -214,7 +204,6 @@ class DashboardCartsController extends Controller
                 return $map;
             });
 
-            // 4) Payload final
             $payload = $carts->map(function ($c) use ($pathsByCart, $countsByCart) {
                 return [
                     'id'             => $c->id,
@@ -233,7 +222,7 @@ class DashboardCartsController extends Controller
             return response()->json([
                 'carts'         => $payload,
                 'active_window' => $this->computeActiveWindowLabel($hospital),
-                'window'        => $this->computeWindowFromDb($hospital), // ← ventana con reset_at
+                'window'        => $this->computeWindowFromDb($hospital), 
                 'window_key'    => optional($this->computeWindowFromDb($hospital))['key'] ?? null,
                 'server_time'   => now()->toIso8601String(),
             ]);
@@ -249,7 +238,6 @@ class DashboardCartsController extends Controller
             throw $e;
         }
     }
-
 
     private function resolveSelectedHospital(HttpRequest $request, $user): ?Hospital
     {
@@ -277,26 +265,21 @@ class DashboardCartsController extends Controller
         return null;
     }
 
-    /**
-     * Variables por defecto para encabezado (fecha y ventana activa).
-     */
+
     private function defaultHeaderWindowVars(?Hospital $hospital): array
     {
         Carbon::setLocale('es');
 
         $now = Carbon::now();
-        $fechaLarga = $now->translatedFormat('l, d \\de F \\de Y'); // lunes, 13 de octubre de 2025
+        $fechaLarga = $now->translatedFormat('l, d \\de F \\de Y'); 
         $activeWindow = $this->computeActiveWindowLabel($hospital);
 
         return [
             'todayHuman'   => $fechaLarga,
-            'activeWindow' => $activeWindow, // puede ser null
+            'activeWindow' => $activeWindow, 
         ];
     }
 
-    /**
-     * Obtiene etiqueta de “ventana activa” de forma segura si existe App\Support\MealWindow.
-     */
     private function computeActiveWindowLabel(?Hospital $hospital): ?string
     {
         if (!$hospital) {
@@ -342,9 +325,7 @@ class DashboardCartsController extends Controller
 
         return null;
     }
-    // --- Lee valores de ENUM desde INFORMATION_SCHEMA (maneja comas en el texto) ---
     
-    // Helpers al final del controlador
     private function getEnumValues(string $table, string $column): array
     {
         if (!\Illuminate\Support\Facades\Schema::hasTable($table)
@@ -386,9 +367,9 @@ class DashboardCartsController extends Controller
 
     public function collectsSummary(\Illuminate\Http\Request $request)
     {
-        $date       = $request->input('date');         // yyyy-mm-dd (opcional, default hoy)
-        $hospitalId = $request->input('hospital_id');  // opcional
-        $meal       = $request->input('meal');         // opcional
+        $date       = $request->input('date');         
+        $hospitalId = $request->input('hospital_id');  
+        $meal       = $request->input('meal');         
 
         if ($date && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             return response()->json(['error' => 'invalid_date'], 422);
@@ -401,23 +382,19 @@ class DashboardCartsController extends Controller
             if ($meal)       $q->where('meal', $meal);
         };
 
-        // Solo la dieta principal puede ser desechable
         $disposableMain = "CASE WHEN (COALESCE(is_disposable, disposable, 0) = 1 OR packaging = 'desechable') THEN 1 ELSE 0 END";
 
-        // Principal: siempre bandeja=1; desechable según flag (SOLO principal)
         $main = \DB::table('collects')
             ->selectRaw("diet_type as diet_type, 1 as bandeja, {$disposableMain} as desechable")
             ->whereNotNull('diet_type');
         $scope($main);
 
-        // Acompañante: siempre bandeja=1; desechable=0 (NUNCA desechable)
         $companion = \DB::table('collects')
             ->selectRaw("companion_diet_type as diet_type, 1 as bandeja, 0 as desechable")
             ->where('has_companion', 1)
             ->whereNotNull('companion_diet_type');
         $scope($companion);
 
-        // Unión y agregación por tipo de dieta
         $rows = \DB::query()
             ->fromSub($main->unionAll($companion), 'x')
             ->selectRaw('diet_type, SUM(bandeja) as bandeja, SUM(desechable) as desechable')
@@ -461,7 +438,6 @@ class DashboardCartsController extends Controller
             }
         }
 
-        // Latch a la última que ya terminó hoy
         $past = array_values(array_filter($wins, fn($w) => $w['to_dt']->lt($now)));
         if (!empty($past)) {
             $last = $past[count($past)-1];
@@ -478,7 +454,6 @@ class DashboardCartsController extends Controller
             ];
         }
 
-        // Antes de la primera de hoy → engancha la última de ayer
         $yesterday = $now->copy()->subDay()->toDateString();
         $winsY     = $this->buildWindowsForDate($hospital, $yesterday);
         if (!empty($winsY)) {
@@ -516,11 +491,9 @@ class DashboardCartsController extends Controller
             $end   = $this->normalizeHospitalTime($rawEnd);
             if (!$start || !$end) continue;
 
-            // Construye DT consistentes: 'YYYY-MM-DD HH:MM:SS'
             $from = \Carbon\Carbon::parse("$date $start");
             $to   = \Carbon\Carbon::parse("$date $end");
 
-            // Si el final es <= inicio, interpretamos cruce de medianoche
             if ($to->lte($from)) {
                 $to->addDay();
             }
@@ -544,21 +517,17 @@ class DashboardCartsController extends Controller
     {
         if (!$val) return null;
 
-        // Si llega ya como "HH:MM" o "HH:MM:SS", úsalo tal cual
         if (preg_match('/^\d{1,2}:\d{2}(:\d{2})?$/', (string)$val)) {
-            // Asegura HH:MM:SS
             $parts = explode(':', (string)$val);
             if (count($parts) === 2) return $val . ':00';
             return (string)$val;
         }
 
-        // Si llega con fecha y hora "YYYY-MM-DD HH:MM(:SS)?", toma solo la hora
         try {
             return \Carbon\Carbon::parse($val)->format('H:i:s');
         } catch (\Throwable $e) {
-            return null; // Valor inválido
+            return null; 
         }
     }
-
 
 }

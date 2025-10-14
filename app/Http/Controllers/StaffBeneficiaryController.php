@@ -56,8 +56,9 @@ class StaffBeneficiaryController extends Controller
         if ($search !== '') {
             $like = '%' . str_replace(['%','_'], ['\%','\_'], $search) . '%';
             $base->where(function ($q) use ($like) {
-                $q->where('full_name', 'like', $like)
-                  ->orWhere('job_title', 'like', $like);
+                $q
+                ->where('full_name', 'like', $like)
+                ->orWhere('job_title', 'like', $like);
             });
         }
 
@@ -146,7 +147,7 @@ class StaffBeneficiaryController extends Controller
     }
 
 
-   public function edit(\App\Models\StaffBeneficiary $staff_beneficiary)
+    public function edit(\App\Models\StaffBeneficiary $staff_beneficiary)
     {
         $hospitals = Hospital::orderBy('name')->get(['id','name']);
 

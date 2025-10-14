@@ -28,12 +28,12 @@
                 {{-- Nombre --}}
                 <div class="form-floating mb-3">
                     <input type="text"
-                           name="name"
-                           id="name"
-                           placeholder="Ingrediente"
-                           class="form-control @error('name') is-invalid @enderror"
-                           value="{{ old('name', $ingredient->name ?? '') }}"
-                           required>
+                        name="name"
+                        id="name"
+                        placeholder="Ingrediente"
+                        class="form-control @error('name') is-invalid @enderror"
+                        value="{{ old('name', $ingredient->name ?? '') }}"
+                        required>
                     <label for="name">Nombre</label>
                     @error('name')<div class="text-danger small">{{ $message }}</div>@enderror
                 </div>
@@ -80,9 +80,9 @@
                 {{-- Notas --}}
                 <div class="form-floating mb-3">
                     <textarea name="notes"
-                              id="notes"
-                              class="form-control @error('notes') is-invalid @enderror"
-                              style="height: 120px">{{ old('notes', $ingredient->notes ?? '') }}</textarea>
+                        id="notes"
+                        class="form-control @error('notes') is-invalid @enderror"
+                        style="height: 120px">{{ old('notes', $ingredient->notes ?? '') }}</textarea>
                     <label for="notes">Nota</label>
                     @error('notes')<div class="text-danger small">{{ $message }}</div>@enderror
                 </div>

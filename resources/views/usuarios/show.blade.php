@@ -8,9 +8,9 @@
 <div class="card">
   <div class="card-header d-flex align-items-center gap-3">
     <img src="{{ $usuario->avatar_url }}"
-         alt="Avatar de {{ $usuario->name }}"
-         class="rounded-circle"
-         style="width:64px;height:64px;object-fit:cover;">
+      alt="Avatar de {{ $usuario->name }}"
+      class="rounded-circle"
+      style="width:64px;height:64px;object-fit:cover;">
     <h5 class="card-title mb-0">Información del Usuario</h5>
   </div>
 

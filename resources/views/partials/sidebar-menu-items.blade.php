@@ -31,16 +31,6 @@
                 </a>
             </li>
 
-            <li 
-                class="slide">
-                <a href="dashboard-project-management" 
-                data-lang="hr-dashboards-project-management" 
-                class="side-menu__item" 
-                role="menuitem">
-                Historia
-                </a>
-            </li>
-
         </ul>
     </li>
 

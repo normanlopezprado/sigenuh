@@ -159,10 +159,10 @@
 
         {{-- Contenedor principal --}}
         <div id="cartsRegion"
-             data-live-url="{{ $liveDataUrl ?? '' }}"
-             data-fallback-url="/dashboard/carts/live"
-             {{-- Opcional: si algún día mandas esto desde el backend, lo toma --}}
-             data-diet-types='@json($dietTypes ?? null)'>
+            data-live-url="{{ $liveDataUrl ?? '' }}"
+            data-fallback-url="/dashboard/carts/live"
+            {{-- Opcional: si algún día mandas esto desde el backend, lo toma --}}
+            data-diet-types='@json($dietTypes ?? null)'>
             {{-- Estado inicial / vacío --}}
             <div id="emptyState" class="empty-state" @if($hospital) style="display:none" @endif>
                 <i class="ri-shopping-cart-2-line" style="font-size:2rem"></i>
@@ -219,12 +219,12 @@
     const FALLBACK_URL = (region?.dataset.fallbackUrl || '/dashboard/carts/live').trim();
     if (!liveUrl) liveUrl = FALLBACK_URL;
 
-    // Control de ventana
+    
     let lastWindowKey = null;
     let resetTimer = null;
-    let serverTimeOffsetMs = 0; // para ajustar reset_at con hora del servidor
+    let serverTimeOffsetMs = 0; 
 
-    // Diet types cache (en el orden que vienen del ENUM)
+    
     let cachedDietTypes = null;
 
     function showAlert(msg) {
@@ -264,24 +264,35 @@
         return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
-    // Diet types: data-attr -> endpoint -> fallback
+
     async function getDietTypes() {
         try {
             const fromAttr = region?.dataset.dietTypes;
             if (fromAttr) {
                 const parsed = JSON.parse(fromAttr);
-                if (Array.isArray(parsed) && parsed.length) return parsed; // mantiene el orden original
+                if (Array.isArray(parsed) && parsed.length) return parsed; 
             }
         } catch (_) {}
         try {
             const res = await fetch('/api/diet-types', { headers: { 'Accept': 'application/json' }});
             if (res.ok) {
                 const arr = await res.json();
-                if (Array.isArray(arr) && arr.length) return arr; // tal cual vengan
+                if (Array.isArray(arr) && arr.length) return arr; 
             }
         } catch (_) {}
-        // Fallback por seguridad (no ordenar)
-        return ['Libre','Blanda','Hiposódica','Diabético 1,200','Diabético 1,500','Renal','Licuada','Especial'];
+        
+        return [
+            'Libre',
+            'Blanda',
+            'Hiposódica',
+            'Diabético 1,200',
+            'Diabético 1,500',
+            'Renal',
+            'Licuada',
+            'Blanda 8m',
+            'Papilla',
+            'Especial',
+        ];
     }
 
     function renderCards(carts = [], dietTypes = []) {
@@ -305,7 +316,6 @@
             const paths = Array.isArray(c.service_paths) ? c.service_paths : [];
             const count = Number(c.services_count ?? paths.length ?? 0);
 
-            // Filas de dietas (solo lectura)
             const rowsHtml = (Array.isArray(dietTypes) && dietTypes.length)
                 ? dietTypes.map(dt => `
                     <tr>
@@ -316,7 +326,6 @@
                 `).join('')
                 : `<tr><td colspan="3" class="text-center muted">Sin tipos de dieta configurados.</td></tr>`;
 
-            // Servicios asignados (todos, sin truncar)
             const servicesHtml = count > 0
                 ? `
                     <div class="cart-services">
@@ -330,7 +339,6 @@
                     </div>
                 `;
 
-            // Título: carts.name (o fallback Carrito #order) y subtítulo: code_name
             const titleMain = escapeHtml(
                 (c.name && String(c.name).trim() !== '')
                     ? c.name
@@ -383,7 +391,7 @@
         }).join('');
 
         cartsContainer.innerHTML = `<div class="carts-grid">${grid}</div>`;
-        // Totales iniciales en 0
+        
         bindTotalsLogic();
     }
 
@@ -403,32 +411,37 @@
                 const sb = tbl.querySelector('.subtotal-bandeja');
                 const sd = tbl.querySelector('.subtotal-desechable');
                 const tg = tbl.querySelector('.total-general');
+
                 if (sb) sb.textContent = sumB.toLocaleString();
+
                 if (sd) sd.textContent = sumD.toLocaleString();
+                
                 if (tg) tg.textContent = (sumB + sumD).toLocaleString();
             };
-            // Guarda función para reutilizar si hace falta:
+            
             tbl._recalcTotals = recalc;
             recalc();
         });
     }
 
-    // Aplica counts del backend a cada tabla (respetando el orden de dietTypes)
+    
     function applyCountsToTables(carts = [], dietTypes = []) {
         const byId = new Map(carts.map(c => [String(c.id), c]));
         cartsContainer.querySelectorAll('.cart-table').forEach(tbl => {
             const cartId = tbl.getAttribute('data-cart-id');
             const cart = byId.get(String(cartId));
-            if (!cart) return;
-            const counts = cart.counts || {}; // { 'Libre': {bandeja,desechable,total}, ... }
 
-            // Recorre dietTypes en el orden que vienen
+            if (!cart) return;
+            const counts = cart.counts || {}; 
+
+            
             dietTypes.forEach(dt => {
-                // encuentra la fila por la primera celda (texto exacto)
+                
                 const row = Array.from(tbl.tBodies[0]?.rows || []).find(r => {
                     const cell = r.cells?.[0];
                     return cell && cell.textContent.trim() === dt;
                 });
+
                 if (!row) return;
                 const bandTd = row.querySelector('td.qty-bandeja');
                 const desTd  = row.querySelector('td.qty-desechable');
@@ -438,26 +451,28 @@
                     bandTd.setAttribute('data-val', String(val.bandeja || 0));
                     bandTd.textContent = (val.bandeja || 0).toLocaleString();
                 }
+
                 if (desTd) {
                     desTd.setAttribute('data-val', String(val.desechable || 0));
                     desTd.textContent = (val.desechable || 0).toLocaleString();
                 }
             });
 
-            // Recalcula subtotales/total
             if (typeof tbl._recalcTotals === 'function') tbl._recalcTotals();
         });
     }
 
     function scheduleReset(isoWhen) {
+
         if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+
         if (!isoWhen) return;
         const due = new Date(isoWhen).getTime() - (Date.now() + serverTimeOffsetMs);
+
         if (due > 0) {
             resetTimer = setTimeout(() => {
-                // Limpiar UI y forzar refresco al comienzo de la nueva ventana
                 cartsContainer.innerHTML = '';
-                lastWindowKey = null; // obligará a re-render limpio
+                lastWindowKey = null; 
                 fetchCarts();
             }, due);
         }
@@ -471,6 +486,7 @@
         clearAlert();
         setLoading(true);
         try {
+
             if (!cachedDietTypes) cachedDietTypes = await getDietTypes();
 
             const url = new URL(liveUrl, window.location.origin);
@@ -502,40 +518,44 @@
                 return;
             }
 
-            // Ajuste de reloj con el servidor para scheduleReset
+            
             if (data?.server_time) {
                 const serverNow = new Date(data.server_time).getTime();
                 serverTimeOffsetMs = serverNow - Date.now();
             }
 
-            // Gestión de ventana
+            
             const wkey = data?.window_key || null;
+
             if (wkey && wkey !== lastWindowKey) {
-                // Cambio de ventana → limpiar UI antes de re-render
                 cartsContainer.innerHTML = '';
                 lastWindowKey = wkey;
             }
             scheduleReset(data?.window?.reset_at || null);
 
-            // Etiqueta de ventana activa
             const effectiveWindow = data?.active_window || null;
+
             if (effectiveWindow) {
                 activeWindowBadge.textContent = effectiveWindow;
                 activeWindowBadge.style.display = 'inline-block';
                 summaryWindowLbl.textContent = effectiveWindow;
                 summaryWindow.style.display = 'block';
+
             } else {
+
                 activeWindowBadge.style.display = 'none';
                 summaryWindow.style.display = 'none';
             }
 
-            // Render de cards
+        
             const carts = Array.isArray(data?.carts) ? data.carts : (Array.isArray(data) ? data : []);
+
             if (!carts.length) {
                 renderEmpty();
+
             } else {
+
                 renderCards(carts, cachedDietTypes);
-                // Aplicar conteos a las filas
                 applyCountsToTables(carts, cachedDietTypes);
             }
 
@@ -551,14 +571,15 @@
 
     function startAutoRefresh() {
         stopAutoRefresh();
+
         if (autoRefreshSw && autoRefreshSw.checked) timer = setInterval(fetchCarts, 5000);
     }
     function stopAutoRefresh() { if (timer) clearInterval(timer); timer = null; }
 
-    // Eventos
     hospitalSelect?.addEventListener('change', () => {
         currentHospitalId = hospitalSelect.value;
         lastUpdatedAtEl.textContent = '—';
+
         if (!currentHospitalId) {
             stopAutoRefresh();
             cartsContainer.style.display = 'none';
@@ -569,7 +590,6 @@
         }
         emptyState.style.display = 'none';
         cartsContainer.style.display = 'block';
-        // reset de ventana al cambiar hospital
         lastWindowKey = null;
         if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
         fetchCarts();
@@ -577,16 +597,17 @@
     });
 
     autoRefreshSw?.addEventListener('change', () => {
+
         if (!currentHospitalId) return;
         if (autoRefreshSw.checked) startAutoRefresh(); else stopAutoRefresh();
     });
 
     btnManualRefresh?.addEventListener('click', () => {
+
         if (!currentHospitalId) { showAlert('Primero selecciona un hospital.'); return; }
         fetchCarts();
     });
 
-    // Init
     if (currentHospitalId) {
         emptyState.style.display = 'none';
         cartsContainer.style.display = 'block';

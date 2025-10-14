@@ -39,7 +39,7 @@
                             {{-- Servicios Disponibles (HFS no asignados a ningún carrito) --}}
                             <div class="col-12 col-md-5">
                                 <input type="text" id="filterAvailable" class="form-control mb-2"
-                                       placeholder="Filtrar disponibles...">
+                                    placeholder="Filtrar disponibles...">
 
                                 <div class="card">
                                     <div class="card-header py-2"><strong>Servicios disponibles</strong></div>
@@ -74,7 +74,7 @@
                             {{-- Servicios Asignados (HFS del carrito actual) --}}
                             <div class="col-12 col-md-5">
                                 <input type="text" id="filterSelected" class="form-control mb-2"
-                                       placeholder="Filtrar asignados...">
+                                    placeholder="Filtrar asignados...">
 
                                 <div class="card">
                                     <div class="card-header py-2"><strong>Servicios asignados</strong></div>

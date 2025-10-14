@@ -44,10 +44,10 @@
                                 <div class="col-md-3">
                                     <label class="form-label">Fecha</label>
                                     <input type="date"
-                                           name="date"
-                                           class="form-control @error('date') is-invalid @enderror"
-                                           value="{{ old('date', $calendar->date->format('Y-m-d')) }}"
-                                           required disabled>
+                                        name="date"
+                                        class="form-control @error('date') is-invalid @enderror"
+                                        value="{{ old('date', $calendar->date->format('Y-m-d')) }}"
+                                        required disabled>
                                     @error('date')
                                     <div class="invalid-feedback">{{ $message }}</div>@enderror
                                     <small class="text-muted">* La fecha una vez asignada no se puede cambiar.</small>
@@ -73,7 +73,7 @@
                                 <div class="col-12">
                                     <label class="form-label">Notas (opcional)</label>
                                     <textarea name="notes" rows="3"
-                                              class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $calendar->notes) }}</textarea>
+                                        class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $calendar->notes) }}</textarea>
                                     @error('notes')
                                     <div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
@@ -112,7 +112,7 @@
                                                     <strong>{{ $opt->ingredient?->name ?? 'Ingrediente' }}</strong>
                                                     <br>
                                                     <small class="text-muted">
-                                                      Menú: {{ $opt->menu?->name ?? '-' }}
+                                                        Menú: {{ $opt->menu?->name ?? '-' }}
                                                         @if(!empty($opt->qty))
                                                             · Cant: {{ rtrim(rtrim(number_format($opt->qty, 3, '.', ''), '0'), '.') }}
                                                         @endif
@@ -120,7 +120,7 @@
                                                             · {{ $opt->unit }}
                                                         @endif
                                                     </small>
-                                                  </span>
+                                                </span>
                                             </label>
                                         </div>
                                     @endforeach

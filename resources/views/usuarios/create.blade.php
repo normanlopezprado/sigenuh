@@ -26,47 +26,60 @@
     <script src="{{ asset('assets/js/form/form-layout.init.js') }}"></script>
     <script type="module" src="{{ asset('assets/js/app.js') }}"></script>
 
-  <script>
-  document.addEventListener("DOMContentLoaded", function() {
-      const nameInput = document.getElementById('name');
-      const userInput = document.getElementById('user');
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function () {
+    const nameInput = document.getElementById('name');
+    const userInput = document.getElementById('user');
+        
+    // ✅ Nunca será "undefined" aunque no exista $usuario
+    const isEdit = @json(isset($usuario) && $usuario->exists);
 
-      function generarUsername(nombre) {
-          if (!nombre) return '';
+    let userManuallyEdited = false;
 
-          // Normalizar: minúsculas, sin acentos
-          nombre = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-          let parts = nombre.trim().split(/\s+/).filter(Boolean);
+    function limpiar(texto) {
+        return texto
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s]/g, " ")
+        .trim();
+    }
 
-          let username = '';
+    function generarUsername(nombre) {
+        if (!nombre) return '';
+        const parts = limpiar(nombre).split(/\s+/).filter(Boolean);
+        if (parts.length === 1) return parts[0].substring(0,4);
+        if (parts.length === 2) return parts[0].substring(0,2) + parts[1].substring(0,2);
+        if (parts.length === 3) return parts[0].substring(0,2) + parts[1].substring(0,2) + parts[2].substring(0,2);
+        return parts[0].substring(0,2)
+            + parts[1].substring(0,2)
+            + parts[parts.length-2].substring(0,2)
+            + parts[parts.length-1].substring(0,2);
+    }
 
-          if (parts.length === 2) {
-              // 1 nombre + 1 apellido
-              username = parts[0].substring(0,2) + parts[1].substring(0,2);
-          } else if (parts.length === 3) {
-              // 1 nombre + 2 apellidos
-              username = parts[0].substring(0,2) + parts[1].substring(0,2) + parts[2].substring(0,2);
-          } else if (parts.length >= 4) {
-              // Solo 2 nombres + 2 apellidos
-              username = parts[0].substring(0,2) + parts[1].substring(0,2)
-                       + parts[parts.length-2].substring(0,2) + parts[parts.length-1].substring(0,2);
-          } else {
-              // fallback: primer nombre hasta 4 letras
-              username = parts[0].substring(0,4);
-          }
+    userInput.addEventListener('input', () => { userManuallyEdited = true; });
 
-          return username;
-      }
+    function actualizar() {
+        const nombre = nameInput?.value?.trim() ?? '';
+        if (nombre === '') {
+        userInput.value = '';
+        userManuallyEdited = false; // reset cuando vacían el nombre
+        return;
+        }
+        if (!userManuallyEdited) {
+        userInput.value = generarUsername(nombre);
+        }
+    }
 
-      function actualizar() {
-          const generado = generarUsername(nameInput.value);
-          userInput.value = generado;
-          console.log("Generado:", generado);
-      }
+    nameInput?.addEventListener('input', actualizar);
+    nameInput?.addEventListener('blur', actualizar);
 
-      // Generar username en tiempo real y también al perder foco
-      nameInput.addEventListener('input', actualizar);
-      nameInput.addEventListener('blur', actualizar);
-  });
-  </script>
+    // Prefill al cargar: solo si estamos creando y el campo está vacío
+    if (!isEdit && (userInput?.value?.trim() === '') && (nameInput?.value?.trim() !== '')) {
+        actualizar();
+    }
+    });
+    
+
+</script>
 @endsection

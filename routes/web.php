@@ -194,7 +194,6 @@ Route::middleware(['auth'])->group(function () {
 // ---------------------------
 // Calendario de Menús
 // ---------------------------
-// Declaración explícita (evitamos resource para controlar permisos por acción)
 Route::middleware(['auth'])->group(function () {
     Route::get('/calendars',              [CalendarController::class, 'index'])->name('calendars.index')->middleware('permission:calendars.index');
     Route::get('/calendars/create',       [CalendarController::class, 'create'])->name('calendars.create')->middleware('permission:calendars.create');
@@ -225,21 +224,18 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('staff_meals/delivery',                [StaffMealController::class, 'delivery'])->name('staff_meals.delivery')->middleware('permission:staff-meals.view');
 
-    // Opciones / autocompletes
     Route::get('staff_meals/options/diet-types',      [StaffMealController::class, 'dietTypes'])->name('staff_meals.diet-types')->middleware('permission:staff-meals.view');
     Route::get('staff_meals/options/menus-today',     [StaffMealController::class, 'menusToday'])->name('staff_meals.menus-today')->middleware('permission:staff-meals.view');
     Route::get('staff_meals/search-beneficiaries',    [StaffMealController::class, 'searchBeneficiaries'])->name('staff_meals.search-beneficiaries')->middleware('permission:staff-meals.view');
 
-    // Acción de entrega
     Route::post('staff_meals/deliver',                [StaffMealController::class, 'deliver'])->name('staff_meals.deliver')->middleware('permission:staff-meals.deliver');
 
-    // Listado de entregas
     Route::get('staff_meals/list-deliveries',         [StaffMealController::class, 'listDeliveries'])->name('staff_meals.list-deliveries')->middleware('permission:staff-meals.view');
 });
 
-// Reportes de entregas
 Route::middleware(['auth','permission:staff-meals.report'])->group(function () {
     Route::get('staff_meals/report', [StaffMealReportController::class, 'deliveriesReport'])->name('staff_meals.report');
+
 });
 
 // ---------------------------
@@ -253,16 +249,13 @@ Route::middleware(['auth','verified'])->prefix('carts')->name('carts.')->group(f
     Route::put('/{cart}',                  [CartController::class, 'update'])->name('update')->middleware('permission:carts.edit');
     Route::delete('/{cart}',               [CartController::class, 'destroy'])->name('destroy')->middleware('permission:carts.delete');
 
-    // Ruta del carrito
     Route::get('/{cart}/route',            [CartController::class, 'editRoute'])->name('route.edit')->middleware('permission:carts.routes.edit');
     Route::put('/{cart}/route',            [CartController::class, 'updateRoute'])->name('route.update')->middleware('permission:carts.routes.update');
 
-    // Servicios asociados
     Route::get('/{cart}/services/available', [CartController::class, 'availableServices'])->name('services.available')->middleware('permission:carts.services.view');
     Route::get('/{cart}/services/selected',  [CartController::class, 'selectedServices'])->name('services.selected')->middleware('permission:carts.services.view');
 });
 
-// Pantalla global de rutas
 Route::middleware(['auth'])->group(function () {
     Route::get('carts/routes',  [CartRouteController::class, 'edit'])->name('carts.routes.index')->middleware('permission:carts.routes.edit');
     Route::post('carts/routes', [CartRouteController::class, 'update'])->name('carts.routes.update')->middleware('permission:carts.routes.update');
@@ -271,8 +264,6 @@ Route::middleware(['auth'])->group(function () {
 // ---------------------------
 // Recolección (Collects)
 // ---------------------------
-
-// Vista de tarjetas (GET)
 Route::prefix('collects')->name('collects.')->group(function () {
     Route::get('/cards', [CollectCardsController::class, 'index'])->name('cards');
 
@@ -282,30 +273,27 @@ Route::prefix('collects')->name('collects.')->group(function () {
     Route::post('/bed/{bed}', [CollectCardsController::class, 'upsert'])
         ->name('cards.upsert');
 
-    // ESTA es la que falta:
     Route::post('/cards/bulk', [CollectCardsController::class, 'bulkUpsert'])
         ->name('cards.bulk');
 });
 
-
-
-    // ---------------------------
+// ---------------------------
 // Dashboard - Tarjetas de carritos
 // ---------------------------
 Route::prefix('dashboard')->group(function () {
     Route::get('/carts', [DashboardCartsController::class, 'index'])->name('dashboard.carts.index');
     Route::get('/carts/live', [DashboardCartsController::class, 'live'])->name('dashboard.carts.live');
-    Route::get('/carts/summary', [DashboardCartsController::class, 'collectsSummary'])->name('dashboard.carts.summary'); // opcional
+    Route::get('/carts/summary', [DashboardCartsController::class, 'collectsSummary'])->name('dashboard.carts.summary'); 
 });
 
 Route::get('/api/diet-types', function () {
-    // Lee la definición del ENUM tal cual está creada en la BD
+    
     $row = DB::selectOne("
         SELECT COLUMN_TYPE
         FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_SCHEMA = DATABASE()
-          AND TABLE_NAME = ?
-          AND COLUMN_NAME = ?
+        AND TABLE_NAME = ?
+        AND COLUMN_NAME = ?
         LIMIT 1
     ", ['collects', 'diet_type']);
 
@@ -313,21 +301,19 @@ Route::get('/api/diet-types', function () {
         return response()->json([], 404);
     }
 
-    $columnType = $row->COLUMN_TYPE; // ej: enum('Libre','Blanda','Hiposódica','Diabético 1,200',...)
+    $columnType = $row->COLUMN_TYPE; 
     if (!preg_match("/^enum\\((.*)\\)$/i", $columnType, $m)) {
-        // No es un ENUM
         return response()->json([], 422);
     }
 
-    $inside = $m[1]; // "'Libre','Blanda',..."
-    // Extrae cada valor respetando comillas y escapes
+    $inside = $m[1]; 
+
     preg_match_all("/'((?:\\\\'|[^'])*)'/", $inside, $mm);
     $values = collect($mm[1] ?? [])->map(function ($v) {
-        // Desescapa comilla simple y backslash
         $v = str_replace("\\'", "'", $v);
         $v = str_replace('\\\\', '\\', $v);
         return $v;
-    })->values(); // mantiene el orden del ENUM
+    })->values(); 
 
     return response()->json($values);
 })->name('api.diet-types');
