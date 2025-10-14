@@ -52,14 +52,15 @@
       width: 3.1em; height: 1.6em; background-size: 1.2em 1.2em; cursor: pointer;
       transition: background-color .15s, border-color .15s, box-shadow .15s;
     }
-    /* base: ocupada (unchecked) naranja */
-    .availability .form-check-input { background-color: #f59e0b; border-color: #f59e0b; }
-    /* checked: disponible verde */
-    .availability .form-check-input:checked { background-color: #22c55e; border-color: #22c55e; }
+   /* base: ocupada (unchecked) verde */
+    .availability .form-check-input { background-color: #22c55e; border-color: #22c55e; }
+    /* checked: disponible naranja */
+    .availability .form-check-input:checked { background-color: #f59e0b; border-color: #f59e0b; }
 
     .state-pill { display: inline-block; padding: .15rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
-    .state-pill.free  { color: #065f46; background: #d1fae5; }
-    .state-pill.busy  { color: #7c2d12; background: #ffedd5; }
+    /* Intercambio de colores en los textos */
+    .state-pill.free  { color: #7c2d12; background: #ffedd5; } /* naranja para Disponible */
+    .state-pill.busy  { color: #065f46; background: #d1fae5; } /* verde para Ocupada */
 
     /* ====== SECTION TITLES ====== */
     .section-title { font-weight: 700; font-size: .9rem; margin-bottom: .35rem; color: #111827; }
@@ -67,25 +68,73 @@
     /* ====== FLOATING ACTIONS (MOBILE) ====== */
     .floating-actions { position: sticky; bottom: 0; z-index: 20; background: rgba(255,255,255,.9); backdrop-filter: blur(6px); border-top: 1px solid var(--bs-border-color, #e5e7eb); padding: .75rem; display: none; }
     @media (max-width: 767.98px) { .floating-actions { display: block; } }
+
+    
   </style>
 @endsection
 
 @section('content')
-  @php
+@php
     use Carbon\Carbon; use Illuminate\Support\Facades\App;
     App::setLocale('es'); Carbon::setLocale('es');
     $fechaFormateada = ucfirst(Carbon::parse($date ?? now())->translatedFormat('l d \\d\\e F'));
-  @endphp
+
+    // --- Normalizaciones seguras para esta vista ---
+    // 1) serviceId (para @selected y los links Cancelar)
+    $serviceId = $serviceId
+        ?? ($selectedService ?? (request('service') ?? old('service')));
+    if (is_array($serviceId)) {
+        $serviceId = $serviceId['id'] ?? ($serviceId[0]['id'] ?? ($serviceId[0] ?? null));
+    }
+    $serviceId = filled($serviceId) ? (string)$serviceId : null;
+
+    // 2) collectsByBed: el controlador manda 'prefill' (array keyBy bed_id)
+    $collectsByBed = (isset($collectsByBed) && is_array($collectsByBed))
+        ? $collectsByBed
+        : ((isset($prefill) && is_array($prefill)) ? $prefill : []);
+
+    // 4) isOpen (habilita/inhabilita botones Guardar)
+    if (!isset($isOpen)) {
+        $isOpen = true; // fallback en la vista
+    }
+@endphp
+
+
 
   <div class="row g-4">
     <div class="col-12">
       <div class="card mb-0 h-100">
         <div class="container py-4">
+          <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-1">
+            <div>
+              <h1 class="mb-0">
+                Recolección de: <span class="text-primary">{{ $meal }}</span>
+              </h1>
+                <h3> {{ $fechaFormateada }}
+                </h3>
+              @php $wc = $windowConfig ?? []; @endphp
+              <small class="text-muted d-block mt-1">
+                @if(!empty($wc['Desayuno']))
+                  <div><strong>Desayuno:</strong> {{ $wc['Desayuno'] }}</div>
+                @endif
+                @if(!empty($wc['Almuerzo']))
+                  <div><strong>Almuerzo:</strong> {{ $wc['Almuerzo'] }}</div>
+                @endif
+                @if(!empty($wc['Cena']))
+                  <div><strong>Cena:</strong> {{ $wc['Cena'] }}</div>
+                @endif
+              </small>
+            </div>
+          </div>
 
-          <h1 class="mb-1">
-            Recolección de: <span class="text-primary">{{ $meal }}</span>
-          </h1>
-          <small class="text-muted d-block mb-3">{{ $fechaFormateada }}</small>
+
+          <small class="text-muted d-block mb-2">{{ $windowMessage ?? '' }}</small>
+          
+
+
+
+
+          
 
           {{-- Selector de servicio --}}
           <form id="filterForm" method="GET" action="{{ route('collects.cards') }}" class="row g-2 mb-2">
@@ -94,11 +143,27 @@
               <select name="service" id="serviceSelect" class="form-select" required onchange="this.form.submit()">
                 <option value="">— Selecciona un servicio —</option>
                 @foreach($services as $svc)
-                  <option value="{{ $svc->id }}" @selected($serviceId===$svc->id)>
-                    {{ !empty($svc->display_levels) ? ($svc->display_levels.' — ') : '' }}
-                    {{ !empty($svc->abbreviation) ? ($svc->abbreviation.' — ') : '' }}
-                    {{ trim(($svc->name ?? '').' '.($svc->category ?? '')) }}
-                  </option>
+                  @php
+                    // Acepta Eloquent (objeto) o arreglo simple.
+                    $id    = is_array($svc) ? ($svc['id'] ?? null)                 : ($svc->id ?? null);
+                    $label = is_array($svc) ? ($svc['label'] ?? null)              : null;
+
+                    // Si no viene 'label', construirlo con los campos disponibles
+                    $displayLevels = is_array($svc) ? ($svc['display_levels'] ?? null) : ($svc->display_levels ?? null);
+                    $abbreviation  = is_array($svc) ? ($svc['abbreviation']  ?? null) : ($svc->abbreviation  ?? null);
+                    $name          = is_array($svc) ? ($svc['name']          ?? null) : ($svc->name          ?? null);
+                    $category      = is_array($svc) ? ($svc['category']      ?? null) : ($svc->category      ?? null);
+
+                    if (empty($label)) {
+                      $parts = [];
+                      if (!empty($displayLevels)) { $parts[] = $displayLevels; }
+                      if (!empty($abbreviation))  { $parts[] = $abbreviation; }
+                      $tail = trim(($name ?? '').' '.($category ?? ''));
+                      if (!empty($tail)) { $parts[] = $tail; }
+                      $label = implode(' — ', array_filter($parts));
+                    }
+                  @endphp
+                  <option value="{{ $id }}" @selected((string)$serviceId === (string)$id)>{{ $label }}</option>
                 @endforeach
               </select>
               <small class="text-muted d-block mt-1">Selecciona un servicio para ver sus camas y capturar datos.</small>
@@ -115,10 +180,12 @@
           @endif
 
           {{-- Form principal (bulk) --}}
-          <form method="POST" action="{{ route('collects.bulk') }}" id="cardsBulkForm">
+          <form method="POST" action="{{ route('collects.cards.bulk') }}" id="cardsBulkForm">
             @csrf
             <input type="hidden" name="date" value="{{ $date ?? now()->toDateString() }}">
             <input type="hidden" name="meal" value="{{ $meal }}">
+            <input type="hidden" name="service" value="{{ $serviceId }}">
+
 
             <div class="cards-grid mt-3">
               @forelse($beds as $bed)
@@ -137,7 +204,7 @@
                 @endphp
 
                 <div class="card-col">
-                  <div class="card bed-card h-100">
+                  <div class="card bed-card h-100" data-bed="{{ $bed->id }}">
                     <div class="card-header d-flex justify-content-between align-items-start">
                       <div>
                         <div class="svc-title">{{ $svcTitle }}</div>
@@ -161,10 +228,12 @@
                         </label>
                       </div>
                     </div>
-
+                    
                     <div class="card-body">
                       {{-- marker para garantizar envío de fila --}}
                       <input type="hidden" name="rows[{{ $bed->id }}][__present]" value="1">
+                      <input type="hidden" name="rows[{{ $bed->id }}][__touched]" value="0" class="touched-flag">
+
 
                       {{-- Dieta (chips con preselección) --}}
                       <div class="mb-3">
@@ -174,10 +243,10 @@
                             @php $checked = $diet === $d; @endphp
                             <label class="diet-chip {{ $checked ? 'active':'' }}">
                               <input type="radio"
-                                     name="rows[{{ $bed->id }}][diet_type]"
-                                     value="{{ $d }}"
-                                     @checked($checked)
-                                     aria-label="Cama {{ $bed->code }}, dieta {{ $d }}">
+                                name="rows[{{ $bed->id }}][diet_type]"
+                                value="{{ $d }}"
+                                @checked($checked)
+                                aria-label="Cama {{ $bed->code }}, dieta {{ $d }}">
                               <span>{{ $d }}</span>
                             </label>
                           @endforeach
@@ -187,11 +256,11 @@
                       {{-- Desechable --}}
                       <div class="mb-3 form-check form-switch">
                         <input class="form-check-input"
-                               type="checkbox"
-                               id="disp-{{ $bed->id }}"
-                               name="rows[{{ $bed->id }}][has_disponsable]"
-                               value="1"
-                               @checked($hasDisp)>
+                          type="checkbox"
+                          id="disp-{{ $bed->id }}"
+                          name="rows[{{ $bed->id }}][has_disponsable]"
+                          value="1"
+                          @checked($hasDisp)>
                         <label class="form-check-label" for="disp-{{ $bed->id }}">Desechable</label>
                       </div>
 
@@ -199,35 +268,35 @@
                       <div class="mb-2">
                         <div class="form-check form-switch">
                           <input class="form-check-input minor-switch"
-                                 type="checkbox"
-                                 id="minor-{{ $bed->id }}"
-                                 name="rows[{{ $bed->id }}][has_minor]"
-                                 value="1"
-                                 data-target="#minor-age-{{ $bed->id }}"
-                                 @checked($hasMinor)>
+                            type="checkbox"
+                            id="minor-{{ $bed->id }}"
+                            name="rows[{{ $bed->id }}][has_minor]"
+                            value="1"
+                            data-target="#minor-age-{{ $bed->id }}"
+                            @checked($hasMinor)>
                           <label class="form-check-label" for="minor-{{ $bed->id }}">Menor</label>
                         </div>
                       </div>
                       <div class="mb-3" id="minor-age-{{ $bed->id }}" style="{{ $hasMinor ? '' : 'display:none;' }}">
                         <label class="form-label">Edad</label>
                         <input type="number"
-                               min="0" max="120" step="1"
-                               class="form-control form-floating"
-                               name="rows[{{ $bed->id }}][minor_age]"
-                               value="{{ $minorAge ?? '' }}"
-                               placeholder="Edad del menor">
+                          min="0" max="120" step="1"
+                          class="form-control form-floating"
+                          name="rows[{{ $bed->id }}][minor_age]"
+                          value="{{ $minorAge ?? '' }}"
+                          placeholder="Edad del menor">
                       </div>
 
                       {{-- Acompañante + dieta acompañante --}}
                       <div class="mb-2">
                         <div class="form-check form-switch">
                           <input class="form-check-input companion-switch"
-                                 type="checkbox"
-                                 id="companion-{{ $bed->id }}"
-                                 name="rows[{{ $bed->id }}][has_companion]"
-                                 value="1"
-                                 data-target="#companion-wrapper-{{ $bed->id }}"
-                                 @checked($hasComp)>
+                            type="checkbox"
+                            id="companion-{{ $bed->id }}"
+                            name="rows[{{ $bed->id }}][has_companion]"
+                            value="1"
+                            data-target="#companion-wrapper-{{ $bed->id }}"
+                            @checked($hasComp)>
                           <label class="form-check-label" for="companion-{{ $bed->id }}">Acompañante</label>
                         </div>
                       </div>
@@ -239,10 +308,10 @@
                             @php $cChecked = $compDiet === $d; @endphp
                             <label class="companion-chip {{ $cChecked ? 'active':'' }}">
                               <input type="radio"
-                                     name="rows[{{ $bed->id }}][companion_diet_type]"
-                                     value="{{ $d }}"
-                                     @checked($cChecked)
-                                     aria-label="Cama {{ $bed->code }}, dieta acompañante {{ $d }}">
+                                name="rows[{{ $bed->id }}][companion_diet_type]"
+                                value="{{ $d }}"
+                                @checked($cChecked)
+                                aria-label="Cama {{ $bed->code }}, dieta acompañante {{ $d }}">
                               <span>{{ $d }}</span>
                             </label>
                           @endforeach
@@ -261,15 +330,16 @@
 
             {{-- Acciones escritorio --}}
             <div class="d-none d-md-flex gap-2 mt-3">
-              <button class="btn btn-primary" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
-              <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-secondary">Cancelar</a>
+              <button type="submit" class="btn btn-primary" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
+              <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-danger">Cancelar</a>
             </div>
 
             {{-- Acciones móviles fijas --}}
             <div class="floating-actions d-md-none">
               <div class="d-flex gap-2">
-                <button class="btn btn-primary w-100" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
-                <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary w-100" {{ (!$isOpen) ? 'disabled' : '' }}>Guardar</button>
+
+                <a href="{{ route('collects.cards', ['service'=>$serviceId]) }}" class="btn btn-outline-danger">Cancelar</a>
               </div>
             </div>
           </form>
@@ -282,7 +352,7 @@
 
 @section('js')
   <script>
-    // Activado visual de chips
+  
     document.addEventListener('change', (e) => {
       if (e.target.matches('.diet-chips input[type="radio"]')) {
         const group = e.target.closest('.diet-chips');
@@ -296,7 +366,7 @@
       }
     });
 
-    // Mostrar/ocultar secciones dependientes
+  
     document.addEventListener('change', (e) => {
       if (e.target.matches('.minor-switch')) {
         const t = document.querySelector(e.target.dataset.target);
@@ -308,7 +378,7 @@
       }
     });
 
-    // Cambiar estado cama (switch visual) con PATCH y feedback en pill
+  
     document.addEventListener('change', async (e) => {
       if (e.target.matches('.availability-input')) {
         const input  = e.target;
@@ -316,7 +386,7 @@
         const isAvailable = input.checked;
         const pill = document.getElementById(`pill-${bedId}`);
 
-        // Optimista
+        
         if (pill) {
           pill.textContent = isAvailable ? 'Disponible' : 'Ocupada';
           pill.classList.toggle('free',  isAvailable);
@@ -346,7 +416,7 @@
             }
           }
         } catch (err) {
-          // Revertir
+          
           input.checked = !isAvailable;
           if (pill) {
             pill.textContent = input.checked ? 'Disponible' : 'Ocupada';
@@ -358,6 +428,17 @@
         }
       }
     });
+
+    function markTouched(e) {
+    const card = e.target.closest('.card[data-bed]');
+    if (!card) return;
+    const bedId = card.getAttribute('data-bed');
+    const flag  = card.querySelector(`input[name="rows[${bedId}][__touched]"]`);
+    if (flag) flag.value = '1';
+  }
+  document.addEventListener('input',  markTouched);
+  document.addEventListener('change', markTouched);
+
   </script>
 
   {{-- (Opcional) librerías adicionales de tu layout --}}
