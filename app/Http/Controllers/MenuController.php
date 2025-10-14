@@ -27,6 +27,8 @@ class MenuController extends Controller
             'Diabético 1,500',
             'Renal',
             'Licuada',
+            'Blanda 8m',
+            'Papilla',
             'Especial',
         ];
         $dietOptions = array_combine($diets, $diets);
@@ -44,6 +46,8 @@ class MenuController extends Controller
             'Diabético 1,500',
             'Renal',
             'Licuada',
+            'Blanda 8m',
+            'Papilla',
             'Especial',
         ];
         $dietOptions = array_combine($diets, $diets);
@@ -82,6 +86,8 @@ class MenuController extends Controller
             'Diabético 1,500',
             'Renal',
             'Licuada',
+            'Blanda 8m',
+            'Papilla',
             'Especial',
         ];
         $dietOptions = array_combine($diets, $diets);
@@ -98,6 +104,8 @@ class MenuController extends Controller
             'Diabético 1,500',
             'Renal',
             'Licuada',
+            'Blanda 8m',
+            'Papilla',
             'Especial',
         ];
         $dietOptions = array_combine($diets, $diets);

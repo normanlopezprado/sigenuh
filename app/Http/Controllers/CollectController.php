@@ -14,9 +14,16 @@ use Illuminate\Support\Facades\DB;
 class CollectController extends Controller
 {
     private const DIETS = [
-        'Libre','Blanda','Hiposódica',
-        'Diabético 1,200','Diabético 1,500',
-        'Renal','Licuada','Especial',
+        'Libre',
+        'Blanda',
+        'Hiposódica',
+        'Diabético 1,200',
+        'Diabético 1,500',
+        'Renal',
+        'Licuada',
+        'Blanda 8m',
+        'Papilla',
+        'Especial',
     ];
 
     public function index(Request $request)
@@ -246,7 +253,18 @@ class CollectController extends Controller
             'has_companion' => ['required','boolean'],
             'companion_diet_type' => [
                 'nullable',
-                Rule::in(['Libre','Blanda','Hiposódica','Diabético 1,200','Diabético 1,500','Renal','Licuada','Especial']),
+                Rule::in([
+                'Libre',
+                'Blanda',
+                'Hiposódica',
+                'Diabético 1,200',
+                'Diabético 1,500',
+                'Renal',
+                'Licuada',
+                'Blanda 8m',
+                'Papilla',
+                'Especial',
+                ]),
             ],
             'companion_notes' => ['nullable','string'],
         ]);

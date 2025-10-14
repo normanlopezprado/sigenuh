@@ -281,7 +281,18 @@
             }
         } catch (_) {}
         
-        return ['Libre','Blanda','Hiposódica','Diabético 1,200','Diabético 1,500','Renal','Licuada','Especial'];
+        return [
+            'Libre',
+            'Blanda',
+            'Hiposódica',
+            'Diabético 1,200',
+            'Diabético 1,500',
+            'Renal',
+            'Licuada',
+            'Blanda 8m',
+            'Papilla',
+            'Especial',
+        ];
     }
 
     function renderCards(carts = [], dietTypes = []) {

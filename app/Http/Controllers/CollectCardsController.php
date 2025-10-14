@@ -22,6 +22,8 @@ class CollectCardsController extends Controller
         'Diabético 1,500',
         'Renal',
         'Licuada',
+        'Blanda 8m',
+        'Papilla',
         'Especial',
     ];
 
@@ -136,8 +138,10 @@ class CollectCardsController extends Controller
         $isOpen = (bool) $active;
 
         $windowMessage = $active
-            ? "Ventana activa: {$active}"
-            : ($nextLabel ? "Siguiente: {$nextLabel} {$etaText}" : "Fuera de ventanas configuradas");
+        ? "Ventana activa: {$active}"
+        : ($nextLabel ? "Fuera de horario de recolección — siguiente: {$nextLabel} {$etaText}"
+                    : "Fuera de horario de recolección");
+
 
         $windowConfig = [
             'Desayuno' => ($Bstart && $Bend) ? ($fmt12($Bstart).' - '.$fmt12($Bend)) : null,

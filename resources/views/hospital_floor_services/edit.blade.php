@@ -69,17 +69,26 @@
                                             </div>
                                             <div class="card-body p-0">
                                                 <ul id="listAvailable" class="list-group list-group-flush" style="height: 320px; overflow:auto;">
+                                                    {{-- === Columna DISPONIBLES === --}}
                                                     @foreach($services as $s)
                                                         @php
                                                             $isSelected = in_array($s->id, old('services', $selectedServiceIds));
-                                                            $text = trim(($s->name ?? '').' '.(!empty($s->abbreviation) ? '(' . $s->abbreviation . ')' : ''));
+                                                            // Armamos la etiqueta: "Nombre Categoría"
+                                                            $label = trim(implode(' ', array_filter([
+                                                                $s->name ?? '',
+                                                                $s->category ?? '',   // <— agregamos categoría
+                                                            ])));
+
+                                                            // Texto completo para mostrar/filtrar: "Nombre Categoría (ABR)"
+                                                            $text = trim($label . ' ' . (!empty($s->abbreviation) ? '(' . $s->abbreviation . ')' : ''));
                                                         @endphp
                                                         @if(!$isSelected)
                                                             <li class="list-group-item d-flex justify-content-between align-items-center"
                                                                 data-id="{{ $s->id }}"
                                                                 data-text="{{ strtolower($text) }}"
                                                                 role="button">
-                                                                <span class="me-2">{{ $s->name }}
+                                                                <span class="me-2">
+                                                                    {{ $label }}
                                                                     @if(!empty($s->abbreviation))
                                                                         <small class="text-muted">({{ $s->abbreviation }})</small>
                                                                     @endif
@@ -112,17 +121,23 @@
                                             </div>
                                             <div class="card-body p-0">
                                                 <ul id="listSelected" class="list-group list-group-flush" style="height: 320px; overflow:auto;">
+                                                    {{-- === Columna SELECCIONADOS === --}}
                                                     @foreach($services as $s)
                                                         @php
                                                             $isSelected = in_array($s->id, old('services', $selectedServiceIds));
-                                                            $text = trim(($s->name ?? '').' '.(!empty($s->abbreviation) ? '(' . $s->abbreviation . ')' : ''));
+                                                            $label = trim(implode(' ', array_filter([
+                                                                $s->name ?? '',
+                                                                $s->category ?? '',   // <— agregamos categoría
+                                                            ])));
+                                                            $text = trim($label . ' ' . (!empty($s->abbreviation) ? '(' . $s->abbreviation . ')' : ''));
                                                         @endphp
                                                         @if($isSelected)
                                                             <li class="list-group-item d-flex justify-content-between align-items-center"
                                                                 data-id="{{ $s->id }}"
                                                                 data-text="{{ strtolower($text) }}"
                                                                 role="button">
-                                                                <span class="me-2">{{ $s->name }}
+                                                                <span class="me-2">
+                                                                    {{ $label }}
                                                                     @if(!empty($s->abbreviation))
                                                                         <small class="text-muted">({{ $s->abbreviation }})</small>
                                                                     @endif

@@ -69,8 +69,7 @@
                             <hr class="my-4">
 
                             <h4>Ingredientes del menú</h4>
-                            <p class="text-muted">Agrega ingredientes, cantidades y marca si son opcionales. Al guardar se sincroniza todo.</p>
-
+                            
                             <table class="table" id="ingredients-table">
                                 <thead>
                                 <tr>
