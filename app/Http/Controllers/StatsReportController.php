@@ -14,14 +14,10 @@ class StatsReportController extends Controller
     // -------------------------------------------------------------------------
     public function index(Request $request)
     {
-        // ---
-        // Parseo de rango de fechas ?date_range=YYYY-MM-DD - YYYY-MM-DD
-        // ---
-        // Lee el rango desde query o input (GET/POST), como string plano
+        // rango de fechas        
         $rawRange = $request->query('date_range', $request->input('date_range', ''));
         $applyRange = filled($rawRange);
 
-        // (Opcional) normaliza "+" -> " " si llegara literal
         $rawRange = str_replace('+', ' ', $rawRange);
 
         [$start, $end] = $this->parseRange($rawRange);
@@ -70,62 +66,71 @@ class StatsReportController extends Controller
         $desechables = (int) $desechablesQ
         ->count();
 
-        
-        // [CHART] Distribución por sexo (Hombres / Mujeres / Niños)
-        // Fuente: services.category a través de la cama del collect
-        // Mapear: 'Menores' -> 'Niños' en la etiqueta final
-        // ---
-        // --- CHART: Distribución por sexo ----------------------------------
+        // ------
+        // [CHARTs]
+        // ------
+    
+        // === SEXO (Hombres / Mujeres / Niños) ===
+        // Histórico por defecto; si viene date_range -> filtra por c.date
         $sexQ = DB::table('collects as c')
             ->join('beds as b', 'b.id', '=', 'c.bed_id')
             ->join('hospital_floor_services as hfs', 'hfs.id', '=', 'b.hospital_floor_service_id')
             ->join('services as s', 's.id', '=', 'hfs.service_id')
-            ->whereIn('s.category', ['Hombres', 'Mujeres', 'Menores'])
-            ->select('s.category', DB::raw('COUNT(*) as total'));
+            ->selectRaw("UPPER(TRIM(s.category)) as cat, COUNT(*) as total")
+            ->whereIn(DB::raw("UPPER(TRIM(s.category))"), ['HOMBRES','MUJERES','MENORES','NIÑOS'])
+            ->groupBy('cat');
 
         if ($applyRange) {
             $sexQ->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]);
         }
 
-        $rawSex = $sexQ->groupBy('s.category')->pluck('total', 's.category')->toArray();
+        $rawSex = $sexQ->pluck('total', 'cat')->toArray();
+
+        // Suma "MENORES" + "NIÑOS" (y cubre sin acento por si acaso)
+        $kids = (int) (($rawSex['MENORES'] ?? 0) + ($rawSex['NIÑOS'] ?? 0) + ($rawSex['NINOS'] ?? 0));
 
         $sexPayload = [
             'labels' => ['Hombres', 'Mujeres', 'Niños'],
             'data'   => [
-                (int)($rawSex['Hombres'] ?? 0),
-                (int)($rawSex['Mujeres'] ?? 0),
-                (int)($rawSex['Menores'] ?? 0), // Menores -> Niños
+                (int)($rawSex['HOMBRES'] ?? 0),
+                (int)($rawSex['MUJERES'] ?? 0),
+                $kids,
             ],
         ];
 
-        // (opcional) debug rápido
-        \Log::info('stats.report sexPayload', ['raw' => $rawSex, 'payload' => $sexPayload]);
-
-        // ---
-        // CHART: DIETAS ENTREGADAS (pie)
-        // Cuenta por collects.diet_type (mapea vacío/null a "(Sin dieta)")
-        // ---
-        $dietCountsMap = DB::table('collects as c')
-            ->whereBetween('c.date', [$start->toDateString(), $end->toDateString()])
+        // === CHART: Dietas entregadas  ==================
+        // Contamos cada fila por su tipo de dieta; si hay acompañante, sumamos su dieta.
+        $dietPac = DB::table('collects as c')
+            ->when($applyRange, fn($q) => $q->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]))
             ->selectRaw("COALESCE(NULLIF(TRIM(c.diet_type), ''), '(Sin dieta)') as label, COUNT(*) as total")
-            ->groupBy('label')
-            ->pluck('total', 'label')        
-            ->map(fn ($v) => (int) $v)
-            ->toArray();
-
-
-        $dietCountsQ = DB::table('collects as c')
-            ->selectRaw("COALESCE(NULLIF(TRIM(c.diet_type), ''), '(Sin dieta)') as label, COUNT(*) as total");
-
-        if ($applyRange) {
-            $dietCountsQ->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]);
-        }
-
-        $dietCountsMap = $dietCountsQ
             ->groupBy('label')
             ->pluck('total', 'label')
             ->map(fn ($v) => (int) $v)
             ->toArray();
+
+        $dietComp = DB::table('collects as c')
+            ->where('c.has_companion', 1)
+            ->when($applyRange, fn($q) => $q->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]))
+            ->selectRaw("COALESCE(NULLIF(TRIM(c.companion_diet_type), ''), '(Sin dieta)') as label, COUNT(*) as total")
+            ->groupBy('label')
+            ->pluck('total', 'label')
+            ->map(fn ($v) => (int) $v)
+            ->toArray();
+
+        
+        $dietCountsMap = [];
+        foreach ([$dietPac, $dietComp] as $arr) {
+            foreach ($arr as $label => $cnt) {
+                $dietCountsMap[$label] = ($dietCountsMap[$label] ?? 0) + (int) $cnt;
+            }
+        }
+        
+        uksort($dietCountsMap, fn($a, $b) => $dietCountsMap[$b] <=> $dietCountsMap[$a]);
+
+        $dietPayload = [
+            'labels' => array_keys($dietCountsMap),
+            'data'   => array_values($dietCountsMap),
+        ];
 
 
 
@@ -152,6 +157,8 @@ class StatsReportController extends Controller
             ],
             'dietCountsMap' => $dietCountsMap,
             'sexPayload'    => $sexPayload, 
+            'dietPayload'  => $dietPayload,  
+
 
         ]);
     }
