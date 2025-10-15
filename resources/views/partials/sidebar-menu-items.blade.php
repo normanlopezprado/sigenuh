@@ -31,16 +31,6 @@
                 </a>
             </li>
 
-            <li class="slide">
-                <a 
-                href="{{ route('dashboard.carts.index') }}" 
-                data-lang="hr-dashboards-project-management" 
-                class="side-menu__item" 
-                role="menuitem">
-                Carritos
-                </a>
-            </li>
-
         </ul>
     </li>
 
