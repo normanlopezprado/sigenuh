@@ -27,6 +27,7 @@ use App\Http\Controllers\CollectController;
 use App\Http\Controllers\DashboardCartsController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Http\Controllers\StatsReportController;
 
 use App\Http\Controllers\CollectCardsController;
 
@@ -317,3 +318,18 @@ Route::get('/api/diet-types', function () {
 
     return response()->json($values);
 })->name('api.diet-types');
+
+//----------------------------
+// reporte Hisotira
+//----------------------------
+
+Route::get('/stats/report', [StatsReportController::class, 'index'])
+    ->name('stats.report');
+
+Route::get('/api/diet-types', [StatsReportController::class, 'dietTypes'])
+    ->name('api.diet-types');
+
+Route::get('/api/diet-types', [\App\Http\Controllers\StatsReportController::class, 'dietTypes'])
+    ->name('api.diet-types');
+
+    
