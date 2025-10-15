@@ -70,33 +70,52 @@ class StatsReportController extends Controller
         // [CHARTs]
         // ------
     
-        // === SEXO (Hombres / Mujeres / Niños) ===
-        // Histórico por defecto; si viene date_range -> filtra por c.date
-        $sexQ = DB::table('collects as c')
+        // === SEXO (Hombres / Mujeres / Niños) con regla de has_minor =================
+        // - "Niños": si el servicio es Menores/NIÑOS o si c.has_minor = 1 (en cualquier servicio)
+        // - "Hombres": solo si cat = HOMBRES y NO es menor
+        // - "Mujeres": solo si cat = MUJERES y NO es menor
+        $sexBase = DB::table('collects as c')
             ->join('beds as b', 'b.id', '=', 'c.bed_id')
             ->join('hospital_floor_services as hfs', 'hfs.id', '=', 'b.hospital_floor_service_id')
             ->join('services as s', 's.id', '=', 'hfs.service_id')
-            ->selectRaw("UPPER(TRIM(s.category)) as cat, COUNT(*) as total")
-            ->whereIn(DB::raw("UPPER(TRIM(s.category))"), ['HOMBRES','MUJERES','MENORES','NIÑOS'])
-            ->groupBy('cat');
+            // limitamos a categorías relevantes o a casos con has_minor=1
+            ->where(function ($q) {
+                $q->whereIn(DB::raw("UPPER(TRIM(s.category))"), ['HOMBRES','MUJERES','MENORES','NIÑOS','NINOS'])
+                ->orWhereRaw('COALESCE(c.has_minor,0) = 1');
+            });
 
         if ($applyRange) {
-            $sexQ->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]);
+            $sexBase->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]);
         }
 
-        $rawSex = $sexQ->pluck('total', 'cat')->toArray();
+        // Derivamos el bucket con prioridad a Niños para evitar doble conteo
+        $sexQ = $sexBase->selectRaw("
+            CASE
+                WHEN COALESCE(c.has_minor,0) = 1
+                    OR UPPER(TRIM(s.category)) IN ('MENORES','NIÑOS','NINOS')
+                THEN 'Niños'
+                WHEN UPPER(TRIM(s.category)) = 'HOMBRES'
+                THEN 'Hombres'
+                WHEN UPPER(TRIM(s.category)) = 'MUJERES'
+                THEN 'Mujeres'
+                ELSE 'Otros'
+            END AS bucket,
+            COUNT(*) AS total
+        ")->groupBy('bucket');
 
-        // Suma "MENORES" + "NIÑOS" (y cubre sin acento por si acaso)
-        $kids = (int) (($rawSex['MENORES'] ?? 0) + ($rawSex['NIÑOS'] ?? 0) + ($rawSex['NINOS'] ?? 0));
+        // Mapeamos resultados a nuestro payload fijo (H/M/Niños)
+        $rawSex = $sexQ->pluck('total', 'bucket')->toArray();
 
         $sexPayload = [
             'labels' => ['Hombres', 'Mujeres', 'Niños'],
             'data'   => [
-                (int)($rawSex['HOMBRES'] ?? 0),
-                (int)($rawSex['MUJERES'] ?? 0),
-                $kids,
+                (int)($rawSex['Hombres'] ?? 0),
+                (int)($rawSex['Mujeres'] ?? 0),
+                (int)($rawSex['Niños']   ?? 0), 
             ],
         ];
+
+
 
         // === CHART: Dietas entregadas  ==================
         // Contamos cada fila por su tipo de dieta; si hay acompañante, sumamos su dieta.
