@@ -326,7 +326,7 @@ if ($clear){
 // ------
 
 
-{{-- Generos de pacientes --}}
+{{-- Generos de pacientes (polarArea, ApexCharts) --}}
 <script>
 (function(){
 'use strict';
@@ -336,48 +336,62 @@ function renderSexChart(){
     const el = document.getElementById('chartBySex');
     if (!el || !window.ApexCharts) return;
 
+    // 1) Cargar payload
     let payload = { labels:['Hombres','Mujeres','Niños'], data:[0,0,0] };
     const src = document.getElementById('sexPayloadJSON');
-    if (src && src.textContent){ try{ payload = JSON.parse(src.textContent); }catch(e){ console.error('sexPayloadJSON inválido', e); } }
+    if (src && src.textContent){
+    try { payload = JSON.parse(src.textContent); }
+    catch(e){ console.error('sexPayloadJSON inválido', e); }
+    }
 
-    const total  = Array.isArray(payload.data) ? payload.data.reduce((a,b)=>a+b,0) : 0;
-    const series = total > 0 ? payload.data   : [1];
-    const labels = total > 0 ? payload.labels : ['Sin datos'];
+    // 2) Normalizar y asegurar que labels y series tengan la misma longitud
+    const rawLabels = Array.isArray(payload.labels) ? payload.labels.map(String) : [];
+    const rawData   = Array.isArray(payload.data)   ? payload.data.map(v => Number(v) || 0) : [];
+    const L         = Math.min(rawLabels.length, rawData.length);
+    const labels    = rawLabels.slice(0, L);
+    const series    = rawData.slice(0, L);
+
+    const total  = series.reduce((a,b)=>a+b, 0);
+    const hasData = total > 0;
 
     if (window.__sexApex) window.__sexApex.destroy();
 
     window.__sexApex = new ApexCharts(el, {
-    chart:{ type:'polarArea', height:'100%', toolbar:{ show:false } },
-    series, labels,
-    stroke:{ width:1 },
+    chart:  { type:'polarArea', height:'100%', toolbar:{ show:false } },
+    labels: hasData ? labels : ['Sin datos'],
+    series: hasData ? series : [1],
+    stroke: { width:1 },
     legend:{
         position:'bottom',
-        formatter:(name,opts)=>{
+        formatter: function (name, opts) {
         const v = opts.w.globals.series[opts.seriesIndex] || 0;
-        return total ? `${name}: ${fmt(v)} (${(v*100/total).toFixed(1)}%)` : `${name}: ${fmt(v)}`;
+        return hasData ? `${name}: ${fmt(v)} (${(v*100/total).toFixed(1)}%)` : `${name}: ${fmt(v)}`;
         }
     },
     dataLabels:{
         enabled:true,
-        formatter:(_val,opts)=>{
-        const v = opts.series[opts.seriesIndex] || 0;
-        return total ? `${fmt(v)} • ${(v*100/total).toFixed(1)}%` : fmt(v);
+        formatter: function (_val, opts) {
+        const v = opts.w.globals.series[opts.seriesIndex] || 0;
+        return hasData ? `${fmt(v)} • ${(v*100/total).toFixed(1)}%` : fmt(v);
         }
     },
-    tooltip:{ y:{ formatter:v => total ? `${fmt(v)} (${(v*100/total).toFixed(1)}%)` : fmt(v) } },
+    tooltip:{
+        y:{ formatter: v => hasData ? `${fmt(v)} (${(v*100/total).toFixed(1)}%)` : fmt(v) }
+    },
     noData:{ text:'Sin datos' }
     });
 
     window.__sexApex.render();
 
     const hint = el.closest('.card')?.querySelector('.mini-hint');
-    if (hint) hint.textContent = total ? `Total: ${fmt(total)} — Hombres/Mujeres/Niños` : 'Sin datos';
+    if (hint) hint.textContent = hasData ? `Total: ${fmt(total)} — Hombres/Mujeres/Niños` : 'Sin datos';
 }
 
 if (document.readyState !== 'loading') renderSexChart();
 else document.addEventListener('DOMContentLoaded', renderSexChart);
 })();
 </script>
+
 
 
 // ------
