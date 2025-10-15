@@ -76,6 +76,29 @@
             </a>
 
             <ul class="slide-menu" role="menu">
+
+                <li class="slide">
+                    <a href="#!" class="side-menu__item" role="menuitem">
+                        <i class="ri-line-chart-line"></i>
+                        <span class="side-menu__label" data-lang="hr-apps-email">Estadísticas</span>
+                        <i class="ri-arrow-down-s-line side-menu__angle"></i>
+                    </a>
+                    <ul class="slide-menu" role="menu">
+
+                        <li class="slide">
+                            <a href="{{ route('stats.report') }}" 
+                            class="side-menu__item" 
+                            role="menuitem" 
+                            data-lang="hr-apps-email-inbox">
+                                <i class="ri-brain-line"></i>
+                                Historia
+                            </a>
+                        </li>
+                        
+                    </ul>
+                </li>
+                
+                
                 <li class="slide">
                     <a href="#!" class="side-menu__item" role="menuitem">
                         <i class="ri-team-line"></i>
@@ -171,26 +194,7 @@
                     </ul>
                 </li>
 
-                <li class="slide">
-                    <a href="#!" class="side-menu__item" role="menuitem">
-                        <i class="ri-line-chart-line"></i>
-                        <span class="side-menu__label" data-lang="hr-apps-email">Estadísticas</span>
-                        <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                    </a>
-                    <ul class="slide-menu" role="menu">
-
-                        <li class="slide">
-                            <a href="{{ route('stats.report') }}" 
-                            class="side-menu__item" 
-                            role="menuitem" 
-                            data-lang="hr-apps-email-inbox">
-                                <i class="ri-brain-line"></i>
-                                Historia
-                            </a>
-                        </li>
-                        
-                    </ul>
-                </li>
+                
 
             </ul>
             

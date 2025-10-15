@@ -35,7 +35,32 @@
 
 /* Flatpickr arriba de toolbars/modales */
 .flatpickr-calendar{ z-index:1060; }
+
+
+/* ====== CHARTS LAYOUT: 1 / 2 / 3 por fila ====== */
+.charts-grid{
+display: grid;
+grid-template-columns: repeat(12, 1fr);
+gap: 12px;
+}
+
+.chart-col{
+grid-column: span 12;
+}
+
+@media (min-width: 768px){
+.chart-col{ grid-column: span 6; } 
+}
+
+@media (min-width: 1200px){
+.chart-col{ grid-column: span 4; } 
+}
+
+
+
 </style>
+
+
 @endsection
 
 
@@ -150,6 +175,32 @@
     {{-- === CHARTS === --}}
     <div class="charts-grid mb-3">
 
+        {{-- Pirámide: servicios que más alimentan --}}
+        <div class="chart-col">
+        <div class="card h-100">
+            <div class="card-header">
+            <h6 class="mb-0">Servicios con más pascientes</h6>
+            <div class="mini-hint mt-1">Mayor → menor </div>
+            </div>
+            <div class="card-body chart-body">
+            <div id="chartServicesPyramid"></div>
+            </div>
+        </div>
+        </div>
+
+        {{-- Dietas entregadas --}}
+        <div class="chart-col">
+        <div class="card h-100">
+            <div class="card-header">
+            <h6 class="mb-0">Dietas entregadas</h6>
+            <div class="mini-hint mt-1">Pacientes</div>
+            </div>
+            <div class="card-body chart-body">
+            <div id="chartByDiet"></div>
+            </div>
+        </div>
+        </div>
+
         {{-- Distribución por sexo --}}
         <div class="chart-col">
             <div class="card h-100">
@@ -163,45 +214,22 @@
             </div>
         </div>
 
-        {{-- Dietas entregadas --}}
+        {{-- Comidas por servicio (Stacked Bar) --}}
         <div class="chart-col">
-            <div class="card h-100">
+        <div class="card h-100">
             <div class="card-header">
-                <h6 class="mb-0">Dietas entregadas</h6>
-                <div class="mini-hint mt-1">Pacientes + acompañantes</div>
+            <h6 class="mb-0">Comidas por servicio</h6>
+            <div class="mini-hint mt-1">Desayuno / Almuerzo / Cena • Horizontal</div>
             </div>
             <div class="card-body chart-body">
-                <div id="chartByDiet"></div>
-            </div>
-            </div>
-        </div>
-
-        {{-- Bandejas por tiempo (placeholder) --}}
-        <div class="chart-col">
-        <div class="card h-100">
-            <div class="card-header">
-            <h6 class="mb-0">Bandejas por tiempo de comida</h6>
-            </div>
-            <div class="card-body">
-            <div id="chartByMeal" style="min-height: 300px;" class="d-flex align-items-center justify-content-center text-muted">
-                <span class="mini-hint">Próximamente: gráfico por tiempo (Desayuno/Almuerzo/Cena)</span>
-            </div>
+            <div id="chartMealsByService"></div>
             </div>
         </div>
         </div>
 
-        {{-- Top servicios con más pacientes atendidos --}}
-        <div class="chart-col">
-        <div class="card h-100">
-            <div class="card-header">
-            <h6 class="mb-0">Servicios con más pacientes atendidos</h6>
-            </div>
-            <div class="card-body">
-            <canvas id="chartTopServices" style="min-height: 300px;"></canvas>
-            <div class="mini-hint mt-2">Ordenado por pacientes (SUM de bandejas).</div>
-            </div>
-        </div>
-        </div>
+        
+
+
     </div>
     @endsection
 
@@ -228,10 +256,25 @@ JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
 ) !!}
 </script>
 
+{{-- Dietas entregadas (polarArea, monochrome) --}}
 <script id="dietPayloadJSON" type="application/json">
 {!! json_encode(
-$dietPayload ?? ['labels' => [], 'data' => []],
-JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+    $dietPayload ?? ['labels' => [], 'data' => []],
+    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+) !!}
+</script>
+
+<script id="mealsStackedJSON" type="application/json">
+{!! json_encode(
+    $mealsStackedPayload ?? ['categories' => [], 'series' => []],
+    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+) !!}
+</script>
+
+<script id="pyramidPayloadJSON" type="application/json">
+{!! json_encode(
+    $pyramidPayload ?? ['categories' => [], 'data' => []],
+    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
 ) !!}
 </script>
 
@@ -336,7 +379,6 @@ function renderSexChart(){
     const el = document.getElementById('chartBySex');
     if (!el || !window.ApexCharts) return;
 
-    // 1) Cargar payload
     let payload = { labels:['Hombres','Mujeres','Niños'], data:[0,0,0] };
     const src = document.getElementById('sexPayloadJSON');
     if (src && src.textContent){
@@ -397,7 +439,9 @@ else document.addEventListener('DOMContentLoaded', renderSexChart);
 // ------
 
 
-{{-- Dietas entregadas --}}
+
+
+<!-- Dietas entregadas — Pie (ApexCharts) -->
 <script>
 (function(){
 'use strict';
@@ -407,35 +451,65 @@ function renderDietChart(){
     const el = document.getElementById('chartByDiet');
     if (!el || !window.ApexCharts) return;
 
-    let payload = { labels:[], data:[] };
+    let payload = { labels: [], data: [] };
     const src = document.getElementById('dietPayloadJSON');
-    if (src && src.textContent){ try{ payload = JSON.parse(src.textContent); }catch(e){ console.error('dietPayloadJSON inválido', e); } }
+    if (src && src.textContent){
+        try { payload = JSON.parse(src.textContent); }
+        catch(e){ console.error('[SIGENUH] dietPayloadJSON inválido:', e); }
+    }
 
-    const total  = Array.isArray(payload.data) ? payload.data.reduce((a,b)=>a+b,0) : 0;
-    const series = total > 0 ? payload.data   : [1];
-    const labels = total > 0 ? payload.labels : ['Sin datos'];
+    const rawLabels = Array.isArray(payload.labels) ? payload.labels.map(String) : [];
+    const rawData   = Array.isArray(payload.data)   ? payload.data.map(v => Number(v) || 0) : [];
+    const L         = Math.min(rawLabels.length, rawData.length);
+    const labels    = rawLabels.slice(0, L);
+    const counts    = rawData.slice(0, L);
+
+    const total   = counts.reduce((a,b)=>a+b, 0);
+    const hasData = total > 0;
 
     if (window.__dietApex) window.__dietApex.destroy();
 
     window.__dietApex = new ApexCharts(el, {
-    chart:{ type:'donut', height:'100%', toolbar:{ show:false } },
-    series, labels,
-    legend:{ position:'bottom' },
-    dataLabels:{
-        enabled:true,
-        formatter:(_val,opts)=>{
-        const v = opts.series[opts.seriesIndex] || 0;
-        return total ? `${fmt(v)} • ${(v*100/total).toFixed(1)}%` : fmt(v);
+        chart:  { type: 'pie', height: '100%', toolbar: { show: false } },
+        labels: hasData ? labels : ['Sin datos'],
+        series: hasData ? counts : [1],
+
+    dataLabels: {
+        enabled: true,
+        dropShadow: { enabled: false },
+        formatter: function (percent, opts) {
+        const v = opts.w.globals.series[opts.seriesIndex] || 0; 
+            return hasData ? `${fmt(v)} • ${percent.toFixed(1)}%` : fmt(v);
         }
     },
-    tooltip:{ y:{ formatter:v => total ? `${fmt(v)} (${(v*100/total).toFixed(1)}%)` : fmt(v) } },
-    noData:{ text:'Sin datos' }
+
+    legend: {
+        position: 'bottom',
+        formatter: function (name, opts) {
+            const v = opts.w.globals.series[opts.seriesIndex] || 0;
+          const pct = hasData && total ? (v * 100 / total).toFixed(1) : '0.0';
+            return `${name}: ${fmt(v)} • ${pct}%`;
+        }
+    },
+
+    tooltip: {
+        y: {
+            formatter: function (v, { seriesIndex, w }) {
+            if (!hasData) return fmt(v);
+            const pct = total ? (v * 100 / total).toFixed(1) : '0.0';
+            return `${fmt(v)} (${pct}%)`;
+            }
+        }
+    },
+
+    noData: { text: 'Sin datos' },
+    responsive: [{ breakpoint: 768, options: { legend: { position: 'bottom' } } }]
     });
 
     window.__dietApex.render();
 
     const hint = el.closest('.card')?.querySelector('.mini-hint');
-    if (hint) hint.textContent = total ? `Total: ${fmt(total)} (pacientes + acompañantes)` : 'Sin datos';
+    if (hint) hint.textContent = hasData ? `Total: ${fmt(total)} (pacientes)` : 'Sin datos';
 }
 
 if (document.readyState !== 'loading') renderDietChart();
@@ -443,11 +517,199 @@ else document.addEventListener('DOMContentLoaded', renderDietChart);
 })();
 </script>
 
+
+
+
 // ------
 
 
-{{-- Dietas entregadas --}}
+{{-- tiempos servicios --}}
+<script>
+(function(){
+'use strict';
 
+const fmt = n => (typeof n === 'number' ? n.toLocaleString('es-VE') : String(n));
+
+function renderMealsStacked(){
+    const el  = document.getElementById('chartMealsByService');
+    if (!el || !window.ApexCharts) return;
+
+    let payload = { categories: [], series: [] };
+    const src = document.getElementById('mealsStackedJSON');
+    if (src && src.textContent){
+    try { payload = JSON.parse(src.textContent); }
+    catch(e){ console.error('[SIGENUH] mealsStackedJSON inválido:', e); }
+    }
+
+    const categories = Array.isArray(payload.categories) ? payload.categories.map(String) : [];
+    const seriesRaw  = Array.isArray(payload.series) ? payload.series : [];
+
+    const series = seriesRaw
+    .filter(s => s && typeof s.name === 'string' && Array.isArray(s.data))
+    .map(s => ({
+        name: String(s.name),
+        data: s.data.map(v => Number(v) || 0).slice(0, categories.length)
+    }));
+
+    for (const s of series) {
+    if (s.data.length < categories.length) {
+        s.data = s.data.concat(Array(categories.length - s.data.length).fill(0));
+    }
+    }
+
+    const totalAll = series.reduce((acc, s) => acc + s.data.reduce((a,b)=>a+b, 0), 0);
+    const hasData  = categories.length > 0 && totalAll > 0;
+    const dynamicHeight = Math.max(320, 28 * categories.length + 120);
+
+    if (window.__mealsStackedApex) window.__mealsStackedApex.destroy();
+
+    window.__mealsStackedApex = new ApexCharts(el, {
+    chart: {
+        type: 'bar',
+        stacked: true,
+        height: dynamicHeight,
+        toolbar: { show: false }
+    },
+    plotOptions: {
+        bar: {
+        horizontal: true,
+        dataLabels: {
+            total: {
+            enabled: true,
+            offsetX: 0,
+            style: { fontSize: '13px', fontWeight: 700 }
+            }
+        }
+        }
+    },
+    stroke: { width: 1, colors: ['#fff'] },
+    series: hasData ? series : [{ name: 'Sin datos', data: [1] }],
+    xaxis: {
+        categories: hasData ? categories : [''],
+        labels: {
+        formatter: function (val) { return fmt(Number(val) || 0); }
+        },
+        title: { text: '' }
+    },
+    yaxis: { title: { text: '' } },
+    legend: {
+        position: 'top',
+        horizontalAlign: 'left',
+        offsetX: 16
+    },
+    tooltip: {
+        y: { formatter: function (val) { return fmt(Number(val) || 0); } }
+    },
+    fill: { opacity: 1 },
+    noData: { text: 'Sin datos' }
+    });
+
+    window.__mealsStackedApex.render();
+
+    const hint = el.closest('.card')?.querySelector('.mini-hint');
+    if (hint) hint.textContent = hasData
+    ? `Servicios: ${fmt(categories.length)} • Total registros: ${fmt(totalAll)}`
+    : 'Sin datos';
+}
+
+if (document.readyState !== 'loading') renderMealsStacked();
+else document.addEventListener('DOMContentLoaded', renderMealsStacked);
+})();
+</script>
+
+
+// ------
+
+
+{{-- servicios con mas pascientes atendidos --}}
+<script>
+(function(){
+'use strict';
+const fmt = n => (typeof n === 'number' ? n.toLocaleString('es-VE') : String(n));
+
+function renderServicesPyramid(){
+    const el = document.getElementById('chartServicesPyramid');
+    if (!el || !window.ApexCharts) return;
+
+    let payload = { categories: [], data: [] };
+    const src = document.getElementById('pyramidPayloadJSON');
+    if (src && src.textContent){
+    try { payload = JSON.parse(src.textContent); }
+    catch(e){ console.error('[SIGENUH] pyramidPayloadJSON inválido:', e); }
+    }
+
+    const rawCats = Array.isArray(payload.categories) ? payload.categories.map(String)   : [];
+    const rawVals = Array.isArray(payload.data)       ? payload.data.map(v => +v || 0) : [];
+    const L       = Math.min(rawCats.length, rawVals.length);
+
+    let categories = rawCats.slice(0, L);
+    let data       = rawVals.slice(0, L);
+
+    const pairs = categories.map((label, i) => ({ label, value: data[i] }));
+    pairs.sort((a,b) => b.value - a.value);
+    categories = pairs.map(p => p.label);
+    data       = pairs.map(p => p.value);
+
+    const total   = data.reduce((a,b)=>a+b, 0);
+    const hasData = total > 0;
+
+    const dynamicHeight = Math.max(320, 28 * categories.length + 120);
+
+    if (window.__svcPyramidApex) window.__svcPyramidApex.destroy();
+
+    const options = {
+    chart: {
+        type: 'bar',
+        height: dynamicHeight,
+        toolbar: { show: false }
+    },
+    plotOptions: {
+        bar: {
+        horizontal: true,
+        isFunnel: true,
+        barHeight: '80%'
+        }
+    },
+    series: hasData ? [{ name: 'Comidas', data }] : [{ name: 'Sin datos', data: [1] }],
+    xaxis: {
+        categories: hasData ? categories : [''],
+        labels: { formatter: val => fmt(+val || 0) }
+    },
+    dataLabels: {
+        enabled: true,
+        dropShadow: { enabled: false },
+        formatter: function (val, opts) {
+        const v = opts.w.globals.series[0][opts.dataPointIndex] || 0;
+          const pct = total ? (v * 100 / total).toFixed(1) : '0.0';
+        return hasData ? `${fmt(v)} • ${pct}%` : fmt(v);
+        }
+    },
+    tooltip: {
+        y: { formatter: v => fmt(+v || 0) }
+    },
+    legend: { show: false },
+    noData: { text: 'Sin datos' }
+    };
+
+    window.__svcPyramidApex = new ApexCharts(el, options);
+    window.__svcPyramidApex.render();
+
+    const hint = el.closest('.card')?.querySelector('.mini-hint');
+    if (hint) {
+    if (hasData && categories.length) {
+        const top = categories[0];
+        const topVal = data[0] || 0;
+        hint.textContent = `Top: ${top} — ${fmt(topVal)} comidas (Total: ${fmt(total)})`;
+    } else {
+        hint.textContent = 'Sin datos';
+    }
+    }
+}
+
+if (document.readyState !== 'loading') renderServicesPyramid();
+else document.addEventListener('DOMContentLoaded', renderServicesPyramid);
+})();
+</script>
 
 
 

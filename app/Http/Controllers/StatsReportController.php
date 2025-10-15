@@ -71,14 +71,11 @@ class StatsReportController extends Controller
         // ------
     
         // === SEXO (Hombres / Mujeres / Niños) con regla de has_minor =================
-        // - "Niños": si el servicio es Menores/NIÑOS o si c.has_minor = 1 (en cualquier servicio)
-        // - "Hombres": solo si cat = HOMBRES y NO es menor
-        // - "Mujeres": solo si cat = MUJERES y NO es menor
+    
         $sexBase = DB::table('collects as c')
             ->join('beds as b', 'b.id', '=', 'c.bed_id')
             ->join('hospital_floor_services as hfs', 'hfs.id', '=', 'b.hospital_floor_service_id')
             ->join('services as s', 's.id', '=', 'hfs.service_id')
-            // limitamos a categorías relevantes o a casos con has_minor=1
             ->where(function ($q) {
                 $q->whereIn(DB::raw("UPPER(TRIM(s.category))"), ['HOMBRES','MUJERES','MENORES','NIÑOS','NINOS'])
                 ->orWhereRaw('COALESCE(c.has_minor,0) = 1');
@@ -88,7 +85,6 @@ class StatsReportController extends Controller
             $sexBase->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]);
         }
 
-        // Derivamos el bucket con prioridad a Niños para evitar doble conteo
         $sexQ = $sexBase->selectRaw("
             CASE
                 WHEN COALESCE(c.has_minor,0) = 1
@@ -103,7 +99,6 @@ class StatsReportController extends Controller
             COUNT(*) AS total
         ")->groupBy('bucket');
 
-        // Mapeamos resultados a nuestro payload fijo (H/M/Niños)
         $rawSex = $sexQ->pluck('total', 'bucket')->toArray();
 
         $sexPayload = [
@@ -153,6 +148,88 @@ class StatsReportController extends Controller
 
 
 
+        // === CHART: Comidas por servicio (Stacked Bar) =============================
+        // Series = { Desayuno, Almuerzo, Cena }, Categorías = Servicios
+
+        $meals = ['Desayuno','Almuerzo','Cena'];
+
+        $svcMealRows = DB::table('collects as c')
+            ->join('beds as b', 'b.id', '=', 'c.bed_id')
+            ->join('hospital_floor_services as hfs', 'hfs.id', '=', 'b.hospital_floor_service_id')
+            ->join('services as s', 's.id', '=', 'hfs.service_id')
+            ->select('s.name as service', 'c.meal', DB::raw('COUNT(*) as total'))
+            ->when($applyRange, fn($q) => $q->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]))
+            ->groupBy('service', 'c.meal')
+            ->get();
+
+        $svcMealMap = [];      
+        $totalPerSvc = [];     
+
+        foreach ($svcMealRows as $r) {
+            $svc  = (string) $r->service;
+            $meal = (string) $r->meal;
+            $cnt  = (int) $r->total;
+
+            if (!isset($svcMealMap[$svc])) {
+                $svcMealMap[$svc] = array_fill_keys($meals, 0);
+                $totalPerSvc[$svc] = 0;
+            }
+
+            if (in_array($meal, $meals, true)) {
+                $svcMealMap[$svc][$meal] += $cnt;
+                $totalPerSvc[$svc]       += $cnt;
+            }
+        }
+
+        uksort($svcMealMap, function($a, $b) use ($totalPerSvc) {
+            return ($totalPerSvc[$b] <=> $totalPerSvc[$a]) ?: strcasecmp($a, $b);
+        });
+
+        $categories = array_keys($svcMealMap);
+
+        $series = [];
+        foreach ($meals as $meal) {
+            $series[] = [
+                'name' => $meal,
+                'data' => array_map(fn($svc) => (int) ($svcMealMap[$svc][$meal] ?? 0), $categories),
+            ];
+        }
+
+        $mealsStackedPayload = [
+            'categories' => $categories, 
+            'series'     => $series,     
+        ];
+
+
+
+
+        // === CHART: Pirámide por servicio (pacientes + acompañantes) ===
+        // Cuenta 1 por cada collect + 1 extra si has_companion=1 (misma fila).
+        $pyrQ = DB::table('collects as c')
+            ->join('beds as b', 'b.id', '=', 'c.bed_id')
+            ->join('hospital_floor_services as hfs', 'hfs.id', '=', 'b.hospital_floor_service_id')
+            ->join('services as s', 's.id', '=', 'hfs.service_id')
+            ->select('s.name',
+                DB::raw('COUNT(*) + SUM(CASE WHEN c.has_companion=1 THEN 1 ELSE 0 END) as total')
+            );
+
+        if ($applyRange) {
+            $pyrQ->whereBetween('c.date', [$start->toDateString(), $end->toDateString()]);
+        }
+
+        $svcCounts = $pyrQ
+            ->groupBy('s.name')
+            ->pluck('total', 's.name')
+            ->map(fn($v) => (int)$v)
+            ->toArray();
+
+        arsort($svcCounts);
+
+        $pyramidPayload = [
+            'categories' => array_keys($svcCounts),   // Servicios (labels)
+            'data'       => array_values($svcCounts), // Totales
+        ];
+
 
 
 
@@ -176,7 +253,9 @@ class StatsReportController extends Controller
             ],
             'dietCountsMap' => $dietCountsMap,
             'sexPayload'    => $sexPayload, 
-            'dietPayload'  => $dietPayload,  
+            'dietPayload'  => $dietPayload,
+            'mealsStackedPayload' => $mealsStackedPayload,
+            'pyramidPayload'  => $pyramidPayload,  
 
 
         ]);
@@ -192,21 +271,21 @@ class StatsReportController extends Controller
 
         if ($range) {
             try {
-                // Normaliza: decodifica, recorta y convierte "+" en espacio por si acaso
+                
                 $raw = urldecode(trim($range));
-                $raw = str_replace('+', ' ', $raw); // blindaje si llega literal con +
+                $raw = str_replace('+', ' ', $raw); 
 
-                // Acepta "YYYY-MM-DD - YYYY-MM-DD" o "YYYY-MM-DD-YYYY-MM-DD" (sin espacios)
+                
                 if (preg_match('/^\s*(\d{4}-\d{2}-\d{2})\s*-\s*(\d{4}-\d{2}-\d{2})\s*$/', $raw, $m)) {
                     $start = Carbon::parse($m[1])->startOfDay();
                     $end   = Carbon::parse($m[2])->endOfDay();
                 } else {
-                    // Si solo viene una fecha, usa ese mismo día
+                
                     $start = Carbon::parse($raw)->startOfDay();
                     $end   = Carbon::parse($raw)->endOfDay();
                 }
             } catch (\Throwable $e) {
-                // fallback seguro: hoy
+                
                 $start = Carbon::today()->startOfDay();
                 $end   = Carbon::today()->endOfDay();
             }
