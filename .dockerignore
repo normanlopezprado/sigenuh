@@ -1,0 +1,16 @@
+/vendor
+/node_modules
+/storage/app/public
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/views
+/.git
+/.github
+/.env
+npm-debug.log
+yarn-error.log
+.pnpm-store
+.idea
+.vscode
+Dockerfile
+docker-compose.yml
