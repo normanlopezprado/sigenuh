@@ -29,9 +29,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # Cargamos .env pero sobreescribimos host/puerto para Docker
+    # Cargamos .env.docker pero sobreescribimos host/puerto para Docker
     env_file:
-      - .env
+      - .env.docker
     environment:
       DB_HOST: db
       DB_PORT: 3306
