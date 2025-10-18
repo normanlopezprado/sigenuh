@@ -125,7 +125,7 @@
                             </div>
                             <div class="mt-3">
                                 <button class="btn btn-sm btn-primary">Guardar</button>
-                                <a href="{{ route('menus.index') }}" class="btn btn-sm btn-danger">Cancelar</a>
+                                <a href="{{ route('dashboard') }}" class="btn btn-sm btn-info">Atrás</a>
                             </div>
                         </form>
 
