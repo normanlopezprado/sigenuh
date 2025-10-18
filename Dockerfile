@@ -1,42 +1,32 @@
 # syntax=docker/dockerfile:1
+FROM php:8.2-fpm
 
-FROM php:8.2-fpm AS base
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Instalar dependencias del sistema y extensiones de PHP necesarias
-RUN apt-get update \
-    && apt-get install -y \
-        git \
-        curl \
-        libpng-dev \
-        libonig-dev \
-        libxml2-dev \
-        zip \
-        unzip \
-        libzip-dev \
-    && docker-php-ext-configure zip \
-    && docker-php-ext-install \
-        pdo_mysql \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd \
-        zip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# 1) Paquetes base + PHP ext (incluye freetype/jpeg p/ gd) + Nginx + Supervisor + MariaDB client
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      nginx supervisor git unzip curl ca-certificates gnupg \
+      mariadb-client \
+      libzip-dev libpng-dev libonig-dev libxml2-dev \
+      libfreetype6-dev libjpeg62-turbo-dev \
+  && docker-php-ext-configure gd --with-freetype --with-jpeg \
+  && docker-php-ext-install -j"$(nproc)" pdo_mysql zip gd \
+  && rm -rf /var/lib/apt/lists/*
 
-# Copiar Composer desde la imagen oficial
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# 2) Node.js 20 (vía NodeSource) + Yarn
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+  && apt-get update && apt-get install -y --no-install-recommends nodejs \
+  && npm install -g yarn \
+  && npm cache clean --force \
+  && rm -rf /var/lib/apt/lists/*
 
-# Establecer el directorio de trabajo dentro del contenedor
+# 3) Composer
+RUN curl -sS https://getcomposer.org/installer | php -- \
+      --install-dir=/usr/local/bin --filename=composer
+
 WORKDIR /var/www/html
 
-# Copiar los archivos del proyecto
-COPY . .
+EXPOSE 80 5173
 
-# Ajustar permisos para Laravel
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && find storage bootstrap/cache -type d -exec chmod 775 {} \; \
-    && find storage bootstrap/cache -type f -exec chmod 664 {} \;
-
-CMD ["php-fpm"]
+# Usamos el entrypoint montado por volumen; si no tiene +x, lo forzamos al vuelo.
+CMD ["/bin/sh","-lc","chmod +x /usr/local/bin/app-entrypoint 2>/dev/null || true; /usr/local/bin/app-entrypoint"]
