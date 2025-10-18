@@ -1,16 +1,21 @@
-/vendor
-/node_modules
-/storage/app/public
-/storage/framework/cache/data
-/storage/framework/sessions
-/storage/framework/views
-/.git
-/.github
-/.env
-npm-debug.log
-yarn-error.log
-.pnpm-store
-.idea
-.vscode
-Dockerfile
-docker-compose.yml
+# Ignora cosas grandes, pero NO todo
+.git
+node_modules
+vendor
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+
+# Si tienes dist o builds locales
+public/hot
+public/build
+
+# Permitir explícitamente los archivos que el Dockerfile necesita
+!Dockerfile
+!default.conf
+!supervisord.conf
+!entrypoint.sh
+
+# Si vas a copiar código dentro de la imagen (no solo bind mount), no ignores app
+# y demás. Si NO vas a copiar código (solo bind mount), puedes ignorarlos sin problema.

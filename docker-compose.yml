@@ -1,65 +1,60 @@
-version: "3.9"
 
 services:
-  app:
-    build: .
-    container_name: sigenuh-app
+  db:
+    image: mariadb:10.11
+    container_name: sigenuh-db
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-sigenuhdb}
+      MYSQL_USER: ${DB_USERNAME:-sigenuh}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      TZ: America/Guatemala
+    volumes:
+      - db-data:/var/lib/mysql
+    # Evita chocar con un MySQL local en 3306
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sigenuh-app
+    depends_on:
+      db:
+        condition: service_healthy
+    # Cargamos .env.docker pero sobreescribimos host/puerto para Docker
+    env_file:
+      - .env.docker
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-sigenuhdb}
+      DB_USERNAME: ${DB_USERNAME:-sigenuh}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      TZ: America/Guatemala
+      SEED_ON_BOOT: "true"
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
+      - app-vendor:/var/www/html/vendor
+      - app-node_modules:/var/www/html/node_modules
+      # Montamos tus configs (asegúrate que existan como archivos, no carpetas)
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf:ro
+      - ./entrypoint.sh:/usr/local/bin/app-entrypoint:ro
     ports:
-      - "5173:5173"
-    environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-      APP_URL: http://localhost:8080
-      VITE_HOST: 0.0.0.0
-      VITE_PORT: 5173
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: sigenuh
-      DB_USERNAME: sigenuh
-      DB_PASSWORD: sigenuh
-    depends_on:
-      - db
-    networks:
-      - laravel
-
-  webserver:
-    image: nginx:1.25-alpine
-    container_name: sigenuh-web
+      - "8080:80"     # App en http://localhost:8080
+      - "5173:5173"   # Vite
     restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www/html
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - app
-    networks:
-      - laravel
-
-  db:
-    image: mysql:8.0
-    container_name: sigenuh-db
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: sigenuh
-      MYSQL_USER: sigenuh
-      MYSQL_PASSWORD: sigenuh
-    ports:
-      - "33060:3306"
-    volumes:
-      - db-data:/var/lib/mysql
-    networks:
-      - laravel
 
 volumes:
   db-data:
-
-networks:
-  laravel:
-    driver: bridge
+  app-vendor:
+  app-node_modules:
