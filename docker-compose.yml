@@ -1,65 +1,80 @@
-version: "3.9"
-
 services:
-  app:
-    build: .
-    container_name: sigenuh-app
+  db:
+    image: mariadb:10.11
+    container_name: sigenuh-db
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      TZ: ${TZ}
+    ports:
+      - "127.0.0.1:${DB_PORT_LOCAL}:3306"  # acceso local
+      - "0.0.0.0:${DB_PORT_PUBLIC}:3307"   # acceso remoto
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/mariadb/conf.d:/etc/mysql/conf.d:ro
+      - ./docker/mariadb/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
+
+# ========= APP (PHP-FPM + Composer + Node + Yarn) =========
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: sigenuh-app
+    depends_on:
+      - db
+    env_file:
+      - .env.docker
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
-    ports:
-      - "5173:5173"
-    environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-      APP_URL: http://localhost:8080
-      VITE_HOST: 0.0.0.0
-      VITE_PORT: 5173
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: sigenuh
-      DB_USERNAME: sigenuh
-      DB_PASSWORD: sigenuh
-    depends_on:
-      - db
-    networks:
-      - laravel
-
-  webserver:
-    image: nginx:1.25-alpine
-    container_name: sigenuh-web
+    healthcheck:
+      test: ["CMD-SHELL", "php -v >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www/html
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+
+  # ========= WEB (Nginx) =========
+  web:
+    image: nginx:stable
+    container_name: sigenuh-web
     depends_on:
       - app
-    networks:
-      - laravel
-
-  db:
-    image: mysql:8.0
-    container_name: sigenuh-db
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: sigenuh
-      MYSQL_USER: sigenuh
-      MYSQL_PASSWORD: sigenuh
     ports:
-      - "33060:3306"
+      - "${WEB_PORT}:80"
     volumes:
-      - db-data:/var/lib/mysql
-    networks:
-      - laravel
+      - ./:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ========= Vite (hot-reload) =========
+  vite:
+    container_name: sigenuh-vite
+    image: node:20-bullseye
+    working_dir: /var/www/html
+    command: sh -lc "corepack enable && yarn install --frozen-lockfile || yarn install && yarn dev --host ${VITE_HOST} --port ${VITE_PORT}"
+    env_file:
+      - .env.docker
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "${VITE_PORT}:${VITE_PORT}"
+    depends_on:
+      - app
+    restart: unless-stopped
 
 volumes:
   db-data:
-
-networks:
-  laravel:
-    driver: bridge

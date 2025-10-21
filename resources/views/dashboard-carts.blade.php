@@ -6,41 +6,85 @@
 @section('pagetitle', 'Dashboard • Carritos')
 @section('buttonTitle', 'Actualizar')
 
-@section('css')
-<style>
+    @section('css')
+    <style>
+    /* ===========================
+        mobile
+        =========================== */
     .carts-grid {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: 1fr; 
         gap: 1rem;
     }
-    @media (max-width: 1919px) { .carts-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 1199px) { .carts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 767px)  { .carts-grid { grid-template-columns: 1fr; } }
 
+    /* ===========================
+        Cards / UI base
+        =========================== */
     .cart-card {
         border: 1px solid var(--tblr-border-color, #e9ecef);
         border-radius: 16px;
-        box-shadow: 0 4px 18px rgba(0,0,0,.04);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .04);
         transition: transform .15s ease, box-shadow .15s ease;
         background: #fff;
         overflow: hidden;
     }
-    .cart-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+
+    .cart-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+    }
 
     .cart-header {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: .75rem 1rem; border-bottom: 1px dashed #efefef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: clamp(.6rem, 1vw + .25rem, .85rem);
+        border-bottom: 1px dashed #efefef;
     }
-    .cart-title { display:flex; align-items:center; gap:.5rem; min-width:0; }
-    .cart-dot { width: 12px; height: 12px; border-radius: 999px; display: inline-block; outline: 2px solid rgba(0,0,0,.06); flex: 0 0 auto; }
-    .cart-title-text { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cart-submeta { font-size: .8rem; color: #6c757d; }
 
-    .badge-soft { padding: .25rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+    .cart-title {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        min-width: 0;
+    }
+
+    .cart-dot {
+        width: clamp(10px, 1.1vw + 6px, 12px);
+        height: clamp(10px, 1.1vw + 6px, 12px);
+        border-radius: 999px;
+        display: inline-block;
+        outline: 2px solid rgba(0, 0, 0, .06);
+        flex: 0 0 auto;
+    }
+
+    .cart-title-text {
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: clamp(1.06rem, 1.2vw + .6rem, 1.25rem);
+    }
+
+    .cart-submeta {
+        font-size: clamp(.82rem, .6vw + .55rem, .95rem);
+        color: #6c757d;
+    }
+
+    .badge-soft {
+        padding: .25rem .5rem;
+        border-radius: 999px;
+        font-size: clamp(.72rem, .6vw + .45rem, .8rem);
+        font-weight: 600;
+    }
+
     .badge-soft-success { background: #e9f7ef; color: #0f5132; }
     .badge-soft-secondary { background: #f1f2f4; color: #495057; }
 
-    .cart-body { padding: 1rem; }
+    .cart-body {
+        padding: clamp(.75rem, 1.2vw + .25rem, 1rem);
+    }
+
     .muted { color: #6c757d; }
 
     .skeleton {
@@ -49,68 +93,147 @@
         animation: shine 1.2s linear infinite;
         border-radius: 10px;
     }
-    @keyframes shine { to { background-position-x: -200%; } }
+
+    @keyframes shine {
+        to { background-position-x: -200%; }
+    }
+
     .empty-state {
-        border: 2px dashed #e9ecef; border-radius: 16px; padding: 2rem;
-        text-align: center; color: #6c757d;
+        border: 2px dashed #e9ecef;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        color: #6c757d;
     }
 
-    /* Tabla de captura */
-    .cart-table { width: 100%; border-collapse: collapse; margin-top: .5rem; }
-    .cart-table th, .cart-table td { border-top: 1px solid #e9ecef; padding: .5rem; vertical-align: middle; }
-    .cart-table thead th { background: #f8f9fa; font-weight: 700; }
-    .cart-table tfoot th, .cart-table tfoot td { background: #fafbfc; font-weight: 700; }
-    .text-end { text-align: right; }
-    .qty-input { width: 100%; max-width: 110px; }
-    .row-note { font-size: .8rem; color:#6c757d; }
-
-    /* Servicios asignados */
-    .cart-services { margin-top: .75rem; }
-    .cart-services small { display: block; line-height: 1.2rem; }
-    .cart-services .svc { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .toolbar { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
-    .last-updated { font-size: .85rem; }
-
-    .alert-mini { display:none; margin-bottom:1rem; }
-    .summary-window { margin-top: .25rem; }
-
-    .text-center { text-align: center; }
-
-    /* === +15% tamaño en cards === */
-    :root { --card-scale: 1.15; }
-
-    .carts-grid {
-    gap: calc(1rem * var(--card-scale));
+    /* ===========================
+        Tabla
+        =========================== */
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: .5rem;
     }
 
-    .cart-title-text {
-    font-size: calc(1rem * var(--card-scale));
-    }
-    .cart-submeta {
-    font-size: calc(.8rem * var(--card-scale));
+    .cart-table thead th {
+        background: #f8f9fa;
+        font-weight: 700;
     }
 
-    .cart-header {
-    padding: calc(.75rem * var(--card-scale)) calc(1rem * var(--card-scale));
-    }
-    .cart-body {
-    padding: calc(1rem * var(--card-scale));
-    }
-
-    .cart-dot {
-    width: calc(12px * var(--card-scale));
-    height: calc(12px * var(--card-scale));
+    .cart-table tfoot th,
+    .cart-table tfoot td {
+        background: #fafbfc;
+        font-weight: 700;
     }
 
-    /* Tabla un poco más grande y con celdas cómodas */
     .cart-table th,
     .cart-table td {
-    padding: calc(.5rem * var(--card-scale));
+        border-top: 1px solid #e9ecef;
+        padding: clamp(.35rem, 0.8vw + .2rem, .5rem);
+        vertical-align: middle;
+        font-size: clamp(.9rem, .6vw + .55rem, 1rem);
     }
 
-</style>
-@endsection
+    .text-end { text-align: right; }
+    .qty-input { width: 100%; max-width: 110px; }
+    .row-note { font-size: clamp(.78rem, .5vw + .5rem, .9rem); color: #6c757d; }
+
+    /* ===========================
+        Servicios asignados
+        =========================== */
+    .cart-services {
+        margin-top: .75rem;
+        line-height: 1.35;
+        font-size: clamp(.92rem, 0.7vw + .55rem, 1.05rem);
+    }
+
+    .cart-services small {
+        display: block;
+    
+        font-size: 1em;
+    }
+
+    .cart-services .svc {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .toolbar { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+    .last-updated { font-size: clamp(.85rem, .4vw + .6rem, .95rem); }
+    .alert-mini { display: none; margin-bottom: 1rem; }
+    .summary-window { margin-top: .25rem; }
+    .text-center { text-align: center; }
+
+    /* ===========================
+        Escala general
+        =========================== */
+    :root { --card-scale: 1; }
+    
+    @media (min-width: 576px) {
+        .carts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    
+    @media (min-width: 992px) {
+        .carts-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        :root { --card-scale: 1.1; }
+    }
+
+
+    @media (min-width: 1200px) {
+        :root { --card-scale: 1.15; }
+        .cart-title-text {
+        font-size: clamp(1.12rem, .9vw + .7rem, 1.35rem);
+        }
+    }
+
+
+    @media (min-width: 2560px) and (max-width: 3839.98px) {
+        .carts-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        :root { --card-scale: 1.3; }
+
+        .cart-header { padding: 1rem; }
+        .cart-body   { padding: 1.2rem; }
+
+        .cart-title-text { font-size: 1.35rem; }     
+        .cart-submeta    { font-size: 1rem; }        
+        .cart-table th,
+        .cart-table td   { font-size: 1.06rem; }     
+        .badge-soft      { font-size: calc(.82rem * var(--card-scale)); }
+
+        
+        .cart-services { font-size: 1.18rem; }       
+    }
+
+    
+    @media (min-width: 3840px) {
+        .carts-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        :root { --card-scale: 1.5; }
+
+        .cart-header { padding: 1.3rem; }
+        .cart-body   { padding: 1.6rem; }
+
+        .cart-title-text { font-size: 2.1rem; }      
+        .cart-submeta    { font-size: 1.9rem; }      
+        .cart-table th,
+        .cart-table td   { font-size: 1.7rem; }     
+        .badge-soft      { font-size: calc(.85rem * var(--card-scale)); }
+
+    }
+    </style>
+    @endsection
+
+
 
 @section('content')
 <div class="row g-4">
