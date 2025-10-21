@@ -22,8 +22,8 @@ El contenedor `app` incluye **PHP**, **Composer**, **Node.js**, **Yarn** y sirve
 ## Puesta en marcha (desatendida)
 Construye e inicia todo en segundo plano:
 ```bash
-docker compose build --progress=plain
+docker compose --env-file .env.docker build --no-cache app
 ```
 ```bash
-docker compose up -d
+docker compose --env-file .env.docker up -d
 ```
